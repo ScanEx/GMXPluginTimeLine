@@ -1,0 +1,238 @@
+.gmxTimeline.leaflet-control {
+/*    background-color: white;*/
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 24px;
+    margin: 0px;
+    padding: 5px;
+}
+.gmxTimeline .hideButton {
+    margin-right: 0px;
+	margin-bottom: 0px;
+    top: -10px;
+/*	
+
+	color: white;
+    text-align: center;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    border-width: 1px;
+    border-radius: 15px;
+    position: absolute;
+    right: 3px;
+    top: -20px;
+    cursor: pointer;
+    background-color: black;
+*/
+}
+.gmxTimeline .tabs {
+    z-index: 1;
+    position: relative;
+    top: 1px;
+}
+
+.gmxTimeline .layer {
+    bottom: 14px;
+    position: absolute;
+}
+
+.gmxTimeline .options {
+	float: left;
+}
+.gmxTimeline .timeline-content {
+    background-color: rgba(192, 207, 216, 0.5);
+/*    background-color: rgba(218, 227, 232, 0.5);*/
+    font-family: Roboto reg;
+}
+.gmxTimeline .timeline-axis-text-minor {
+    font-size: 11px;
+}
+.gmxTimeline .timeline-axis-text-major {
+    font-family: Roboto reg;
+    font-size: 10px;
+}
+.gmxTimeline .timeline-axis-grid-minor {
+    border-color: #bfbfbf;
+    /* border-color: #4a5557; */
+}
+
+.gmxTimeline .timeline-container {
+    background-color: lightgray;
+}
+.gmxTimeline .internal-container {
+	border: 1px solid gray;
+	background-color: white;
+}
+.gmx-hidden {
+	display: none;
+}
+.gmxTimeline .vis-group  .vis-point {
+	top: 10px;
+}
+.gmxTimeline .timeline-frame {
+   /* background: none;*/
+}
+.gmxTimeline .timeline-event-content {
+	display: none;
+}
+.gmxTimeline .timeline-event-dot-container {
+	margin-left: -5px;
+	margin-top: -8px;
+}
+.gmxTimeline .timeline-event-content {
+	border-style: solid;
+	border-width: 5px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+.gmxTimeline .timeline-event-dot {
+	position: absolute;
+	top: -5px;
+	left: 5px;
+}
+
+.gmxTimeline .timeline-event-line {
+	border-left-width: 1px;
+	border-left-style: solid;
+}
+.gmxTimeline .timeline-event-selected {
+	border-color: #FFC200;
+	background-color: #FFF785;
+	z-index: 999;
+}
+
+.gmxTimeline .w-scroll {
+/*    background-color: white;
+	border-top: 1px solid gray;*/
+    position: relative;
+    height: 24px;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+.gmxTimeline .w-scroll .l-scroll {
+	cursor: col-resize;
+    margin-left: -6px;
+    /*
+	margin-right: 12px;
+    left: -5px;
+	*/
+    width: 15px;
+    height: 15px;
+    background-color: #3ca1c7;
+    border-radius: 50%;
+    position: absolute;
+    top: 6px;
+}
+.gmxTimeline .w-scroll .l-scroll-title {
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    margin-top: -23px;
+}
+.gmxTimeline .w-scroll .r-scroll {
+	cursor: col-resize;
+/*	margin-left: 12px;
+	*/
+	margin-right: 10px;
+    width: 15px;
+    height: 15px;
+    background-color: #3ca1c7;
+    border-radius: 50%;
+    position: absolute;
+    right: -6px;
+    top: 6px;
+}
+.gmxTimeline .w-scroll .c-scroll {
+    width: 100%;
+    height: 81px;
+	margin-left: 11px;
+	margin-right: 12px;
+    background-color: rgba(81, 184, 202, 0.1);
+    position: absolute;
+    left: 0px;
+    top: 28px;
+    border-left: 1px solid #9ad4df;
+    border-right: 1px solid #9ad4df;
+}
+.gmxTimeline .w-scroll .c-scroll .c-borders {
+    height: 8px;
+    width: 100%;
+    position: relative;
+    top: -7px;
+    left: -1px;
+    border-right: 1px solid #9ad4df;
+    border-left: 1px solid #9ad4df;
+}
+
+.gmxTimeline .vis {
+/*    background-color: white;*/
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+}
+
+.tabs ul, .tabs ul li {
+	list-style: none;
+}
+.tabs ul {
+	display: inline-flex;
+/*	text-align: center;	*/
+}
+
+.tabs ul li {
+	padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;
+	width: 185px;
+	height: 21px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: gray;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    background-color: white;
+	cursor: pointer;
+	position: relative;
+}
+
+.tabs ul li.last {
+	margin-right: 0;
+}
+
+.tabs ul li .close-button {
+    position: absolute;
+    right: 0px;
+    top: 3px;
+    width: 16px;
+    height: 16px;
+    padding-right: 0px;
+    background: url(../../../img/redesign/icons2.png) -74px -2px;
+}
+
+.tabs ul li span {
+    padding-right: 8px;
+    overflow: hidden;
+/*    height: 21px;
+    display: block;*/
+    font-family: Roboto reg;
+    font-size: 10px;
+}
+
+.tabs ul li .close-button:hover span {
+	color: #69C;
+	text-decoration: underline;
+}
+
+.tabs .selected {
+	border-bottom: white;
+    padding-bottom: 1px;
+	margin-bottom: -1px;
+}
+
+.leaflet-iconLayers.iconLayersShift {
+	margin-bottom: 152px;
+}
