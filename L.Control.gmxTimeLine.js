@@ -627,8 +627,8 @@
 				var state = _this.getCurrentState();
 				if (state) {
 					var oInterval = state.oInterval,
-						dInterval = oInterval,
-						// dInterval = state.dInterval || oInterval,
+						// dInterval = oInterval,
+						dInterval = state.dInterval || oInterval,
 						oe = oInterval.endDate.getTime(),
 						ob = oInterval.beginDate.getTime(),
 						msecW = oe - ob,
