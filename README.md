@@ -23,5 +23,18 @@ moveable|`<Boolean>`|`false`| При `true` позволяет изменять 
 addLayer|`addLayer(`[layer](https://github.com/ScanEx/Leaflet-GeoMixer/blob/master/documentation-rus.md#Класс-lgmxvectorlayer)`)`| Добавляет мультивременной слой.
 removeLayer|`removeLayer(`[layer](https://github.com/ScanEx/Leaflet-GeoMixer/blob/master/documentation-rus.md#Класс-lgmxvectorlayer)`)`| Удаляет мультивременной слой.
 
+#### События
+
+| Type | Property | Description
+| --- | --- |:---
+| click | `<Event>` | click на таймлайне
+| dateInterval | `<Event>` | произошло изменение интервала таймлайна
+
+#### События добавляемые к карте
+
+| Type | Property | Description
+| --- | --- |:---
+| gmxTimeLine.currentTabChanged | `<Event>` | изменена текущая вкладка таймлайна
+
 ## config line example for Geomixer
      { pluginName: 'Timeline Vectors', file: 'plugins/external/GMXPluginTimeLine/L.Control.gmxTimeLine.js', module: 'gmxTimeLine', mapPlugin: true, isPublic: true }
