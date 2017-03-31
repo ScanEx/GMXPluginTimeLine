@@ -51,7 +51,16 @@
 						opt = gmxLayer.getGmxProperties();
 
 					if (!dInterval.beginDate || !dInterval.endDate) {
-						var cInterval = calendar.getDateInterval().attributes;
+						var cInterval;
+						if (calendar) {
+							cInterval = calendar.getDateInterval().attributes;
+						} else {
+							var cDate = new Date();
+							cInterval = {
+								dateBegin: cDate,
+								dateEnd: new Date(cDate.valueOf() + 1000 * 60 * 60 * 24)
+							};
+						}
 						dInterval = {
 							beginDate: cInterval.dateBegin,
 							endDate: cInterval.dateEnd
@@ -100,8 +109,8 @@
 			className: 'gmxTimeline',
 			modeSelect: 'range',	// selected
 			groups: false,
-			hostPrefix: 'http://maps.kosmosnimki.ru/',
-			dateInterval: [new Date('2016-01-01'), new Date('2016-12-31')],
+			// hostPrefix: 'http://maps.kosmosnimki.ru/',
+			// dateInterval: [new Date('2016-01-01'), new Date('2016-12-31')],
 			moveable: false
         },
 
@@ -481,7 +490,8 @@
 			}
 		},
 
-		layerAdd: function (gmxLayer) {
+		// layerAdd: function (gmxLayer) {
+		addLayer: function (gmxLayer) {
 			var opt = gmxLayer.getGmxProperties(),
 				data = getDataSource(opt.name);
 			if (data) {
@@ -687,7 +697,7 @@
 			map
 				// .on('layeradd', function(ev) {
 					// if (ev.layer instanceof L.gmx.VectorLayer) {
-						// this.layerAdd(ev.layer);
+						// this.addLayer(ev.layer);
 					// }
 				// }, this)
 				// .on('layerremove', function(ev) {
@@ -715,6 +725,7 @@
 
         afterViewer: function (params, map) {
 			if (window.nsGmx) {
+				if (params.gmxMap && !window.nsGmx.gmxMap) { window.nsGmx.gmxMap = params.gmxMap; }
 				var options = {},
 					nsGmx = window.nsGmx,
 					layersByID = nsGmx.gmxMap.layersByID;
@@ -723,7 +734,7 @@
 				if (nsGmx.widgets && nsGmx.commonCalendar) {
 					calendar = nsGmx.commonCalendar;
 				}
-				iconLayers = nsGmx.leafletMap.gmxControlsManager.get('iconLayers');
+				iconLayers = map.gmxControlsManager.get('iconLayers');
 
 				timeLineControl = L.control.gmxTimeline(options)
 					.on('dateInterval', function (ev) {
@@ -746,7 +757,7 @@
 				nsGmx.timeLineControl = timeLineControl;
 				// nsGmx.gmxMap.layers.forEach(function (gmxLayer) {
 					// if (map.hasLayer(gmxLayer)) {
-						// timeLineControl.layerAdd(gmxLayer);
+						// timeLineControl.addLayer(gmxLayer);
 					// }
 				// });
 				var title = 'Добавить к Таймлайну';
@@ -760,19 +771,21 @@
 					}});
 					title = translations.getText('gmxTimeLine.contextMemuTitle');
 				}
-				nsGmx.ContextMenuController.addContextMenuElem({
-					title: function() { return title; },
-					isVisible: function(context) {
-						return !context.layerManagerFlag && 
-								context.elem.type == "Vector" &&
-								context.elem.Temporal;
-								// &&
-								// context.elem.GeometryType !== 'point';
-					},
-					clickCallback: function(context) {
-						this.layerAdd(context.elem.name);
-					}.bind(this)
-				}, 'Layer');
+				if (nsGmx.ContextMenuController) {
+					nsGmx.ContextMenuController.addContextMenuElem({
+						title: function() { return title; },
+						isVisible: function(context) {
+							return !context.layerManagerFlag && 
+									context.elem.type == "Vector" &&
+									context.elem.Temporal;
+									// &&
+									// context.elem.GeometryType !== 'point';
+						},
+						clickCallback: function(context) {
+							this.layerAdd(context.elem.name);
+						}.bind(this)
+					}, 'Layer');
+				}
 
 				if (window._mapHelper) {
 					_mapHelper.customParamsManager.addProvider({
@@ -789,10 +802,13 @@
 				return timeLineControl;
 			}
         },
+        addLayer: function(gmxLayer) {
+			nsGmx.timeLineControl.addLayer(gmxLayer);
+        },
         layerAdd: function(layerID) {
 			var gmxLayer = nsGmx.gmxMap.layersByID[layerID];
 			if (gmxLayer) {
-				nsGmx.timeLineControl.layerAdd(gmxLayer);
+				nsGmx.timeLineControl.addLayer(gmxLayer);
 			}
 			return this;
         },

@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>GeoMixer timeline Example</title>
+	<meta charset="utf-8" />
+    <style>
+		html, body, #map {
+			height: 100%;
+			margin: 0px;
+		}
+        .controls {
+            position: absolute;
+			left: 190px;
+			top: 11px;
+			z-index: 1000;
+			background-color: #ffffff;
+			border-radius: 5px;
+            box-shadow: 0 1px 7px rgba(0,0,0,0.65);
+        }
+        
+        .controls button {
+            border-radius: 5px;
+            
+        }
+        
+        .controls > div{
+            padding: 6px;
+        }
+    </style>
+
+	<link rel="stylesheet" href="http://www.kosmosnimki.ru/lib/geomixer/geomixer.css" />
+	<script src="http://www.kosmosnimki.ru/lib/geomixer/geomixer-src.js?key=U92596WMIH"></script>
+
+	<link rel="stylesheet" href="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.css" />
+	<script src="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.js"></script>
+
+	<link rel="stylesheet" href="L.Control.gmxTimeline.css" />
+	<script src="L.Control.gmxTimeline.js"></script>
+</head>
+<body>
+	<div id="map"></div>
+	<div class="controls">
+		<div>
+            <button class="add">Add to timeline</button>
+            <button class="view">View/Hide</button>
+        </div>
+	</div>
+	<script>
+		var map = L.map('map').setView([44, 50], 3);
+
+		var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+		}).addTo(map);
+
+        //Load all the layers from GeoMixer map and add them to Leaflet map
+        L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
+			console.log('sss', arguments)
+			var cm = map.gmxControlsManager;
+			var rr = cm.init();
+			var control = window.nsGmx.gmxTimeLine.afterViewer({
+				gmxMap: gmxMap,
+				moveable: true
+			}, map);
+			map.addControl(control);
+			var add = document.getElementsByClassName('add')[0],
+				view = document.getElementsByClassName('view')[0],
+				cDate = new Date(),
+				beginDate = new Date(cDate.valueOf() - 1000 * 60 * 60 * 24),
+				endDate = cDate,
+				layerID = 'C13B4D9706F7491EBC6DC70DFFA988C0',
+				hotSpotsGlobal = gmxMap.layersByID[layerID],
+				isAdded = false;
+			hotSpotsGlobal.setDateInterval(beginDate, endDate);
+			L.DomEvent
+				.on(add, 'click', function (ev) {
+					if (isAdded) {
+						// control.layerAdd(hotSpotsGlobal);
+						isAdded = false;
+					} else {
+						control.addLayer(hotSpotsGlobal);
+						isAdded = true;
+					}
+				});
+			L.DomEvent
+				.on(view, 'click', function (ev) {
+					if (map.hasLayer(hotSpotsGlobal)) {
+						map.removeLayer(hotSpotsGlobal);
+					} else {
+						map.addLayer(hotSpotsGlobal);
+					}
+				});
+		});
+	</script>
+</body>
+</html>
