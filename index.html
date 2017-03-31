@@ -41,8 +41,8 @@
 	<div id="map"></div>
 	<div class="controls">
 		<div>
-            <button class="add">Add to timeline</button>
-            <button class="view">View/Hide</button>
+            <button class="add">Add/Remove to timeline</button>
+            <button class="view">View/Hide layer to map</button>
         </div>
 	</div>
 	<script>
@@ -75,7 +75,7 @@
 			L.DomEvent
 				.on(add, 'click', function (ev) {
 					if (isAdded) {
-						// control.layerAdd(hotSpotsGlobal);
+						control.removeLayer(hotSpotsGlobal);
 						isAdded = false;
 					} else {
 						control.addLayer(hotSpotsGlobal);

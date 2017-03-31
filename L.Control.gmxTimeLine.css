@@ -178,7 +178,8 @@
 }
 .tabs ul {
 	display: inline-flex;
-/*	text-align: center;	*/
+    margin-bottom: 0px;
+	/*	text-align: center;	*/
 }
 
 .tabs ul li {

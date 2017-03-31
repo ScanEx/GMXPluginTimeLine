@@ -109,8 +109,6 @@
 			className: 'gmxTimeline',
 			modeSelect: 'range',	// selected
 			groups: false,
-			// hostPrefix: 'http://maps.kosmosnimki.ru/',
-			// dateInterval: [new Date('2016-01-01'), new Date('2016-12-31')],
 			moveable: false
         },
 
@@ -151,6 +149,21 @@
 			return this._state.data[currentDmID];
 		},
 
+		_removeLayerTab: function (liItem) {
+			var layersTab = this._containers.layersTab;
+			layersTab.removeChild(liItem);
+			delete this._state.data[liItem._layerID];	// При удалении tab забываем о слое
+			if (layersTab.children.length === 0) {
+				currentDmID = null;
+				L.DomUtil.addClass(this._container, 'gmx-hidden');
+				if (iconLayers) {
+					L.DomUtil.removeClass(iconLayers.getContainer(), 'iconLayersShift');
+				}
+			} else {
+				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
+			}
+		},
+
 		_addLayerTab: function (layerID, title) {
 			var layersTab = this._containers.layersTab,
 				liItem = L.DomUtil.create('li', 'selected', layersTab),
@@ -160,23 +173,11 @@
 
 			liItem._layerID = layerID;
 			span.innerHTML = title;
-			// closeButton.innerHTML = '×';
 
 			L.DomEvent
 				.on(closeButton, 'click', stop)
 				.on(closeButton, 'click', function (ev) {
-					var nextTab = liItem.nextSibling;
-					layersTab.removeChild(liItem);
-					delete this._state.data[layerID];	// При удалении tab забываем о слое
-					if (layersTab.children.length === 0) {
-						currentDmID = null;
-						L.DomUtil.addClass(this._container, 'gmx-hidden');
-						if (iconLayers) {
-							L.DomUtil.removeClass(iconLayers.getContainer(), 'iconLayersShift');
-						}
-					} else {
-						this._setCurrentTab((nextTab || layersTab.lastChild)._layerID);
-					}
+					this._removeLayerTab(liItem);
 			}, this);
 		},
 
@@ -263,7 +264,6 @@
 
 		_redrawTimeline: function () {
 			var count = 0,
-				// interval = this._getDateInterval(true),
 				type = timeLineType === 'timeline' ? 'dot' : 'point',
 				selected = [],
 				res = [],
@@ -332,7 +332,6 @@
 			var state = this.getCurrentState();
 			state.oInterval = {beginDate: ev.start, endDate: ev.end};
 			this._setDateScroll();
-// console.log('_rangechange', ev.start);
 		},
 
 		_rangechanged: function (ev) {
@@ -461,10 +460,6 @@
 					options.start = state.oInterval.beginDate;
 					options.end = state.oInterval.endDate;
 				}
-				if (state.temporalColumnType === 'date') {
-					// options.zoomMin = this._state.day * 30;
-					// options.timeAxis = {scale: 'day'};
-				}
 				this._containers.vis.innerHTML = '';
 
 				var _this = this;
@@ -490,7 +485,26 @@
 			}
 		},
 
-		// layerAdd: function (gmxLayer) {
+		removeLayer: function (gmxLayer) {
+			var opt = gmxLayer.getGmxProperties(),
+				layerID = opt.name,
+				data = getDataSource(layerID);
+			if (data) {
+				gmxLayer
+					.removeFilter(filter.bind(gmxLayer))
+					.off('dateIntervalChanged', this._dateIntervalChanged, this);
+				var layersTab = this._containers.layersTab;
+				for (var i = 0, len = layersTab.children.length; i < len; i++) {
+					var li = layersTab.children[i];
+					if (li._layerID === layerID) {
+						this._removeLayerTab(li);
+						break;
+					}
+				}
+			}
+			return this;
+		},
+
 		addLayer: function (gmxLayer) {
 			var opt = gmxLayer.getGmxProperties(),
 				data = getDataSource(opt.name);
@@ -578,6 +592,7 @@
 							hideButton.style.top = '-10px';
 							useSvg.setAttribute('href', '#arrow-down-01');
 						}
+						this._redrawTimeline();
 					}
 					this._state.isVisible = isVisible;
 				}, this);
@@ -596,7 +611,6 @@
 						dt = (state.dInterval || state.oInterval).endDate,
 						str = this._timeline.getUTCTimeString(new Date(dt - 1));
 					rScroll.title = str;
-					// rScroll.title = (new Date(dt.getTime() + tzm)).toLocaleString();
 				}, this);
 
 			L.DomEvent
@@ -623,7 +637,6 @@
 						msec2 = msec1 + px * w;
 					if (state) {
 						state.dInterval = { beginDate: new Date(msec1), endDate: new Date(msec2) };
-// console.log('state.dateInterval__', state.dInterval.beginDate.toGMTString(), state.dInterval.endDate.toGMTString());
 						state.uTimeStamp = [state.dInterval.beginDate.getTime()/1000, state.dInterval.endDate.getTime()/1000];
 						_this.fire('click', {
 							layerID: state.layerID,
@@ -652,13 +665,6 @@
 					L.DomUtil.setPosition(cScroll, point);
 					L.DomUtil.setPosition(rScroll, new L.Point(x2, 0));
 					cScroll.style.width = (ww + x2 - x1 - 24) + 'px';
-					// if (!state.dInterval) {
-						// _this.fire('dateInterval', {
-							// layerID: state.layerID,
-							// beginDate: oInterval.beginDate,
-							// endDate: oInterval.endDate
-						// }, _this);
-					// }
 				}
 			};
 			(new L.Draggable(lScroll))
@@ -742,7 +748,6 @@
 							d2 = ev.endDate,
 							gmxLayer = layersByID[ev.layerID];
 
-						// console.log('dateInterval__', d1.toGMTString(), d2.toGMTString(), ev.layerID);
 						if (map.hasLayer(gmxLayer) && calendar) {
 							calendar.setDateInterval(d1, d2, gmxLayer);
 						} else {
@@ -778,8 +783,6 @@
 							return !context.layerManagerFlag && 
 									context.elem.type == "Vector" &&
 									context.elem.Temporal;
-									// &&
-									// context.elem.GeometryType !== 'point';
 						},
 						clickCallback: function(context) {
 							this.layerAdd(context.elem.name);
@@ -791,7 +794,6 @@
 					_mapHelper.customParamsManager.addProvider({
 						name: pluginName,
 						loadState: function(state) {
-// console.log('loadState__', arguments);
 							publicInterface.loadState(state, map);
 						},
 						saveState: publicInterface.saveState
@@ -802,13 +804,25 @@
 				return timeLineControl;
 			}
         },
+        removeLayer: function(gmxLayer) {
+			nsGmx.timeLineControl.removeLayer(gmxLayer);
+			return this;
+        },
         addLayer: function(gmxLayer) {
 			nsGmx.timeLineControl.addLayer(gmxLayer);
+			return this;
+        },
+        layerRemove: function(layerID) {
+			var gmxLayer = nsGmx.gmxMap.layersByID[layerID];
+			if (gmxLayer) {
+				this.removeLayer(gmxLayer);
+			}
+			return this;
         },
         layerAdd: function(layerID) {
 			var gmxLayer = nsGmx.gmxMap.layersByID[layerID];
 			if (gmxLayer) {
-				nsGmx.timeLineControl.addLayer(gmxLayer);
+				this.addLayer(gmxLayer);
 			}
 			return this;
         },
