@@ -1,9 +1,11 @@
 # GMXPluginTimeLine
 
 ### Плагин L.control.gmxTimeline
-Добавляет контрол таймлайна слоев ГеоМиксера. Расширяет [L.Control](http://leafletjs.com/reference.html#control).
+Добавляет контрол таймлайна слоев ГеоМиксера (расширяет [L.Control](http://leafletjs.com/reference.html#control)).
+
 Предназначен для анализа временной составляющей мультивременных векторных слоев ГеоМиксера.
-Доступ через пространство имен ГеоМиксера - `window.nsGmx` по идентификатору `gmxTimeline`
+
+(Доступ через пространство имен ГеоМиксера - `window.nsGmx` по идентификатору `gmxTimeline`)
 
 Demos
 ------
