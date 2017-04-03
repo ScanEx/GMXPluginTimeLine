@@ -22,21 +22,21 @@ Demos
 	<link rel="stylesheet" href="L.Control.gmxTimeline.css" />
 	<script src="L.Control.gmxTimeline.js"></script>
 	<script>
-		var map = L.map('map').setView([60, 50], 3);
-		
-        L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
-			var control = L.control.gmxTimeline({
-				moveable: true
-			})
-				.on('dateInterval', function (ev) {
-					gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
-				})
-				.on('click', function (ev) {
-					gmxMap.layersByID[ev.layerID].repaint();
-				});
-
-			map.addControl(control);
+	   var map = L.map('map').setView([60, 50], 3);
+	
+           L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
+		var control = L.control.gmxTimeline({
+			moveable: true
+		})
+		.on('dateInterval', function (ev) {
+			gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
+		})
+		.on('click', function (ev) {
+			gmxMap.layersByID[ev.layerID].repaint();
 		});
+
+		map.addControl(control);
+	  });
 	</script>
 ```
 
