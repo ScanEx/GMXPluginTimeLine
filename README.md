@@ -34,7 +34,7 @@ Demos
 				});
 
 			map.addControl(control);
-			var cDate = new Date(),
+			var cDate = new Date(Date.UTC(2017, 0, 1)),
 				beginDate = new Date(cDate.valueOf() - 1000 * 60 * 60 * 24),
 				endDate = cDate,
 				layerID = 'C13B4D9706F7491EBC6DC70DFFA988C0',
