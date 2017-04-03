@@ -44,7 +44,7 @@
         </div>
 	</div>
 	<script>
-		var map = L.map('map').setView([44, 50], 3);
+		var map = L.map('map').setView([44, 50], 2);
 
 		var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 			maxZoom: 18,
@@ -64,15 +64,19 @@
 				});
 
 			map.addControl(control);
-			var add = document.getElementsByClassName('add')[0],
-				view = document.getElementsByClassName('view')[0],
-				cDate = new Date(),
+			var cDate = new Date(),
 				beginDate = new Date(cDate.valueOf() - 1000 * 60 * 60 * 24),
 				endDate = cDate,
 				layerID = 'C13B4D9706F7491EBC6DC70DFFA988C0',
-				hotSpotsGlobal = gmxMap.layersByID[layerID],
-				isAdded = false;
+				hotSpotsGlobal = gmxMap.layersByID[layerID];
+
 			hotSpotsGlobal.setDateInterval(beginDate, endDate);
+			control.addLayer(hotSpotsGlobal);
+			map.addLayer(hotSpotsGlobal);
+
+			var add = document.getElementsByClassName('add')[0],
+				view = document.getElementsByClassName('view')[0],
+				isAdded = true;
 			L.DomEvent
 				.on(add, 'click', function (ev) {
 					if (isAdded) {
