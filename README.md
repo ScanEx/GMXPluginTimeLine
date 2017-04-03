@@ -7,7 +7,7 @@
 
 Demos
 ------
-  * [Пример](http://scanex.github.io/GMXPluginTimeLine/index.html) инициализации.
+  * [Пример](https://scanex.github.io/GMXPluginTimeLine/index.html) инициализации.
 ```html
 	<div id="map"></div>
  
