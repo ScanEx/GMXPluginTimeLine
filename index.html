@@ -17,12 +17,10 @@
 			border-radius: 5px;
             box-shadow: 0 1px 7px rgba(0,0,0,0.65);
         }
-        
         .controls button {
             border-radius: 5px;
             
         }
-        
         .controls > div{
             padding: 6px;
         }
@@ -55,13 +53,16 @@
 
         //Load all the layers from GeoMixer map and add them to Leaflet map
         L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
-			console.log('sss', arguments)
-			var cm = map.gmxControlsManager;
-			var rr = cm.init();
-			var control = window.nsGmx.gmxTimeLine.afterViewer({
-				gmxMap: gmxMap,
+			var control = L.control.gmxTimeline({
 				moveable: true
-			}, map);
+			})
+				.on('dateInterval', function (ev) {
+					gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
+				})
+				.on('click', function (ev) {
+					gmxMap.layersByID[ev.layerID].repaint();
+				});
+
 			map.addControl(control);
 			var add = document.getElementsByClassName('add')[0],
 				view = document.getElementsByClassName('view')[0],

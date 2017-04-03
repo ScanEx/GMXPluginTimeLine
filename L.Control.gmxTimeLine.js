@@ -16,7 +16,7 @@
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		filter = function (it) {
-			var state = timeLineControl.getCurrentState() || {},
+			var state = this.getCurrentState() || {},
 				selected = state.selected;
 			if (modeSelect === 'range') {
 				var uTimeStamp = state.uTimeStamp || [0, 0],
@@ -38,8 +38,8 @@
 		currentLayerID,
 		currentDmID,
 
-		getDataSource = function (id) {
-			var gmxLayer = nsGmx.gmxMap.layersByID[id];
+		getDataSource = function (gmxLayer) {
+			// var gmxLayer = nsGmx.gmxMap.layersByID[id];
 			if (gmxLayer && gmxLayer.getDataManager) {
 				var dm = gmxLayer.getDataManager(),
 					dmOpt = dm.options;
@@ -205,7 +205,7 @@
 				if (dataSource.oInterval) {
 					currentDmID = layerID;
 					this._initTimeline();
-					timeLineControl._bboxUpdate();
+					this._bboxUpdate();
 				}
 				if (!pDataSource) {
 					this._addLayerTab(layerID, dataSource.title || '');
@@ -488,10 +488,10 @@
 		removeLayer: function (gmxLayer) {
 			var opt = gmxLayer.getGmxProperties(),
 				layerID = opt.name,
-				data = getDataSource(layerID);
+				data = getDataSource(gmxLayer);
 			if (data) {
 				gmxLayer
-					.removeFilter(filter.bind(gmxLayer))
+					.removeFilter(filter.bind(this))
 					.off('dateIntervalChanged', this._dateIntervalChanged, this);
 				var layersTab = this._containers.layersTab;
 				for (var i = 0, len = layersTab.children.length; i < len; i++) {
@@ -507,10 +507,10 @@
 
 		addLayer: function (gmxLayer) {
 			var opt = gmxLayer.getGmxProperties(),
-				data = getDataSource(opt.name);
+				data = getDataSource(gmxLayer);
 			if (data) {
 				gmxLayer
-					.setFilter(filter.bind(gmxLayer))
+					.setFilter(filter.bind(this))
 					.on('dateIntervalChanged', this._dateIntervalChanged, this);
 				this.addDataSource(data);
 			}
@@ -577,25 +577,29 @@
 			L.DomEvent
 				.on(hideButton, 'click', function (ev) {
 					var isVisible = !L.DomUtil.hasClass(visContainer, 'gmx-hidden'),
-						iconLayersCont = iconLayers ? iconLayers.getContainer() : null;
+						iconLayersCont = iconLayers ? iconLayers.getContainer() : null,
+						xTop = '0px';
 					if (isVisible) {
 						L.DomUtil.addClass(visContainer, 'gmx-hidden');
 						if (iconLayersCont) {
 							L.DomUtil.removeClass(iconLayersCont, 'iconLayersShift');
-							hideButton.style.top = '0px';
 							useSvg.setAttribute('href', '#arrow-up-01');
 						}
 					} else {
 						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
 						if (iconLayersCont) {
 							L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
-							hideButton.style.top = '-10px';
+							xTop = '-10px';
 							useSvg.setAttribute('href', '#arrow-down-01');
 						}
 						this._redrawTimeline();
 					}
+					hideButton.style.top = xTop;
 					this._state.isVisible = isVisible;
 				}, this);
+				if (iconLayers) {
+					hideButton.style.top = '-10px';
+				}
 
 			L.DomEvent
 				.on(lScroll, 'mouseover', function (ev) {
@@ -765,7 +769,7 @@
 						// timeLineControl.addLayer(gmxLayer);
 					// }
 				// });
-				var title = 'Добавить к Таймлайну';
+				var title = 'Добавить в таймлайн';
 				if (nsGmx.Translations) {
 					var translations = nsGmx.Translations;
 					translations.addText('rus', {'gmxTimeLine': {
@@ -832,7 +836,7 @@
 				state.dataSources.forEach(function (it) {
 					var gmxLayer = layersByID[it.layerID];
 					if (gmxLayer) {
-						var data = getDataSource(it.layerID);
+						var data = getDataSource(gmxLayer);
 						if (data) {
 							data.oInterval = {
 								beginDate: new Date(it.oInterval.beginDate),

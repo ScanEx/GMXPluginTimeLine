@@ -8,6 +8,35 @@
 Demos
 ------
   * [Пример](http://scanex.github.io/GMXPluginTimeLine/index.html) инициализации.
+```html
+	<div id="map"></div>
+ 
+	<link rel="stylesheet" href="http://www.kosmosnimki.ru/lib/geomixer/geomixer.css" />
+	<script src="http://www.kosmosnimki.ru/lib/geomixer/geomixer-src.js?key=U92596WMIH"></script>
+
+	<link rel="stylesheet" href="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.css" />
+	<script src="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.js"></script>
+
+	<link rel="stylesheet" href="L.Control.gmxTimeline.css" />
+	<script src="L.Control.gmxTimeline.js"></script>
+	<script>
+		var map = L.map('map').setView([60, 50], 3);
+		
+        L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
+			var control = L.control.gmxTimeline({
+				moveable: true
+			})
+				.on('dateInterval', function (ev) {
+					gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
+				})
+				.on('click', function (ev) {
+					gmxMap.layersByID[ev.layerID].repaint();
+				});
+
+			map.addControl(control);
+		});
+	</script>
+```
 
 ### Options
 
