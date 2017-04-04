@@ -10,7 +10,7 @@
 .gmxTimeline .hideButton {
     margin-right: 0px;
 	margin-bottom: 0px;
-    top: 0px;
+    top:13px;
 /*	
 
 	color: white;
@@ -42,7 +42,7 @@
 	float: left;
 }
 .gmxTimeline .timeline-content {
-    background-color: rgba(192, 207, 216, 0.5);
+    background-color: rgba(192, 207, 216, 0.2);
 /*    background-color: rgba(218, 227, 232, 0.5);*/
     font-family: tahoma;
     font-size: 12px;    
@@ -121,10 +121,11 @@
 	*/
     width: 15px;
     height: 15px;
-    background-color: #3ca1c7;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     border-radius: 50%;
     position: absolute;
-    top: 6px;
+    top: 4px;
 }
 .gmxTimeline .w-scroll .l-scroll-title {
     width: 20px;
@@ -139,30 +140,41 @@
 	margin-right: 10px;
     width: 15px;
     height: 15px;
-    background-color: #3ca1c7;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     border-radius: 50%;
     position: absolute;
     right: -6px;
-    top: 6px;
+    top: 4px;
+}
+
+.gmxTimeline .w-scroll .g-scroll {
+    height: 2px;
+    width: 100%;
+    border-top: 1px solid #bfbfbf;
+    top: 12px;
+	left: 0px;
+    position: absolute;
 }
 .gmxTimeline .w-scroll .c-scroll {
     width: 100%;
     height: 81px;
 	margin-left: 11px;
 	margin-right: 12px;
-    background-color: rgba(81, 184, 202, 0.1);
+    background-color: rgba(81, 184, 202, 0.15);
     position: absolute;
     left: 0px;
-    top: 28px;
+    top: 24px;
     border-left: 1px solid #9ad4df;
     border-right: 1px solid #9ad4df;
 }
 .gmxTimeline .w-scroll .c-scroll .c-borders {
-    height: 8px;
+ /*   height: 12px;*/
     width: 100%;
     position: relative;
-    top: -7px;
+    top: -12px;
     left: -1px;
+    border-top: 1px solid #9ad4df;	
     border-right: 1px solid #9ad4df;
     border-left: 1px solid #9ad4df;
 }
@@ -240,4 +252,28 @@
 
 .leaflet-iconLayers.iconLayersShift {
 	margin-bottom: 152px;
+}
+
+.gmxTimeline .leaflet-gmx-iconSvg {
+	text-align: center;
+    height: 20px;
+    width: 20px;
+    border-radius: 4px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0px 3px 4.7px 0.3px rgba(0, 0, 0, 0.24);
+    fill: #757575;
+    clear: none;
+    cursor: pointer;
+    display: block;
+    float: right;
+    margin-left: 4px;
+    position: relative;
+}
+.gmxTimeline .leaflet-gmx-iconSvg svg {
+    height: 12px;
+    width: 12px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    pointer-events: none;
 }

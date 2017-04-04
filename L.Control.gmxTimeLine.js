@@ -552,7 +552,7 @@
 			// L.DomEvent.disableScrollPropagation(container);
 
 			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title=""><svg role="img" class="svgIcon"><use xlink:href="#arrow-down-01"></use></svg></div>';
-			container.innerHTML = str + '<div class="vis-container"><div class="tabs"><ul class="layers-tab"></ul></div><div class="internal-container"><div class="w-scroll"><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
+			container.innerHTML = str + '<div class="vis-container"><div class="tabs"><ul class="layers-tab"></ul></div><div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
 			container._id = this.options.id;
 			this._map = map;
 			var lScroll = container.getElementsByClassName('l-scroll')[0],
