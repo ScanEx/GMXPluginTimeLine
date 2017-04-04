@@ -44,14 +44,15 @@
 .gmxTimeline .timeline-content {
     background-color: rgba(192, 207, 216, 0.5);
 /*    background-color: rgba(218, 227, 232, 0.5);*/
-    font-family: Roboto reg;
+    font-family: tahoma;
+    font-size: 12px;    
 }
 .gmxTimeline .timeline-axis-text-minor {
     font-size: 11px;
 }
 .gmxTimeline .timeline-axis-text-major {
-    font-family: Roboto reg;
-    font-size: 10px;
+    font-family: tahoma;
+    font-size: 12px;    
 }
 .gmxTimeline .timeline-axis-grid-minor {
     border-color: #bfbfbf;
@@ -218,9 +219,12 @@
     padding-right: 8px;
     overflow: hidden;
 /*    height: 21px;
-    display: block;*/
-    font-family: Roboto reg;
+    display: block;
+	font-family: Roboto reg;
     font-size: 10px;
+	*/
+    font-family: tahoma;
+    font-size: 12px;    
 }
 
 .tabs ul li .close-button:hover span {
