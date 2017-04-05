@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>GeoMixer timeline Example</title>
+	<meta charset="utf-8" />
+    <style>
+		html, body, #map {
+			height: 100%;
+			margin: 0px;
+		}
+        .controls {
+            position: absolute;
+			left: 190px;
+			top: 11px;
+			z-index: 1000;
+			background-color: #ffffff;
+			border-radius: 5px;
+            box-shadow: 0 1px 7px rgba(0,0,0,0.65);
+        }
+        .controls button {
+            border-radius: 5px;
+            
+        }
+        .controls > div{
+            padding: 6px;
+        }
+    </style>
+
+	<link rel="stylesheet" href="http://www.kosmosnimki.ru/lib/geomixer/geomixer.css" />
+	<script src="http://www.kosmosnimki.ru/lib/geomixer/geomixer-src.js?key=U92596WMIH"></script>
+
+	<link rel="stylesheet" href="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.css" />
+	<script src="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.js"></script>
+
+	<link rel="stylesheet" href="L.Control.gmxTimeline.css" />
+	<script src="L.Control.gmxTimeline.js"></script>
+</head>
+<body>
+	<div id="fb-root"></div>
+	<div id="map"></div>
+	<div class="controls">
+		<div>
+            <button class="add">Add/Remove to timeline</button>
+            <button class="view">View/Hide layer to map</button>
+            <button class="facebook">Войти через Facebook</button>
+            <span class="facebookresult"></span>
+        </div>
+	</div>
+	<script>
+		var map = L.map('map').setView([44, 50], 2);
+
+		var osm = L.tileLayer('http://{s}.tile.osm.kosmosnimki.ru/kosmo/{z}/{x}/{y}.png', {
+			maxZoom: 18
+		}).addTo(map);
+
+        //Load all the layers from GeoMixer map and add them to Leaflet map
+        L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
+			var control = L.control.gmxTimeline({
+				moveable: true
+			})
+				.on('dateInterval', function (ev) {
+					gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
+				})
+				.on('click', function (ev) {
+					gmxMap.layersByID[ev.layerID].repaint();
+				});
+
+			map.addControl(control);
+			var cDate = new Date(Date.UTC(2017, 0, 1)),
+				beginDate = new Date(cDate.valueOf() - 1000 * 60 * 60 * 24),
+				endDate = cDate,
+				layerID = 'C13B4D9706F7491EBC6DC70DFFA988C0',
+				hotSpotsGlobal = gmxMap.layersByID[layerID];
+
+			hotSpotsGlobal.setDateInterval(beginDate, endDate);
+			control.addLayer(hotSpotsGlobal);
+			map.addLayer(hotSpotsGlobal);
+
+			var add = document.getElementsByClassName('add')[0],
+				view = document.getElementsByClassName('view')[0],
+				isAdded = true;
+			L.DomEvent
+				.on(add, 'click', function (ev) {
+					if (isAdded) {
+						control.removeLayer(hotSpotsGlobal);
+						isAdded = false;
+					} else {
+						control.addLayer(hotSpotsGlobal);
+						isAdded = true;
+					}
+				});
+			L.DomEvent
+				.on(view, 'click', function (ev) {
+					if (map.hasLayer(hotSpotsGlobal)) {
+						map.removeLayer(hotSpotsGlobal);
+					} else {
+						map.addLayer(hotSpotsGlobal);
+					}
+				});
+		});
+		var e = document.createElement('script');
+		e.async = true;
+		e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+		document.getElementById('fb-root').appendChild(e);
+
+		var fbButton = document.getElementsByClassName('facebook')[0],
+			fbrSpan = document.getElementsByClassName('facebookresult')[0];
+
+		window.fbAsyncInit = function() {
+			FB.init({ appId: '1424664207573469', 
+				status: true, 
+				cookie: true,
+				xfbml: true,
+				oauth: true});
+
+			function updateButton(response) {
+				if (response.authResponse) {
+					FB.api('/me', function(response) {
+						fbButton.innerHTML = 'Выход';
+						fbrSpan.innerHTML = response.name;
+						//console.log(response);
+					});
+					fbButton.onclick = function() {
+						FB.logout(function(response) {
+						  fbButton.innerHTML = 'Вход';
+						  fbrSpan.innerHTML = '';
+						});
+					};
+				} else {
+					fbButton.onclick = function() {
+						FB.login(function(response) {
+							if (response.authResponse) {
+								FB.api('/me', function(response) {
+									fbrSpan.innerHTML = response.name;
+									//console.log(response);
+								});	   
+							} else {
+								//user cancelled login or did not grant authorization
+							}
+						}, {scope:'email'});  	
+					}
+				}
+			}
+
+			// run once with current status and whenever the status changes
+			FB.getLoginStatus(updateButton);
+			FB.Event.subscribe('auth.statusChange', updateButton);	
+		}
+
+	</script>
+</body>
+</html>
