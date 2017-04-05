@@ -84,7 +84,7 @@
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
 								var arr = it.properties,
-									utm = arr[tmpKeyNum];
+									utm = Number(arr[tmpKeyNum]);
 								if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
 								this.cache[utm] = 1 + (this.cache[utm] || 0);
 							},
@@ -271,6 +271,9 @@
 				state = this._state,
 				groupInterval = [state.maxDate, state.zeroDate],
 				data = this.getCurrentState(),
+				dInterval = data.dInterval || data.oInterval,
+				beginDate = dInterval.beginDate.valueOf() / 1000,
+				endDate = dInterval.endDate.valueOf() / 1000,
 				dSelected = data.selected || {};
 
 			for (var utm in data.items) {
@@ -288,6 +291,10 @@
 				if (needGroup) {
 					item.group = currentDmID;
 				}
+				if (utm >= beginDate && utm < endDate) {
+					// item.className = 'timeline-event-selected';
+				}
+
 				groupInterval[0] = Math.min(start, groupInterval[0]);
 				groupInterval[1] = Math.max(start, groupInterval[1]);
 				if (dSelected[utm]) {
@@ -311,7 +318,24 @@
 					this._items.add(res);
 				}
 			}
-			this._timeline.setSelection(selected);
+			this._chkSelection(data);
+
+			// this._timeline.setSelection(selected);
+		},
+
+		_chkSelection: function (state) {
+			var dInterval = state.dInterval || state.oInterval,
+				beginDate = new Date(dInterval.beginDate.valueOf() + tzm),
+				endDate = new Date(dInterval.endDate.valueOf() + tzm);
+
+			this._timeline.items.forEach(function(it) {
+				if (it.start >= beginDate && it.start < endDate) {
+					L.DomUtil.addClass(it.dom, 'timeline-event-selected');
+				} else {
+					L.DomUtil.removeClass(it.dom, 'timeline-event-selected');
+				}
+			});
+			// this._timeline.setSelection(selected);
 		},
 
 		_setEvents: function (tl) {
@@ -647,6 +671,7 @@
 							beginDate: state.dInterval.beginDate,
 							endDate: state.dInterval.endDate
 						}, _this);
+						_this._chkSelection(state);
 					}
 				};
 			this._dIntervalUpdate = dragend;
@@ -669,6 +694,7 @@
 					L.DomUtil.setPosition(cScroll, point);
 					L.DomUtil.setPosition(rScroll, new L.Point(x2, 0));
 					cScroll.style.width = (ww + x2 - x1 - 24) + 'px';
+					this._chkSelection(state);
 				}
 			};
 			(new L.Draggable(lScroll))

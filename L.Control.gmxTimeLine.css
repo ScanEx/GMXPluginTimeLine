@@ -98,7 +98,7 @@
 	border-left-width: 1px;
 	border-left-style: solid;
 }
-.gmxTimeline .timeline-event-selected {
+.gmxTimeline .timeline-event-selected .timeline-event {
 	border-color: #FFC200;
 	background-color: #FFF785;
 	z-index: 999;
