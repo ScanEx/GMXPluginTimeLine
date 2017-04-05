@@ -607,15 +607,15 @@
 						L.DomUtil.addClass(visContainer, 'gmx-hidden');
 						if (iconLayersCont) {
 							L.DomUtil.removeClass(iconLayersCont, 'iconLayersShift');
-							useSvg.setAttribute('href', '#arrow-up-01');
 						}
+						useSvg.setAttribute('href', '#arrow-up-01');
 					} else {
 						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
 						if (iconLayersCont) {
 							L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
 							xTop = '-10px';
-							useSvg.setAttribute('href', '#arrow-down-01');
 						}
+						useSvg.setAttribute('href', '#arrow-down-01');
 						this._redrawTimeline();
 					}
 					hideButton.style.top = xTop;
