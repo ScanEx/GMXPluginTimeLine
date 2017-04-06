@@ -331,13 +331,14 @@
 				endDate = new Date(dInterval.endDate.valueOf() + tzm);
 
 			this._timeline.items.forEach(function(it) {
-				if (it.start >= beginDate && it.start < endDate) {
-					L.DomUtil.addClass(it.dom, 'timeline-event-selected');
-				} else {
-					L.DomUtil.removeClass(it.dom, 'timeline-event-selected');
+				if (it.dom) {
+					if (it.start >= beginDate && it.start < endDate) {
+						L.DomUtil.addClass(it.dom, 'timeline-event-selected');
+					} else {
+						L.DomUtil.removeClass(it.dom, 'timeline-event-selected');
+					}
 				}
 			});
-			// this._timeline.setSelection(selected);
 		},
 
 		_setEvents: function (tl) {
@@ -422,6 +423,10 @@
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			state.oInterval = state.gmxLayer.getDateInterval();
+			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
+				state.dInterval.beginDate = state.oInterval.beginDate;
+				state.dInterval.endDate = state.oInterval.endDate;
+			}
 
 			this._map.fire('gmxTimeLine.currentTabChanged', {currentTab: layerID});
 			this._bboxUpdate();
