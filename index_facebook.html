@@ -42,7 +42,8 @@
 		<div>
             <button class="add">Add/Remove to timeline</button>
             <button class="view">View/Hide layer to map</button>
-            <button class="facebook">Войти через Facebook</button>
+<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+</fb:login-button>
             <span class="facebookresult"></span>
         </div>
 	</div>
@@ -103,50 +104,83 @@
 		e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
 		document.getElementById('fb-root').appendChild(e);
 
-		var fbButton = document.getElementsByClassName('facebook')[0],
-			fbrSpan = document.getElementsByClassName('facebookresult')[0];
+//Begin: FaceBook авторизация
+		var fbrSpan = document.getElementsByClassName('facebookresult')[0];
 
-		window.fbAsyncInit = function() {
-			FB.init({ appId: '1424664207573469', 
-				status: true, 
-				cookie: true,
-				xfbml: true,
-				oauth: true});
+  function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+      testAPI();
+    } else {
+      // The person is not logged into your app or we are unable to tell.
+      fbrSpan.innerHTML = 'Please log ' +
+        'into this app.';
+    }
+  }
 
-			function updateButton(response) {
-				if (response.authResponse) {
-					FB.api('/me', function(response) {
-						fbButton.innerHTML = 'Выход';
-						fbrSpan.innerHTML = response.name;
-						//console.log(response);
-					});
-					fbButton.onclick = function() {
-						FB.logout(function(response) {
-						  fbButton.innerHTML = 'Вход';
-						  fbrSpan.innerHTML = '';
-						});
-					};
-				} else {
-					fbButton.onclick = function() {
-						FB.login(function(response) {
-							if (response.authResponse) {
-								FB.api('/me', function(response) {
-									fbrSpan.innerHTML = response.name;
-									//console.log(response);
-								});	   
-							} else {
-								//user cancelled login or did not grant authorization
-							}
-						}, {scope:'email'});  	
-					}
-				}
-			}
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
 
-			// run once with current status and whenever the status changes
-			FB.getLoginStatus(updateButton);
-			FB.Event.subscribe('auth.statusChange', updateButton);	
-		}
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '1424664207573469',
+	status: true, 
+	cookie: true,
+	xfbml: true,
+	oauth: true,
+	version    : 'v2.8' // use graph api version 2.8
+  });
 
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI() {
+    console.log('Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {
+      console.log('Successful login for: ' + response.name);
+      fbrSpan.innerHTML =
+        'Thanks for logging in, ' + response.name + '!';
+    });
+  }
+//End: FaceBook авторизация
 	</script>
 </body>
 </html>
