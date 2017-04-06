@@ -16,23 +16,25 @@
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		filter = function (it) {
-			var state = this.getCurrentState() || {},
-				selected = state.selected;
-			if (modeSelect === 'range') {
-				var uTimeStamp = state.uTimeStamp || [0, 0],
-					prop = it.properties,
-					dt = prop[state.tmpKeyNum];
+			if ( timeLineControl) {
+				var state = timeLineControl.getCurrentState() || {},
+					selected = state.selected;
+				if (modeSelect === 'range') {
+					var uTimeStamp = state.uTimeStamp || [0, 0],
+						prop = it.properties,
+						dt = prop[state.tmpKeyNum];
 
-				if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
-					return false;
+					if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
+						return false;
+					}
 				}
-			}
-			// if (selected) {
-				// var utm = it.properties[state.tmpKeyNum];
-				// if (selected[utm]) {
-					// return true;
+				// if (selected) {
+					// var utm = it.properties[state.tmpKeyNum];
+					// if (selected[utm]) {
+						// return true;
+					// }
 				// }
-			// }
+			}
 			return true;
 		},
 		currentLayerID,
@@ -418,6 +420,9 @@
 				}
 			}
 			currentDmID = layerID;
+			var state = this.getCurrentState();
+			state.oInterval = state.gmxLayer.getDateInterval();
+
 			this._map.fire('gmxTimeLine.currentTabChanged', {currentTab: layerID});
 			this._bboxUpdate();
 			if (this._timeline) {
@@ -534,7 +539,7 @@
 				data = getDataSource(gmxLayer);
 			if (data) {
 				gmxLayer
-					.setFilter(filter.bind(this))
+					.setFilter(filter.bind(gmxLayer))
 					.on('dateIntervalChanged', this._dateIntervalChanged, this);
 				this.addDataSource(data);
 			}
@@ -543,13 +548,18 @@
 		_dateIntervalChanged: function (ev) {
 			var gmxLayer = ev.target,
 				state = this.getCurrentState(),
+				opt = gmxLayer.getGmxProperties(),
 				dInterval = gmxLayer.getDateInterval();
-			if (state && dInterval.beginDate) {
+
+			if (state && state.layerID === opt.name && dInterval.beginDate) {
 				state.oInterval = {
 					beginDate: dInterval.beginDate,
 					endDate: dInterval.endDate
 				};
 				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
+				if (!this.options.moveable) {
+					delete state.dInterval;
+				}
 				if (this._timeline) {
 					this._setWindow(dInterval);
 				}

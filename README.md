@@ -60,6 +60,8 @@ moveable|`<Boolean>`|`false`| При `true` позволяет изменять 
 ------|------|:-----------
 addLayer|`addLayer(`[layer](https://github.com/ScanEx/Leaflet-GeoMixer/blob/master/documentation-rus.md#Класс-lgmxvectorlayer)`)`| Добавляет мультивременной слой.
 removeLayer|`removeLayer(`[layer](https://github.com/ScanEx/Leaflet-GeoMixer/blob/master/documentation-rus.md#Класс-lgmxvectorlayer)`)`| Удаляет мультивременной слой.
+setCurrentTab|`setCurrentTab(id<String>)`| Установить текущую вкладку таймлайна по идентификатору слоя.
+
 
 #### События
 
