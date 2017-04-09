@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>GeoMixer timeline Example</title>
+	<meta charset="utf-8" />
+    <style>
+		html, body, #map {
+			height: 100%;
+			margin: 0px;
+		}
+        .controls {
+            position: absolute;
+			left: 190px;
+			top: 11px;
+			z-index: 1000;
+			background-color: #ffffff;
+			border-radius: 5px;
+            box-shadow: 0 1px 7px rgba(0,0,0,0.65);
+        }
+        .controls button {
+            border-radius: 5px;
+            
+        }
+        .controls > div{
+            padding: 6px;
+        }
+    </style>
+
+	<link rel="stylesheet" href="http://www.kosmosnimki.ru/lib/geomixer/geomixer.css" />
+	<script src="http://www.kosmosnimki.ru/lib/geomixer/geomixer-src.js?key=U92596WMIH"></script>
+
+	<link rel="stylesheet" href="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.css" />
+	<script src="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.js"></script>
+
+	<link rel="stylesheet" href="L.Control.gmxTimeline.css" />
+	<script src="L.Control.gmxTimeline.js"></script>
+</head>
+<body>
+	<div id="fb-root"></div>
+	<div id="map"></div>
+	<div class="controls">
+		<div>
+            <button class="add">Add/Remove to timeline</button>
+            <button class="view">View/Hide layer to map</button>
+<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+</fb:login-button>
+            <span class="facebookresult"></span>
+        </div>
+	</div>
+	<script>
+		var map = L.map('map').setView([44, 50], 2);
+
+		var osm = L.tileLayer('http://{s}.tile.osm.kosmosnimki.ru/kosmo/{z}/{x}/{y}.png', {
+			maxZoom: 18
+		}).addTo(map);
+		
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('gmx-sw1.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          })
+          .catch(function(err) {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      } else {
+        console.error('Your browser does not support Service Workers.');
+      }
+
+        //Load all the layers from GeoMixer map and add them to Leaflet map
+        L.gmx.loadMap('AZR6A', {leafletMap: map}).then(function(gmxMap) {
+			var control = L.control.gmxTimeline({
+				moveable: true
+			})
+				.on('dateInterval', function (ev) {
+					gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
+				})
+				.on('click', function (ev) {
+					gmxMap.layersByID[ev.layerID].repaint();
+				});
+
+			map.addControl(control);
+			var cDate = new Date(Date.UTC(2017, 0, 1)),
+				beginDate = new Date(cDate.valueOf() - 1000 * 60 * 60 * 24),
+				endDate = cDate,
+				layerID = 'C13B4D9706F7491EBC6DC70DFFA988C0',
+				hotSpotsGlobal = gmxMap.layersByID[layerID];
+
+			hotSpotsGlobal.setDateInterval(beginDate, endDate);
+			control.addLayer(hotSpotsGlobal);
+			map.addLayer(hotSpotsGlobal);
+
+			var add = document.getElementsByClassName('add')[0],
+				view = document.getElementsByClassName('view')[0],
+				isAdded = true;
+			L.DomEvent
+				.on(add, 'click', function (ev) {
+					if (isAdded) {
+						control.removeLayer(hotSpotsGlobal);
+						isAdded = false;
+					} else {
+						control.addLayer(hotSpotsGlobal);
+						isAdded = true;
+					}
+				});
+			L.DomEvent
+				.on(view, 'click', function (ev) {
+					if (map.hasLayer(hotSpotsGlobal)) {
+						map.removeLayer(hotSpotsGlobal);
+					} else {
+						map.addLayer(hotSpotsGlobal);
+					}
+				});
+		});
+		var e = document.createElement('script');
+		e.async = true;
+		e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+		document.getElementById('fb-root').appendChild(e);
+
+//Begin: FaceBook авторизация
+		var fbrSpan = document.getElementsByClassName('facebookresult')[0];
+
+  function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+      testAPI();
+    } else {
+      // The person is not logged into your app or we are unable to tell.
+      fbrSpan.innerHTML = 'Please log ' +
+        'into this app.';
+    }
+  }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '1424664207573469',
+	status: true, 
+	cookie: true,
+	xfbml: true,
+	oauth: true,
+	version    : 'v2.8' // use graph api version 2.8
+  });
+
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI() {
+    console.log('Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {
+      console.log('Successful login for: ' + response.name);
+      fbrSpan.innerHTML =
+        'Thanks for logging in, ' + response.name + '!';
+    });
+  }
+//End: FaceBook авторизация
+	</script>
+</body>
+</html>
