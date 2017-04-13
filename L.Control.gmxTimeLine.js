@@ -15,28 +15,6 @@
 		ns = {},
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
-		filter = function (it) {
-			if ( timeLineControl) {
-				var state = timeLineControl.getCurrentState() || {},
-					selected = state.selected;
-				if (modeSelect === 'range') {
-					var uTimeStamp = state.uTimeStamp || [0, 0],
-						prop = it.properties,
-						dt = prop[state.tmpKeyNum];
-
-					if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
-						return false;
-					}
-				}
-				// if (selected) {
-					// var utm = it.properties[state.tmpKeyNum];
-					// if (selected[utm]) {
-						// return true;
-					// }
-				// }
-			}
-			return true;
-		},
 		currentLayerID,
 		currentDmID,
 
@@ -114,7 +92,30 @@
 			moveable: false
         },
 
-        saveState: function() {
+ 		filter: function (it) {
+			// if ( timeLineControl) {
+				var state = this.getCurrentState() || {},
+					selected = state.selected;
+				if (modeSelect === 'range') {
+					var uTimeStamp = state.uTimeStamp || [0, 0],
+						prop = it.properties,
+						dt = prop[state.tmpKeyNum];
+
+					if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
+						return false;
+					}
+				}
+				// if (selected) {
+					// var utm = it.properties[state.tmpKeyNum];
+					// if (selected[utm]) {
+						// return true;
+					// }
+				// }
+			// }
+			return true;
+		},
+
+		saveState: function() {
 			var dataSources = [];
 			for (var layerID in this._state.data) {
 				var state = this._state.data[layerID],
@@ -525,7 +526,7 @@
 				data = getDataSource(gmxLayer);
 			if (data) {
 				gmxLayer
-					.removeFilter(filter.bind(this))
+					.removeLayerFilter({type: 'screen', id: pluginName})
 					.off('dateIntervalChanged', this._dateIntervalChanged, this);
 				var layersTab = this._containers.layersTab;
 				for (var i = 0, len = layersTab.children.length; i < len; i++) {
@@ -544,7 +545,7 @@
 				data = getDataSource(gmxLayer);
 			if (data) {
 				gmxLayer
-					.setFilter(filter.bind(gmxLayer))
+					.addLayerFilter(this.filter.bind(this), {type: 'screen', id: pluginName})
 					.on('dateIntervalChanged', this._dateIntervalChanged, this);
 				this.addDataSource(data);
 			}
@@ -891,7 +892,7 @@
 							}
 							data.selected = it.selected;
 							timeLineControl.addDataSource(data);
-							gmxLayer.setFilter(filter.bind(gmxLayer));
+							gmxLayer.addLayerFilter(filter.bind(gmxLayer), {type: 'screen', id: pluginName});
 						}
 					}
 				});
