@@ -96,7 +96,7 @@
 			// if ( timeLineControl) {
 				var state = this.getCurrentState() || {},
 					selected = state.selected;
-				if (modeSelect === 'range') {
+				if (this.options.modeSelect === 'range') {
 					var uTimeStamp = state.uTimeStamp || [0, 0],
 						prop = it.properties,
 						dt = prop[state.tmpKeyNum];
@@ -563,9 +563,11 @@
 					endDate: dInterval.endDate
 				};
 				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
-				if (!this.options.moveable) {
+				// if (!this.options.moveable) {
 					delete state.dInterval;
-				}
+				// } else if (state.dInterval) {
+					// state.uTimeStamp = [state.dInterval.beginDate.getTime()/1000, state.dInterval.endDate.getTime()/1000];
+				// }
 				if (this._timeline) {
 					this._setWindow(dInterval);
 				}
