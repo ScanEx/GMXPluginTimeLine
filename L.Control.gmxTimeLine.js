@@ -92,29 +92,6 @@
 			moveable: false
         },
 
- 		filter: function (it) {
-			// if ( timeLineControl) {
-				var state = this.getCurrentState() || {},
-					selected = state.selected;
-				if (this.options.modeSelect === 'range') {
-					var uTimeStamp = state.uTimeStamp || [0, 0],
-						prop = it.properties,
-						dt = prop[state.tmpKeyNum];
-
-					if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
-						return false;
-					}
-				}
-				// if (selected) {
-					// var utm = it.properties[state.tmpKeyNum];
-					// if (selected[utm]) {
-						// return true;
-					// }
-				// }
-			// }
-			return true;
-		},
-
 		saveState: function() {
 			var dataSources = [];
 			for (var layerID in this._state.data) {
@@ -540,13 +517,43 @@
 			return this;
 		},
 
-		addLayer: function (gmxLayer) {
+		addLayer: function (gmxLayer, options) {
 			var opt = gmxLayer.getGmxProperties(),
 				data = getDataSource(gmxLayer);
 			if (data) {
+				if (options) {
+					if (options.oInterval) {
+						data.oInterval = {
+							beginDate: new Date(options.oInterval.beginDate),
+							endDate: new Date(options.oInterval.endDate)
+						};
+					}
+					if (options.dInterval) {
+						data.dInterval = {
+							beginDate: new Date(options.dInterval.beginDate),
+							endDate: new Date(options.dInterval.endDate)
+						};
+					}
+					data.selected = options.selected;
+				}
+
 				gmxLayer
-					.addLayerFilter(this.filter.bind(this), {type: 'screen', id: pluginName})
-					.on('dateIntervalChanged', this._dateIntervalChanged, this);
+					.on('dateIntervalChanged', this._dateIntervalChanged, this)
+					.addLayerFilter(function (it) {
+						var state = this._state.data[opt.name] || {};
+						if (modeSelect === 'range') {
+							var uTimeStamp = state.uTimeStamp || [0, 0],
+								prop = it.properties,
+								dt = prop[state.tmpKeyNum];
+
+							if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
+								return false;
+							}
+						}
+						return true;
+					}.bind(this)
+					, {type: 'screen', id: pluginName});
+
 				this.addDataSource(data);
 			}
 		},
@@ -563,11 +570,9 @@
 					endDate: dInterval.endDate
 				};
 				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
-				// if (!this.options.moveable) {
+				if (!this.options.moveable) {
 					delete state.dInterval;
-				// } else if (state.dInterval) {
-					// state.uTimeStamp = [state.dInterval.beginDate.getTime()/1000, state.dInterval.endDate.getTime()/1000];
-				// }
+				}
 				if (this._timeline) {
 					this._setWindow(dInterval);
 				}
@@ -880,22 +885,23 @@
 				state.dataSources.forEach(function (it) {
 					var gmxLayer = layersByID[it.layerID];
 					if (gmxLayer) {
-						var data = getDataSource(gmxLayer);
-						if (data) {
-							data.oInterval = {
-								beginDate: new Date(it.oInterval.beginDate),
-								endDate: new Date(it.oInterval.endDate)
-							};
-							if (it.dInterval) {
-								data.dInterval = {
-									beginDate: new Date(it.dInterval.beginDate),
-									endDate: new Date(it.dInterval.endDate)
-								};
-							}
-							data.selected = it.selected;
-							timeLineControl.addDataSource(data);
-							gmxLayer.addLayerFilter(filter.bind(gmxLayer), {type: 'screen', id: pluginName});
-						}
+						timeLineControl.addLayer(gmxLayer, it);
+						// var data = getDataSource(gmxLayer);
+						// if (data) {
+							// data.oInterval = {
+								// beginDate: new Date(it.oInterval.beginDate),
+								// endDate: new Date(it.oInterval.endDate)
+							// };
+							// if (it.dInterval) {
+								// data.dInterval = {
+									// beginDate: new Date(it.dInterval.beginDate),
+									// endDate: new Date(it.dInterval.endDate)
+								// };
+							// }
+							// data.selected = it.selected;
+							// timeLineControl.addDataSource(data);
+							// gmxLayer.addLayerFilter(filter.bind(gmxLayer), {type: 'screen', id: pluginName});
+						// }
 					}
 				});
 				if (state.currentTab) {
