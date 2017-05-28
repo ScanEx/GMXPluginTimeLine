@@ -342,6 +342,7 @@
 		_rangechanged: function (ev) {
 			var state = this.getCurrentState();
 			state.oInterval = {beginDate: ev.start, endDate: ev.end};
+			state.dInterval = null;
 			this.fire('dateInterval', {
 				layerID: state.layerID,
 				beginDate: state.oInterval.beginDate,
