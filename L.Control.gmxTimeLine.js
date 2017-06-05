@@ -271,13 +271,14 @@
 				if (needGroup) {
 					item.group = currentDmID;
 				}
-				if (utm >= beginDate && utm < endDate) {
+				// if (utm >= beginDate && utm < endDate) {
 					// item.className = 'timeline-event-selected';
-				}
+				// }
 
 				groupInterval[0] = Math.min(start, groupInterval[0]);
 				groupInterval[1] = Math.max(start, groupInterval[1]);
 				if (dSelected[utm]) {
+					item.className = 'timeline-event-selected';
 					selected.push(count);
 				}
 				// res[count] = item;
@@ -298,25 +299,29 @@
 					this._items.add(res);
 				}
 			}
-			this._chkSelection(data);
-
-			// this._timeline.setSelection(selected);
+			if (selected.length) {
+				this._timeline.setSelection(selected);
+			} else {
+				this._chkSelection(data);
+			}
 		},
 
 		_chkSelection: function (state) {
-			var dInterval = state.dInterval || state.oInterval,
-				beginDate = new Date(dInterval.beginDate.valueOf() + tzm),
-				endDate = new Date(dInterval.endDate.valueOf() + tzm);
+			if (!state.selected) {
+				var dInterval = state.dInterval || state.oInterval,
+					beginDate = new Date(dInterval.beginDate.valueOf() + tzm),
+					endDate = new Date(dInterval.endDate.valueOf() + tzm);
 
-			this._timeline.items.forEach(function(it) {
-				if (it.dom) {
-					if (it.start >= beginDate && it.start < endDate) {
-						L.DomUtil.addClass(it.dom, 'timeline-event-selected');
-					} else {
-						L.DomUtil.removeClass(it.dom, 'timeline-event-selected');
+				this._timeline.items.forEach(function(it) {
+					if (it.dom) {
+						if (it.start >= beginDate && it.start < endDate) {
+							L.DomUtil.addClass(it.dom, 'timeline-event-selected');
+						} else {
+							L.DomUtil.removeClass(it.dom, 'timeline-event-selected');
+						}
 					}
-				}
-			});
+				});
+			}
 		},
 
 		_setEvents: function (tl) {
@@ -354,39 +359,29 @@
 		},
 
 		_clickOnTimeline: function (items) {
-			return;
-			var stateAll = this._state,
-				state = this.getCurrentState(),
+			var state = this.getCurrentState(),
 				selectedPrev = state.selected || {},
 				selected = {},
-				out = {},
 				tl = this._timeline;
-			// state.selected = {};
-			// this._items.get(tl.getSelection()).forEach(function (pt, i) {
 			tl.getSelection().forEach(function (it, i) {
-				tl.setSelection([it]);
 				var	pt = tl.getItem(it.row),
-					layerID = pt.group || currentDmID,
-					group = out[layerID] || {filters: [], dateInterval: [stateAll.maxDate, stateAll.zeroDate]},
-					d1 = pt.start.getTime(),
-					d2 = d1 + stateAll.day,
-					utm = pt.utm;
+					utm = Number(pt.utm);
 					
-				selected[utm] = selectedPrev[utm] || state.currentBounds;
-				// state.selected = hash;
-				group.filters.push([d1, d2]);
-				group.dateInterval[0] = Math.min(d1, group.dateInterval[0]);
-				group.dateInterval[1] = Math.max(d2, group.dateInterval[1]);
-				out[layerID] = group;
+				if (selectedPrev[utm]) {
+					delete selectedPrev[utm];
+				} else {
+					selected[utm] = true;
+				}
 			});
-			// if (Object.keys(selected).length === 0) {
-				// state.items = {};
-			// }
-			state.selected = selected;
-
-			// if (modeSelect === 'selected') {
-			this.fire('click', {selected: out, layerID: currentDmID, originalEvent: items ? items.event: null});
-			// }
+			for (var key in selectedPrev) {
+				selected[key] = true;
+			}
+			if (Object.keys(selected).length) {
+				state.selected = selected;
+			} else {
+				delete state.selected;
+			}
+			this._bboxUpdate();
 		},
 
 		_setCurrentTab: function (layerID) {
@@ -541,19 +536,20 @@
 				gmxLayer
 					.on('dateIntervalChanged', this._dateIntervalChanged, this)
 					.addLayerFilter(function (it) {
-						var state = this._state.data[opt.name] || {};
-						if (modeSelect === 'range') {
-							var uTimeStamp = state.uTimeStamp || [0, 0],
-								prop = it.properties,
-								dt = prop[state.tmpKeyNum];
+						var state = this._state.data[opt.name] || {},
+							dt = it.properties[state.tmpKeyNum];
 
+						if (state.selected) {
+							return state.selected[dt];
+						} else if (modeSelect === 'range') {
+							var uTimeStamp = state.uTimeStamp || [0, 0];
 							if (dt < uTimeStamp[0] || dt > uTimeStamp[1]) {
 								return false;
 							}
 						}
 						return true;
 					}.bind(this)
-					, {type: 'screen', id: pluginName});
+					, {target: 'screen', id: pluginName});
 
 				this.addDataSource(data);
 			}
