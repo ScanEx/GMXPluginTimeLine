@@ -129,10 +129,17 @@
 			return this._state.data[currentDmID];
 		},
 
+		clearTab: function (id) {
+			if (this._state.data[id]) {
+				this._state.data[id].observer.deactivate();
+				delete this._state.data[id];	// При удалении tab забываем о слое
+			}
+		},
+
 		_removeLayerTab: function (liItem) {
 			var layersTab = this._containers.layersTab;
 			layersTab.removeChild(liItem);
-			delete this._state.data[liItem._layerID];	// При удалении tab забываем о слое
+			this.clearTab(liItem._layerID);
 			if (layersTab.children.length === 0) {
 				currentDmID = null;
 				L.DomUtil.addClass(this._container, 'gmx-hidden');
