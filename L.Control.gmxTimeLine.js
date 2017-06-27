@@ -20,6 +20,7 @@
 
 		getDataSource = function (gmxLayer) {
 			// var gmxLayer = nsGmx.gmxMap.layersByID[id];
+			var state = null;
 			if (gmxLayer && gmxLayer.getDataManager) {
 				var dm = gmxLayer.getDataManager(),
 					dmOpt = dm.options;
@@ -47,7 +48,7 @@
 						};
 					}
 					
-					return {
+					state = {
 						gmxLayer: gmxLayer, 
 						layerID: opt.name, title: opt.title, //dmID: dmOpt.name,
 						tmpKeyNum: tmpKeyNum,
@@ -67,18 +68,26 @@
 									utm = Number(arr[tmpKeyNum]);
 								if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
 								this.cache[utm] = 1 + (this.cache[utm] || 0);
+								if (state.needResort && state.clickedUTM === utm) {
+									state.needResort[state.needResort.length] = it.id;
+								}
 							},
 							callback: function(data) {
 								var out = this.cache || {};
 								this.cache = {};
+								if (state.needResort) {
+									gmxLayer.setReorderArrays(state.needResort);
+									state.needResort = null;
+								}
 								gmxLayer.repaint();
 								return out;
 							}
 						})
 					};
+					// gmxLayer.repaintObservers[state.observer.id] = true;
 				}
 			}
-			return null;
+			return state;
 		};
 
 	L.Control.GmxTimeline = L.Control.extend({
@@ -261,6 +270,7 @@
 				dInterval = data.dInterval || data.oInterval,
 				beginDate = dInterval.beginDate.valueOf() / 1000,
 				endDate = dInterval.endDate.valueOf() / 1000,
+				clickedUTM = String(data.clickedUTM),
 				dSelected = data.selected || {};
 
 			for (var utm in data.items) {
@@ -271,7 +281,7 @@
 						items: data.items[utm],
 						// group: currentDmID,
 						// title: it[0].toString(),
-						// content: it[0].toString(),
+						content: '',
 						utm: utm,
 						start: start
 					};
@@ -284,10 +294,12 @@
 
 				groupInterval[0] = Math.min(start, groupInterval[0]);
 				groupInterval[1] = Math.max(start, groupInterval[1]);
+				var className = clickedUTM === utm ? 'item-clicked' : '';
 				if (dSelected[utm]) {
-					item.className = 'timeline-event-selected';
+					className += ' item-selected';
 					selected.push(count);
 				}
+				item.className = className;
 				// res[count] = item;
 				res.push(item);
 				count++;
@@ -322,9 +334,9 @@
 				this._timeline.items.forEach(function(it) {
 					if (it.dom) {
 						if (it.start >= beginDate && it.start < endDate) {
-							L.DomUtil.addClass(it.dom, 'timeline-event-selected');
+							L.DomUtil.addClass(it.dom, 'item-selected');
 						} else {
-							L.DomUtil.removeClass(it.dom, 'timeline-event-selected');
+							L.DomUtil.removeClass(it.dom, 'item-selected');
 						}
 					}
 				});
@@ -365,30 +377,49 @@
 			this._bboxUpdate();
 		},
 
-		_clickOnTimeline: function (items) {
-			var state = this.getCurrentState(),
-				selectedPrev = state.selected || {},
-				selected = {},
-				tl = this._timeline;
-			tl.getSelection().forEach(function (it, i) {
-				var	pt = tl.getItem(it.row),
-					utm = Number(pt.utm);
-					
-				if (selectedPrev[utm]) {
-					delete selectedPrev[utm];
-				} else {
-					selected[utm] = true;
+		_clickOnTimeline: function (ev) {
+			var tl = this._timeline,
+				state = this.getCurrentState();
+
+			// if (ev && ev.originalEvent.shiftKey) {
+			if (ev) {
+				var observer = state.observer,
+					dm = state.gmxLayer.getDataManager(),
+					it = tl.getItem(ev.index),
+					utm = Number(it.utm);
+
+				state.clickedUTM = state.clickedUTM === utm ? null : utm;
+				if (state.clickedUTM) {
+					state.needResort = [];
+					observer.activate();
+					observer.needRefresh = true;
+					dm.checkObserver(observer);
 				}
-			});
-			for (var key in selectedPrev) {
-				selected[key] = true;
-			}
-			if (Object.keys(selected).length) {
-				state.selected = selected;
+				this._redrawTimeline();
 			} else {
-				delete state.selected;
+				var selectedPrev = state.selected || {},
+					selected = {};
+
+				tl.getSelection().forEach(function (it, i) {
+					var	pt = tl.getItem(it.row),
+						utm = Number(pt.utm);
+						
+					if (selectedPrev[utm]) {
+						delete selectedPrev[utm];
+					} else {
+						selected[utm] = true;
+					}
+				});
+				for (var key in selectedPrev) {
+					selected[key] = true;
+				}
+				if (Object.keys(selected).length) {
+					state.selected = selected;
+				} else {
+					delete state.selected;
+				}
+				this._bboxUpdate();
 			}
-			this._bboxUpdate();
 		},
 
 		_setCurrentTab: function (layerID) {
@@ -542,6 +573,15 @@
 
 				gmxLayer
 					.on('dateIntervalChanged', this._dateIntervalChanged, this)
+					.on('click', function (ev) {
+						var state = this._state.data[opt.name] || {},
+							it = ev.gmx.target,
+							dt = it.properties[state.tmpKeyNum];
+
+						state.clickedUTM = dt;
+						this._redrawTimeline();
+console.log('click', dt, it, state);
+					}, this)
 					.addLayerFilter(function (it) {
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
