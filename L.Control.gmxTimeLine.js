@@ -580,13 +580,14 @@
 
 						state.clickedUTM = dt;
 						this._redrawTimeline();
-console.log('click', dt, it, state);
 					}, this)
 					.addLayerFilter(function (it) {
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
 
-						if (state.selected) {
+						if (state.skipUnClicked) {
+							return state.clickedUTM === dt;
+						} else if (state.selected) {
 							return state.selected[dt];
 						} else if (modeSelect === 'range') {
 							var uTimeStamp = state.uTimeStamp || [0, 0];
@@ -625,9 +626,43 @@ console.log('click', dt, it, state);
 			}
 		},
 
+		_keydown: function (ev) {
+			if (ev.defaultPrevented) { return; }
+
+			var state = this.getCurrentState(),
+				clickedUTM = String(state.clickedUTM);
+			if (clickedUTM) {
+				var tl = this._timeline,
+					arr = tl.getData(),
+					key = ev.key;
+				for (var i = 0, len = arr.length - 1; i <= len; i++) {
+					if (arr[i].utm === clickedUTM) {
+						if (key === 'ArrowLeft') {
+							clickedUTM = arr[i > 0 ? i - 1 : ( i === 0 ? len : 0)].utm;
+						} else if (key === 'ArrowRight') {
+							clickedUTM = arr[i >= len ? 0 : i + 1].utm;
+						} else if (key === ' ') {
+							state.skipUnClicked = !state.skipUnClicked;
+						}
+						state.clickedUTM = Number(clickedUTM);
+						state.needResort = [];
+						var observer = state.observer,
+							dm = state.gmxLayer.getDataManager();
+						observer.activate();
+						observer.needRefresh = true;
+						dm.checkObserver(observer);
+						break;
+					}
+				}
+			}
+		},
+
 		onAdd: function (map) {
 			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden'),
 				stop = L.DomEvent.stopPropagation;
+
+			L.DomEvent
+				.on(document, 'keydown', this._keydown, this);
 
 			L.DomEvent
 				// .on(container, 'mousemove', stop)
