@@ -676,6 +676,7 @@
 		_setFocuse: function () {
 			focuse = true;
 			L.DomUtil.addClass(this._containers.internalContainer, 'gmx-focuse');
+			this._map._container.blur();
 		},
 
 		_unsetFocuse: function () {
@@ -687,20 +688,7 @@
 			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden'),
 				stop = L.DomEvent.stopPropagation;
 
-			L.DomEvent
-				.on(document, 'keydown', this._keydown, this);
-			map
-				.on('focus', this._unsetFocuse, this)
-				.on('blur', this._setFocuse, this);
-
-			L.DomEvent
-				// .on(container, 'mousemove', stop)
-				.on(container, 'touchstart', stop)
-				.on(container, 'mousedown', stop)
-				.on(container, 'mousewheel', stop)
-				.on(container, 'dblclick', stop)
-				.on(container, 'click', stop);
-
+			container.tabindex = '0';
 			// L.DomUtil.setPosition(container, new L.Point(0, 0));
 			// this.draggable = new L.Draggable(container);
 			// this.draggable.enable();
@@ -730,6 +718,21 @@
 				rScroll: rScroll,
 				cScroll: cScroll
 			};
+			L.DomEvent
+				.on(document, 'keydown', this._keydown, this);
+			map
+				.on('focus', this._unsetFocuse, this)
+				.on('blur', this._setFocuse, this);
+
+			L.DomEvent
+				// .on(container, 'mousemove', stop)
+				.on(container, 'touchstart', stop)
+				.on(container, 'mousedown', stop)
+				.on(container, 'mousewheel', stop)
+				.on(container, 'dblclick', stop)
+				// .on(container, 'focus', stop)
+				.on(container, 'click', stop)
+				.on(container, 'click', this._setFocuse, this);
 
 			L.DomEvent
 				.on(hideButton, 'click', function (ev) {
