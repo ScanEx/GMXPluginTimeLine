@@ -645,9 +645,9 @@
 			if (!this._map || this._map.keyboard._focused) { return; }
 			this._setFocuse();
 
-			var state = this.getCurrentState(),
-				clickedUTM = String(state.clickedUTM);
-			if (clickedUTM) {
+			var state = this.getCurrentState();
+			if (state && state.clickedUTM) {
+				var clickedUTM = String(state.clickedUTM);
 				var tl = this._timeline,
 					arr = tl.getData(),
 					key = ev.key;
