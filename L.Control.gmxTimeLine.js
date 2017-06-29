@@ -3,6 +3,7 @@
 
 	window.nsGmx = window.nsGmx || {};
     var timeLineControl,
+		focuse = false,
 		calendar,
 		iconLayers,
 		timeClass,
@@ -115,6 +116,8 @@
 						},
 						currentBounds: state.currentBounds,
 						selected: state.selected,
+						clickedUTM: state.clickedUTM,
+						skipUnClicked: state.skipUnClicked,
 						items: state.items
 					};
 
@@ -232,7 +235,13 @@
 			if (map.gmxControlsManager) {
 				map.gmxControlsManager.remove(this);
 			}
-			map.off('moveend', this._moveend, this);
+			map
+				.off('moveend', this._moveend, this)
+				.off('focus', this._unsetFocuse, this)
+				.off('blur', this._setFocuse, this);
+			L.DomEvent
+				.off(document, 'keydown', this._keydown, this);
+
 			map.fire('controlremove', this);
 		},
 
@@ -569,6 +578,12 @@
 						};
 					}
 					data.selected = options.selected;
+					if (options.clickedUTM) {
+						data.clickedUTM = options.clickedUTM;
+					}
+					if (options.skipUnClicked) {
+						data.skipUnClicked = options.skipUnClicked;
+					}
 				}
 
 				gmxLayer
@@ -627,7 +642,8 @@
 		},
 
 		_keydown: function (ev) {
-			if (ev.defaultPrevented) { return; }
+			if (!this._map || this._map.keyboard._focused) { return; }
+			this._setFocuse();
 
 			var state = this.getCurrentState(),
 				clickedUTM = String(state.clickedUTM);
@@ -657,12 +673,25 @@
 			}
 		},
 
+		_setFocuse: function () {
+			focuse = true;
+			L.DomUtil.addClass(this._containers.internalContainer, 'gmx-focuse');
+		},
+
+		_unsetFocuse: function () {
+			focuse = false;
+			L.DomUtil.removeClass(this._containers.internalContainer, 'gmx-focuse');
+		},
+
 		onAdd: function (map) {
 			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden'),
 				stop = L.DomEvent.stopPropagation;
 
 			L.DomEvent
 				.on(document, 'keydown', this._keydown, this);
+			map
+				.on('focus', this._unsetFocuse, this)
+				.on('blur', this._setFocuse, this);
 
 			L.DomEvent
 				// .on(container, 'mousemove', stop)
@@ -690,9 +719,11 @@
 				hideButton = container.getElementsByClassName('hideButton')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
 				visContainer = container.getElementsByClassName('vis-container')[0],
+				internalContainer = container.getElementsByClassName('internal-container')[0],
 				layersTab = container.getElementsByClassName('layers-tab')[0];
 			this._containers = {
 				vis: container.getElementsByClassName('vis')[0],
+				internalContainer: internalContainer,
 				layersTab: layersTab,
 				hideButton: hideButton,
 				lScroll: lScroll,
@@ -849,6 +880,8 @@
 					// }
 				// }, this)
 				.on('moveend', this._moveend, this);
+
+			if (!map.keyboard._focused) { this._setFocuse(); }
 
 			return container;
 		}

@@ -117,6 +117,9 @@
 	border-color: red;
 	background-color: #FFF785;
 }
+.gmxTimeline .gmx-focuse {
+    border-style: dashed;
+}
 .gmxTimeline .timeline-event {
 	z-index: 999;
 }
