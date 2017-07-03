@@ -97,7 +97,11 @@
 			position: 'bottom',
 			id: 'gmxTimeline',
 			className: 'gmxTimeline',
+			locale: 'ru',
+			rollClicked: false,		// режим кругового обхода для clickedUTM
 			modeSelect: 'range',	// selected
+			modeBbox: 'thirdpart',		// screen, center, thirdpart
+			centerBuffer: 5,		// буфер центра в пикселях
 			groups: false,
 			moveable: false
         },
@@ -255,10 +259,31 @@
 			if (currentDmID && this._map) {
 				var state = this.getCurrentState(),
 					oInterval = state.oInterval,
+					modeBbox = this.options.modeBbox,
 					map = this._map,
-					lbox = map.getBounds(),
-					bounds = L.gmxUtil.bounds([[lbox._southWest.lng, lbox._southWest.lat], [lbox._northEast.lng, lbox._northEast.lat]]);
+					pbox;
 
+				if (modeBbox === 'center')	{
+					var center = map.getPixelOrigin();
+					pbox = L.gmxUtil.bounds([[center.x, center.y]]).addBuffer(this.options.centerBuffer);
+				} else {
+					pbox = map.getPixelBounds();
+					if (modeBbox === 'thirdpart')	{
+						var dx = (pbox.min.x - pbox.max.x) / 3,
+							dy = (pbox.min.y - pbox.max.y) / 3;
+						pbox = L.gmxUtil.bounds([
+							[pbox.min.x, pbox.min.y],
+							[pbox.max.x, pbox.max.y]
+						]).addBuffer(dx, dy);
+					}
+				}
+				var sw = map.unproject([pbox.min.x, pbox.min.y]),
+					ne = map.unproject([pbox.max.x, pbox.max.y]),
+					bounds = L.gmxUtil.bounds([
+						[sw.lng, sw.lat],
+						[ne.lng, ne.lat]
+					]);
+				
 				// state.observer.deactivate();
 				state.currentBounds = bounds;
 				state.observer.setBounds(bounds);
@@ -480,7 +505,7 @@
 						rollingMode: false
 					},
 					timeline: {
-						locale: 'ru',
+						locale: options.locale,
 						zoomable: this.options.moveable || false,
 						moveable: this.options.moveable || false,
 						timeChangeable: false,
@@ -650,13 +675,14 @@
 				var clickedUTM = String(state.clickedUTM);
 				var tl = this._timeline,
 					arr = tl.getData(),
+					rollClicked = this.options.rollClicked,
 					key = ev.key;
 				for (var i = 0, len = arr.length - 1; i <= len; i++) {
 					if (arr[i].utm === clickedUTM) {
 						if (key === 'ArrowLeft') {
-							clickedUTM = arr[i > 0 ? i - 1 : ( i === 0 ? len : 0)].utm;
+							clickedUTM = arr[i > 0 ? i - 1 : (rollClicked ? len : 0)].utm;
 						} else if (key === 'ArrowRight') {
-							clickedUTM = arr[i >= len ? 0 : i + 1].utm;
+							clickedUTM = arr[i < len ? i + 1 : (rollClicked ? 0 : len)].utm;
 						} else if (key === ' ') {
 							state.skipUnClicked = !state.skipUnClicked;
 						}
@@ -726,6 +752,7 @@
 
 			L.DomEvent
 				// .on(container, 'mousemove', stop)
+				.on(container, 'contextmenu', stop)
 				.on(container, 'touchstart', stop)
 				.on(container, 'mousedown', stop)
 				.on(container, 'mousewheel', stop)
@@ -900,11 +927,16 @@
         afterViewer: function (params, map) {
 			if (window.nsGmx) {
 				if (params.gmxMap && !window.nsGmx.gmxMap) { window.nsGmx.gmxMap = params.gmxMap; }
-				var options = {},
+				var options = {
+						locale: window.language === 'eng' ? 'en' : 'ru'
+					},
 					nsGmx = window.nsGmx,
 					layersByID = nsGmx.gmxMap.layersByID;
 
 				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : params.moveable; }
+				if (params.modeBbox) { options.modeBbox = params.modeBbox; }
+				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : params.rollClicked;; }
+
 				if (nsGmx.widgets && nsGmx.commonCalendar) {
 					calendar = nsGmx.commonCalendar;
 				}
