@@ -16,6 +16,7 @@
 		ns = {},
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
+		translate = {},
 		currentLayerID,
 		currentDmID,
 
@@ -65,12 +66,14 @@
 							active: false,
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
-								var arr = it.properties,
-									utm = Number(arr[tmpKeyNum]);
-								if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
-								this.cache[utm] = 1 + (this.cache[utm] || 0);
-								if (state.needResort && state.clickedUTM === utm) {
-									state.needResort[state.needResort.length] = it.id;
+								var arr = it.properties;
+								if (this.intersectsWithGeometry(arr[arr.length - 1])) {
+									var utm = Number(arr[tmpKeyNum]);
+									if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
+									this.cache[utm] = 1 + (this.cache[utm] || 0);
+									if (state.needResort && state.clickedUTM === utm) {
+										state.needResort[state.needResort.length] = it.id;
+									}
 								}
 							},
 							callback: function(data) {
@@ -170,17 +173,28 @@
 		_addLayerTab: function (layerID, title) {
 			var layersTab = this._containers.layersTab,
 				liItem = L.DomUtil.create('li', 'selected', layersTab),
+				spaneye = L.DomUtil.create('span', 'eye', liItem),
 				span = L.DomUtil.create('span', '', liItem),
 				closeButton = L.DomUtil.create('span', 'close-button', liItem),
 				stop = L.DomEvent.stopPropagation;
 
+			liItem._eye = true;
 			liItem._layerID = layerID;
 			span.innerHTML = title;
+			spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
 
 			L.DomEvent
 				.on(closeButton, 'click', stop)
 				.on(closeButton, 'click', function (ev) {
 					this._removeLayerTab(liItem);
+			}, this);
+
+			L.DomEvent
+				.on(spaneye, 'click', stop)
+				.on(spaneye, 'click', function (ev) {
+					liItem._eye = !liItem._eye;
+					spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
+					this.setCommand(' ');
 			}, this);
 		},
 
@@ -257,39 +271,42 @@
 
 		_bboxUpdate: function () {
 			if (currentDmID && this._map) {
-				var state = this.getCurrentState(),
-					oInterval = state.oInterval,
-					modeBbox = this.options.modeBbox,
-					map = this._map,
-					pbox;
-
-				if (modeBbox === 'center')	{
-					var center = map.getPixelOrigin();
-					pbox = L.gmxUtil.bounds([[center.x, center.y]]).addBuffer(this.options.centerBuffer);
-				} else {
-					pbox = map.getPixelBounds();
-					if (modeBbox === 'thirdpart')	{
-						var dx = (pbox.min.x - pbox.max.x) / 3,
-							dy = (pbox.min.y - pbox.max.y) / 3;
-						pbox = L.gmxUtil.bounds([
-							[pbox.min.x, pbox.min.y],
-							[pbox.max.x, pbox.max.y]
-						]).addBuffer(dx, dy);
-					}
-				}
-				var sw = map.unproject([pbox.min.x, pbox.min.y]),
-					ne = map.unproject([pbox.max.x, pbox.max.y]),
-					bounds = L.gmxUtil.bounds([
-						[sw.lng, sw.lat],
-						[ne.lng, ne.lat]
-					]);
-				
-				// state.observer.deactivate();
-				state.currentBounds = bounds;
-				state.observer.setBounds(bounds);
-				state.observer.setDateInterval(oInterval.beginDate, oInterval.endDate);
-				state.observer.activate();
+				this._triggerObserver(this.getCurrentState());
 			}
+		},
+
+		_triggerObserver: function (state) {
+			var oInterval = state.oInterval,
+				modeBbox = this.options.modeBbox,
+				map = this._map,
+				pbox;
+
+			if (modeBbox === 'center')	{
+				var center = map.getPixelOrigin();
+				pbox = L.gmxUtil.bounds([[center.x, center.y]]).addBuffer(this.options.centerBuffer);
+			} else {
+				pbox = map.getPixelBounds();
+				if (modeBbox === 'thirdpart')	{
+					var dx = (pbox.min.x - pbox.max.x) / 3,
+						dy = (pbox.min.y - pbox.max.y) / 3;
+					pbox = L.gmxUtil.bounds([
+						[pbox.min.x, pbox.min.y],
+						[pbox.max.x, pbox.max.y]
+					]).addBuffer(dx, dy);
+				}
+			}
+			var sw = map.unproject([pbox.min.x, pbox.min.y]),
+				ne = map.unproject([pbox.max.x, pbox.max.y]),
+				bounds = L.gmxUtil.bounds([
+					[sw.lng, sw.lat],
+					[ne.lng, ne.lat]
+				]);
+			
+			// state.observer.deactivate();
+			state.currentBounds = bounds;
+			state.observer.setBounds(bounds);
+			state.observer.setDateInterval(oInterval.beginDate, oInterval.endDate);
+			state.observer.activate();
 		},
 
 		_redrawTimeline: function () {
@@ -420,6 +437,7 @@
 				var observer = state.observer,
 					dm = state.gmxLayer.getDataManager(),
 					it = tl.getItem(ev.index),
+					title = ' ',
 					utm = Number(it.utm);
 
 				state.clickedUTM = state.clickedUTM === utm ? null : utm;
@@ -428,7 +446,9 @@
 					observer.activate();
 					observer.needRefresh = true;
 					dm.checkObserver(observer);
+					title = tl.getUTCTimeString(it.start) + (it.tems > 1 ? ' (' + it.tems + ')': '');
 				}
+				this._containers.clickId.innerHTML = title;
 				this._redrawTimeline();
 			} else {
 				var selectedPrev = state.selected || {},
@@ -668,6 +688,10 @@
 
 		_keydown: function (ev) {
 			if (!this._map || this._map.keyboard._focused) { return; }
+			this.setCommand(ev.key);
+		},
+
+		setCommand: function (key) {
 			this._setFocuse();
 
 			var state = this.getCurrentState();
@@ -675,8 +699,7 @@
 				var clickedUTM = String(state.clickedUTM);
 				var tl = this._timeline,
 					arr = tl.getData(),
-					rollClicked = this.options.rollClicked,
-					key = ev.key;
+					rollClicked = this.options.rollClicked;
 				for (var i = 0, len = arr.length - 1; i <= len; i++) {
 					if (arr[i].utm === clickedUTM) {
 						if (key === 'ArrowLeft') {
@@ -710,6 +733,10 @@
 			L.DomUtil.removeClass(this._containers.internalContainer, 'gmx-focuse');
 		},
 
+		_addSvgIcon: function (id) {
+			return '<svg role="img" class="svgIcon"><use xlink:href="#' + id + '"></use></svg>';
+		},
+
 		onAdd: function (map) {
 			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden'),
 				stop = L.DomEvent.stopPropagation;
@@ -719,9 +746,13 @@
 			// this.draggable = new L.Draggable(container);
 			// this.draggable.enable();
 			// L.DomEvent.disableScrollPropagation(container);
+			// spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
 
-			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title=""><svg role="img" class="svgIcon"><use xlink:href="#arrow-down-01"></use></svg></div>';
-			container.innerHTML = str + '<div class="vis-container"><div class="tabs"><ul class="layers-tab"></ul></div><div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
+			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>';
+			str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center">' + this._addSvgIcon('center') + '</span><span class="clicked click-id"></span><ul class="layers-tab"></ul></div>\
+			<div class="switch"><div class="diamond"></div><div class="modeScreen on" title=""></div><div class="modeCenter" title=""></div></div>\
+			<div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
+			container.innerHTML = str;
 			container._id = this.options.id;
 			this._map = map;
 			var lScroll = container.getElementsByClassName('l-scroll')[0],
@@ -730,20 +761,32 @@
 				rScrollTitle = container.getElementsByClassName('r-scroll-title')[0],
 				cScroll = container.getElementsByClassName('c-scroll')[0],
 				wScroll = container.getElementsByClassName('w-scroll')[0],
+				clickLeft = container.getElementsByClassName('click-left')[0],
+				clickRight = container.getElementsByClassName('click-right')[0],
+				clickCenter = container.getElementsByClassName('click-center')[0],
+				clickId = container.getElementsByClassName('click-id')[0],
+				modeCenter = container.getElementsByClassName('modeCenter')[0],
+				modeScreen = container.getElementsByClassName('modeScreen')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
 				visContainer = container.getElementsByClassName('vis-container')[0],
 				internalContainer = container.getElementsByClassName('internal-container')[0],
 				layersTab = container.getElementsByClassName('layers-tab')[0];
+
 			this._containers = {
 				vis: container.getElementsByClassName('vis')[0],
 				internalContainer: internalContainer,
 				layersTab: layersTab,
+				clickId: clickId,
+				modeScreen: modeScreen,
+				modeCenter: modeCenter,
 				hideButton: hideButton,
 				lScroll: lScroll,
 				rScroll: rScroll,
 				cScroll: cScroll
 			};
+			modeScreen.innerHTML = translate.modeScreen;
+			modeCenter.innerHTML = translate.modeCenter;
 			L.DomEvent
 				.on(document, 'keydown', this._keydown, this);
 			map
@@ -762,6 +805,29 @@
 				.on(container, 'click', this._setFocuse, this);
 
 			L.DomEvent
+				.on(clickCenter, 'click', function (ev) {
+					// this.setCommand(' ');
+				}, this)
+				.on(clickLeft, 'click', function (ev) {
+					this.setCommand('ArrowLeft');
+				}, this)
+				.on(clickRight, 'click', function (ev) {
+					this.setCommand('ArrowRight');
+				}, this)
+				.on(modeScreen, 'click', function (ev) {
+					if (this.options.modeBbox === 'thirdpart') { return; }
+					this.options.modeBbox = 'thirdpart';
+					for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
+					L.DomUtil.addClass(modeScreen, 'on');
+					L.DomUtil.removeClass(modeCenter, 'on');
+				}, this)
+				.on(modeCenter, 'click', function (ev) {
+					if (this.options.modeBbox === 'center') { return; }
+					this.options.modeBbox = 'center';
+					for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
+					L.DomUtil.addClass(modeCenter, 'on');
+					L.DomUtil.removeClass(modeScreen, 'on');
+				}, this)
 				.on(hideButton, 'click', function (ev) {
 					var isVisible = !L.DomUtil.hasClass(visContainer, 'gmx-hidden'),
 						iconLayersCont = iconLayers ? iconLayers.getContainer() : null,
@@ -776,7 +842,7 @@
 						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
 						if (iconLayersCont) {
 							L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
-							xTop = '-10px';
+							xTop = '4px';
 						}
 						useSvg.setAttribute('href', '#arrow-down-01');
 						this._redrawTimeline();
@@ -785,7 +851,7 @@
 					this._state.isVisible = isVisible;
 				}, this);
 				if (iconLayers) {
-					hideButton.style.top = '-10px';
+					hideButton.style.top = '4px';
 				}
 
 			L.DomEvent
@@ -935,7 +1001,19 @@
 
 				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : params.moveable; }
 				if (params.modeBbox) { options.modeBbox = params.modeBbox; }
-				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : params.rollClicked;; }
+				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : params.rollClicked; }
+
+				if (options.locale === 'ru') {
+					translate = {
+						modeScreen: 'Весь экран',
+						modeCenter: 'Центр'
+					};
+				} else {
+					translate = {
+						modeScreen: 'Screen',
+						modeCenter: 'Center'
+					};
+				}
 
 				if (nsGmx.widgets && nsGmx.commonCalendar) {
 					calendar = nsGmx.commonCalendar;

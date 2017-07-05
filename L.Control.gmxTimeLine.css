@@ -30,7 +30,7 @@
 .gmxTimeline .tabs {
     z-index: 1;
     position: relative;
-    top: 1px;
+    top: 5px;
 }
 
 .gmxTimeline .layer {
@@ -209,10 +209,33 @@
 .tabs ul, .tabs ul li {
 	list-style: none;
 }
+
 .tabs ul {
 	display: inline-flex;
     margin-bottom: 0px;
+	margin-left: 6px;
 	/*	text-align: center;	*/
+}
+.tabs .clicked:hover {
+    background-color: lightgray;
+}
+.tabs .clicked {
+    width: 25px;
+    height: 25px;
+    padding-left: 6px;
+    padding-right: 6px;
+    display: inline-block;
+    background-color: white;
+	cursor: pointer;
+}
+
+.tabs .click-id {
+    background-color: rgb(39, 199, 125);
+    width: auto;
+    position: relative;
+    line-height: 24px;
+	font-size: 14px;
+    top: -5px;
 }
 
 .tabs ul li {
@@ -239,6 +262,7 @@
 
 .tabs ul li .close-button {
     position: absolute;
+	left: auto;
     right: 0px;
     top: 3px;
     width: 16px;
@@ -249,6 +273,8 @@
 
 .tabs ul li span {
     padding-right: 8px;
+	position: absolute;
+	left: 22px;
     overflow: hidden;
 /*    height: 21px;
     display: block;
@@ -296,4 +322,76 @@
     margin-right: 4px;
     margin-top: 4px;
     pointer-events: none;
+}
+
+.gmxTimeline .eye  {
+	left: 0px;
+}
+.tabs svg {
+    height: 22px;
+    width: 22px;
+   /* margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;*/
+    pointer-events: none;
+}
+.gmxTimeline .switch  {
+    font-size: 0;
+    display: inline-block;
+	float: right;
+    color: #82909b;
+    padding: 4px;
+    z-index: 2;
+    position: absolute;
+    right: 44px;
+    top: 3px;
+/*    background-color: #2a3a47;
+    vertical-align: middle;
+	*/
+}
+.gmxTimeline .switch .diamond {
+    position: absolute;
+	width: 8px;
+    height: 8px;
+    margin-top: 10px;
+    margin-left: 90px;
+    background-color: rgb(69, 176, 218);
+    transform: rotate(-45deg);
+    transform-origin: 0 100%;
+}
+.gmxTimeline .modeScreen, .gmxTimeline .modeCenter  {
+ /*   float: right;
+    color: black;
+    padding: 8px;
+    font-size: 16px;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    height: 24px;
+    padding: 8px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: gray;
+    background-color: white;	
+	*/
+    background-color: white;
+    width: 90px;
+    line-height: 24px;
+    text-align: center;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    vertical-align: middle;
+}
+.gmxTimeline .modeScreen  {
+    border-top-left-radius: 8px;
+}
+.gmxTimeline .modeCenter  {
+    border-top-right-radius: 8px;
+}
+.gmxTimeline .modeScreen.on, .gmxTimeline .modeCenter.on  {
+    color: white;
+    background-color: rgb(69, 176, 218);
 }
