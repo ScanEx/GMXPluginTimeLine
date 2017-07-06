@@ -108,14 +108,18 @@
 .gmxTimeline .timeline-event-dot-container .timeline-event-content {
 	display: none;
 }
+.gmxTimeline .timeline-event-dot {
+	border-color: rgb(142, 147, 151);
+	background-color: #FFF785;
+}
 .gmxTimeline .item-selected .timeline-event-dot {
-	border-color: #FFC200;
+	border-color: rgb(69, 175, 215);
 	background-color: #FFF785;
 }
 .gmxTimeline .item-clicked .timeline-event-content {
 	display: block;
 	border-color: red;
-	background-color: #FFF785;
+	background-color: rgb(42, 198, 124);
 }
 .gmxTimeline .gmx-focuse {
     border-style: dashed;
@@ -214,17 +218,20 @@
 	display: inline-flex;
     margin-bottom: 0px;
 	margin-left: 6px;
+	height: 26px;
 	/*	text-align: center;	*/
 }
 .tabs .clicked:hover {
     background-color: lightgray;
 }
 .tabs .clicked {
-    width: 25px;
-    height: 25px;
     padding-left: 6px;
     padding-right: 6px;
-    display: inline-block;
+	padding-top: 12px;
+    /*display: inline-block;
+    width: 25px;
+    height: 25px;
+	*/
     background-color: white;
 	cursor: pointer;
 }
@@ -232,10 +239,18 @@
 .tabs .click-id {
     background-color: rgb(39, 199, 125);
     width: auto;
+    padding-top: 7px;
+    padding-bottom: 6px;
+    position: relative;
+    top: -5px;
+	/*
+	height: 22px;
+	vertical-align: top;
     position: relative;
     line-height: 24px;
 	font-size: 14px;
     top: -5px;
+	*/
 }
 
 .tabs ul li {
@@ -243,7 +258,8 @@
     padding-right: 5px;
     display: inline-block;
 	width: 185px;
-	height: 21px;
+	/*height: 21px;
+	*/
     border-style: solid;
     border-width: 1px;
     border-color: gray;
@@ -293,11 +309,10 @@
 .tabs .selected {
 	border-bottom: white;
     padding-bottom: 1px;
-	margin-bottom: -1px;
 }
 
 .leaflet-iconLayers.iconLayersShift {
-	margin-bottom: 152px;
+	margin-bottom: 160px;
 }
 
 .gmxTimeline .leaflet-gmx-iconSvg {
@@ -344,7 +359,7 @@
     z-index: 2;
     position: absolute;
     right: 44px;
-    top: 3px;
+    top: 6px;
 /*    background-color: #2a3a47;
     vertical-align: middle;
 	*/

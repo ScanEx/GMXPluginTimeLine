@@ -62,7 +62,7 @@
 						uTimeStamp: [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000],
 						observer: dm.addObserver({
 							type: 'resend',
-							filters: ['clipFilter', 'userFilter_timeline', 'styleFilter'],
+							filters: ['clipFilter', 'userFilter', 'userFilter_timeline', 'styleFilter'],
 							active: false,
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
@@ -104,7 +104,7 @@
 			rollClicked: false,		// режим кругового обхода для clickedUTM
 			modeSelect: 'range',	// selected
 			modeBbox: 'thirdpart',		// screen, center, thirdpart
-			centerBuffer: 5,		// буфер центра в пикселях
+			centerBuffer: 10,		// буфер центра в пикселях
 			groups: false,
 			moveable: false
         },
@@ -192,10 +192,14 @@
 			L.DomEvent
 				.on(spaneye, 'click', stop)
 				.on(spaneye, 'click', function (ev) {
-					liItem._eye = !liItem._eye;
-					spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
-					this.setCommand(' ');
+					var state = this.getCurrentState();
+					if (state.layerID === layerID && state.clickedUTM) {
+						liItem._eye = !liItem._eye;
+						spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
+						this.setCommand(' ');
+					}
 			}, this);
+			return liItem;
 		},
 
 		setCurrentTab: function (id) {
@@ -224,13 +228,7 @@
 					this._initTimeline();
 					this._bboxUpdate();
 				}
-				if (!pDataSource) {
-					this._addLayerTab(layerID, dataSource.title || '');
-				}
-				// if (dataSource.selected) {
-					// this._setMode('selected');
-					// this._modeSelectCheck();
-				// }
+				dataSource.liItem = pDataSource ? pDataSource.liItem : this._addLayerTab(layerID, dataSource.title || '');
 
 				if (dataSource.observer) {
 					dataSource.observer.on('data', function(ev) {
@@ -276,36 +274,30 @@
 		},
 
 		_triggerObserver: function (state) {
-			var oInterval = state.oInterval,
-				modeBbox = this.options.modeBbox,
-				map = this._map,
-				pbox;
+			var map = this._map,
+				sw, ne, delta;
 
-			if (modeBbox === 'center')	{
-				var center = map.getPixelOrigin();
-				pbox = L.gmxUtil.bounds([[center.x, center.y]]).addBuffer(this.options.centerBuffer);
+			if (this.options.modeBbox === 'center')	{
+				var cp = map._getCenterLayerPoint(),
+					buffer = this.options.centerBuffer;
+				delta = [buffer, buffer];
+				sw = map.layerPointToLatLng(cp.subtract(delta)),
+				ne = map.layerPointToLatLng(cp.add(delta));
 			} else {
-				pbox = map.getPixelBounds();
-				if (modeBbox === 'thirdpart')	{
-					var dx = (pbox.min.x - pbox.max.x) / 3,
-						dy = (pbox.min.y - pbox.max.y) / 3;
-					pbox = L.gmxUtil.bounds([
-						[pbox.min.x, pbox.min.y],
-						[pbox.max.x, pbox.max.y]
-					]).addBuffer(dx, dy);
-				}
+				var sbox = map.getPixelBounds();
+				delta = [(sbox.max.x - sbox.min.x) / 6, (sbox.min.y - sbox.max.y) / 6];
+				sw = map.unproject(sbox.getBottomLeft().add(delta)),
+				ne = map.unproject(sbox.getTopRight().subtract(delta));
 			}
-			var sw = map.unproject([pbox.min.x, pbox.min.y]),
-				ne = map.unproject([pbox.max.x, pbox.max.y]),
-				bounds = L.gmxUtil.bounds([
-					[sw.lng, sw.lat],
-					[ne.lng, ne.lat]
-				]);
 			
+			var bounds = L.gmxUtil.bounds([
+				[sw.lng, sw.lat],
+				[ne.lng, ne.lat]
+			]);
 			// state.observer.deactivate();
 			state.currentBounds = bounds;
 			state.observer.setBounds(bounds);
-			state.observer.setDateInterval(oInterval.beginDate, oInterval.endDate);
+			state.observer.setDateInterval(state.oInterval.beginDate, state.oInterval.endDate);
 			state.observer.activate();
 		},
 
@@ -322,7 +314,8 @@
 				beginDate = dInterval.beginDate.valueOf() / 1000,
 				endDate = dInterval.endDate.valueOf() / 1000,
 				clickedUTM = String(data.clickedUTM),
-				dSelected = data.selected || {};
+				dSelected = data.selected || {},
+				clickIdCount = 0;
 
 			for (var utm in data.items) {
 				var start = new Date(utm * 1000 + tzm),
@@ -345,7 +338,12 @@
 
 				groupInterval[0] = Math.min(start, groupInterval[0]);
 				groupInterval[1] = Math.max(start, groupInterval[1]);
-				var className = clickedUTM === utm ? 'item-clicked' : '';
+				var className = '';
+				if (clickedUTM === utm) {
+					className = 'item-clicked';
+					clickIdCount = item.items;
+				}
+				
 				if (dSelected[utm]) {
 					className += ' item-selected';
 					selected.push(count);
@@ -373,6 +371,13 @@
 				this._timeline.setSelection(selected);
 			} else {
 				this._chkSelection(data);
+			}
+			var clickId = this._containers.clickId;
+			if (clickIdCount) {
+				clickId.innerHTML = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)) + ' (' + clickIdCount + ')';
+				L.DomUtil.removeClass(clickId, 'gmx-hidden');
+			} else {
+				L.DomUtil.addClass(clickId, 'gmx-hidden');
 			}
 		},
 
@@ -428,54 +433,6 @@
 			this._bboxUpdate();
 		},
 
-		_clickOnTimeline: function (ev) {
-			var tl = this._timeline,
-				state = this.getCurrentState();
-
-			// if (ev && ev.originalEvent.shiftKey) {
-			if (ev) {
-				var observer = state.observer,
-					dm = state.gmxLayer.getDataManager(),
-					it = tl.getItem(ev.index),
-					title = ' ',
-					utm = Number(it.utm);
-
-				state.clickedUTM = state.clickedUTM === utm ? null : utm;
-				if (state.clickedUTM) {
-					state.needResort = [];
-					observer.activate();
-					observer.needRefresh = true;
-					dm.checkObserver(observer);
-					title = tl.getUTCTimeString(it.start) + (it.tems > 1 ? ' (' + it.tems + ')': '');
-				}
-				this._containers.clickId.innerHTML = title;
-				this._redrawTimeline();
-			} else {
-				var selectedPrev = state.selected || {},
-					selected = {};
-
-				tl.getSelection().forEach(function (it, i) {
-					var	pt = tl.getItem(it.row),
-						utm = Number(pt.utm);
-						
-					if (selectedPrev[utm]) {
-						delete selectedPrev[utm];
-					} else {
-						selected[utm] = true;
-					}
-				});
-				for (var key in selectedPrev) {
-					selected[key] = true;
-				}
-				if (Object.keys(selected).length) {
-					state.selected = selected;
-				} else {
-					delete state.selected;
-				}
-				this._bboxUpdate();
-			}
-		},
-
 		_setCurrentTab: function (layerID) {
 			var layersTab = this._containers.layersTab;
 			for (var i = 0, len = layersTab.children.length; i < len; i++) {
@@ -508,11 +465,9 @@
 
 		initialize: function (options) {
 			L.Control.prototype.initialize.call(this, options);
-			var day = 1000 * 60 * 60 * 24;
 
 			this._state = {
 				data: {},
-				day: day,
 				timeLineOptions: {
 					vis: {
 						moment: function(date) {
@@ -670,17 +625,10 @@
 				dInterval = gmxLayer.getDateInterval();
 
 			if (state && state.layerID === opt.name && dInterval.beginDate) {
-				state.oInterval = {
-					beginDate: dInterval.beginDate,
-					endDate: dInterval.endDate
-				};
+				state.oInterval = { beginDate: dInterval.beginDate, endDate: dInterval.endDate };
 				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
-				if (!this.options.moveable) {
-					delete state.dInterval;
-				}
-				if (this._timeline) {
-					this._setWindow(dInterval);
-				}
+				if (!this.options.moveable) { delete state.dInterval; }
+				if (this._timeline) { this._setWindow(dInterval); }
 				this._setDateScroll();
 				this._bboxUpdate();
 			}
@@ -711,14 +659,78 @@
 						}
 						state.clickedUTM = Number(clickedUTM);
 						state.needResort = [];
-						var observer = state.observer,
-							dm = state.gmxLayer.getDataManager();
-						observer.activate();
-						observer.needRefresh = true;
-						dm.checkObserver(observer);
+						this._chkObserver(state);
 						break;
 					}
 				}
+			}
+		},
+
+		_chkObserver: function (state) {
+			var observer = state.observer;
+			observer.activate();
+			observer.needRefresh = true;
+			state.gmxLayer.getDataManager().checkObserver(observer);
+		},
+
+		_clickOnTimeline: function (ev) {
+			var tl = this._timeline,
+				state = this.getCurrentState();
+
+			if (ev) {
+				var it = tl.getItem(ev.index),
+					title = '',
+					clickId = this._containers.clickId,
+					utm = Number(it.utm);
+
+				if (state.clickedUTM === utm) {	// выключение выбранной метки
+					L.DomUtil.addClass(clickId, 'gmx-hidden');
+					if (!state.liItem._eye) {
+						state.liItem._eye = true;
+						var eye = state.liItem.getElementsByClassName('eye')[0];
+						eye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
+					}
+					// this.setCommand(' ');
+					state.clickedUTM = null;
+					state.skipUnClicked = false;
+					this._chkObserver(state);
+				} else {
+					state.clickedUTM = utm;
+					// this.setCommand(' ');
+					state.needResort = [];
+					this._chkObserver(state);
+					// var observer = state.observer;
+					// observer.activate();
+					// observer.needRefresh = true;
+					// state.gmxLayer.getDataManager().checkObserver(observer);
+					title = tl.getUTCTimeString(it.start) + (it.items > 1 ? ' (' + it.items + ')': '');
+					L.DomUtil.removeClass(clickId, 'gmx-hidden');
+				}
+				clickId.innerHTML = title;
+				this._redrawTimeline();
+			} else {
+				var selectedPrev = state.selected || {},
+					selected = {};
+
+				tl.getSelection().forEach(function (it, i) {
+					var	pt = tl.getItem(it.row),
+						utm = Number(pt.utm);
+						
+					if (selectedPrev[utm]) {
+						delete selectedPrev[utm];
+					} else {
+						selected[utm] = true;
+					}
+				});
+				for (var key in selectedPrev) {
+					selected[key] = true;
+				}
+				if (Object.keys(selected).length) {
+					state.selected = selected;
+				} else {
+					delete state.selected;
+				}
+				this._bboxUpdate();
 			}
 		},
 
@@ -742,14 +754,9 @@
 				stop = L.DomEvent.stopPropagation;
 
 			container.tabindex = '0';
-			// L.DomUtil.setPosition(container, new L.Point(0, 0));
-			// this.draggable = new L.Draggable(container);
-			// this.draggable.enable();
-			// L.DomEvent.disableScrollPropagation(container);
-			// spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
 
 			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>';
-			str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center">' + this._addSvgIcon('center') + '</span><span class="clicked click-id"></span><ul class="layers-tab"></ul></div>\
+			str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center gmx-hidden">' + this._addSvgIcon('center') + '</span><span class="clicked click-id gmx-hidden"></span><ul class="layers-tab"></ul></div>\
 			<div class="switch"><div class="diamond"></div><div class="modeScreen on" title=""></div><div class="modeCenter" title=""></div></div>\
 			<div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
 			container.innerHTML = str;
@@ -960,21 +967,6 @@
 			}
 			this._sidebarOn = true;
 			map
-				// .on('layeradd', function(ev) {
-					// if (ev.layer instanceof L.gmx.VectorLayer) {
-						// this.addLayer(ev.layer);
-					// }
-				// }, this)
-				// .on('layerremove', function(ev) {
-					// if (ev.layer instanceof L.gmx.VectorLayer) {
-						// var gmxLayer = ev.layer,
-							// opt = gmxLayer.getGmxProperties();
-						// map.removeLayer(gmxLayer);
-						// gmxLayer
-							// .removeFilter()
-							// .off('dateIntervalChanged', this._dateIntervalChanged, this);
-					// }
-				// }, this)
 				.on('moveend', this._moveend, this);
 
 			if (!map.keyboard._focused) { this._setFocuse(); }
