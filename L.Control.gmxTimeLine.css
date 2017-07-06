@@ -359,6 +359,7 @@
     z-index: 2;
     position: absolute;
     right: 44px;
+	width: auto;
     top: 6px;
 /*    background-color: #2a3a47;
     vertical-align: middle;
