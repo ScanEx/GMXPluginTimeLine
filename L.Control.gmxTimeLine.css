@@ -1,5 +1,4 @@
 .gmxTimeline.leaflet-control {
-/*    background-color: white;*/
     position: absolute;
     left: 0px;
     right: 0px;
@@ -11,21 +10,6 @@
     margin-right: 0px;
 	margin-bottom: 0px;
     top:13px;
-/*	
-
-	color: white;
-    text-align: center;
-    z-index: 2;
-    width: 30px;
-    height: 30px;
-    border-width: 1px;
-    border-radius: 15px;
-    position: absolute;
-    right: 3px;
-    top: -20px;
-    cursor: pointer;
-    background-color: black;
-*/
 }
 .gmxTimeline .tabs {
     z-index: 1;
@@ -43,7 +27,6 @@
 }
 .gmxTimeline .timeline-content {
     background-color: rgba(192, 207, 216, 0.2);
-/*    background-color: rgba(218, 227, 232, 0.5);*/
     font-family: tahoma;
     font-size: 12px;    
 }
@@ -56,7 +39,6 @@
 }
 .gmxTimeline .timeline-axis-grid-minor {
     border-color: #bfbfbf;
-    /* border-color: #4a5557; */
 }
 
 .gmxTimeline .timeline-container {
@@ -72,65 +54,52 @@
 .gmxTimeline .vis-group  .vis-point {
 	top: 10px;
 }
-.gmxTimeline .timeline-frame {
-   /* background: none;*/
-}
+
 .gmxTimeline .timeline-event-dot-container {
 	margin-left: -5px;
-    margin-top: -17px;
+	top: 57px;
+	width: 10px;
+    height: 10px;
+	
 }
-.gmxTimeline div.timeline-event-selected {
-    border: none;
-    background: none;
+.gmxTimeline .item-selected{
+    padding-top: 2px;
+    padding-left: 2px;
+    border-radius: 10px;
+    border: 2px solid rgb(69, 175, 215);	
+}
+.gmxTimeline .item-clicked{
+	border-color: rgb(39, 199, 125);
+	z-index: 1;
 }
 
 .gmxTimeline .timeline-event-content {
-	/*display: none;
-	*/
-	border-style: solid;
-	border-width: 8px;
-	border-radius: 8px;
-	border-color: red;
-	margin: 2px 2px;
-	-moz-border-radius: 8px;
-	z-index: 998;
-}
-.gmxTimeline .timeline-event-dot {
-	position: absolute;
-	top: -5px;
-	left: 5px;
-}
-
-.gmxTimeline .timeline-event-line {
-	border-left-width: 1px;
-	border-left-style: solid;
-}
-.gmxTimeline .timeline-event-dot-container .timeline-event-content {
 	display: none;
-}
-.gmxTimeline .timeline-event-dot {
-	border-color: rgb(142, 147, 151);
-	background-color: #FFF785;
-}
-.gmxTimeline .item-selected .timeline-event-dot {
-	border-color: rgb(69, 175, 215);
-	background-color: #FFF785;
-}
-.gmxTimeline .item-clicked .timeline-event-content {
-	display: block;
-	border-color: red;
-	background-color: rgb(42, 198, 124);
-}
-.gmxTimeline .gmx-focuse {
-    border-style: dashed;
 }
 .gmxTimeline .timeline-event {
 	z-index: 999;
 }
+.gmxTimeline .timeline-event-dot {
+	position: absolute;
+	top: 3px;
+    left: 4px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 4px;	
+	border-color: rgb(142, 147, 151);
+	cursor: pointer;
+}
+
+.gmxTimeline .item-selected .timeline-event-dot {
+	border-color: rgb(69, 175, 215);
+    left: 2px;
+    top: 2px;
+}
+.gmxTimeline .gmx-focuse {
+    border-style: dashed;
+}
 
 .gmxTimeline .w-scroll {
-/*    background-color: white;
-	border-top: 1px solid gray;*/
     position: relative;
     height: 24px;
 	padding-left: 10px;
@@ -139,10 +108,6 @@
 .gmxTimeline .w-scroll .l-scroll {
 	cursor: col-resize;
     margin-left: -6px;
-    /*
-	margin-right: 12px;
-    left: -5px;
-	*/
     width: 15px;
     height: 15px;
     background-color: #fff;
@@ -159,8 +124,6 @@
 }
 .gmxTimeline .w-scroll .r-scroll {
 	cursor: col-resize;
-/*	margin-left: 12px;
-	*/
 	margin-right: 10px;
     width: 15px;
     height: 15px;
@@ -193,7 +156,6 @@
     border-right: 1px solid #9ad4df;
 }
 .gmxTimeline .w-scroll .c-scroll .c-borders {
- /*   height: 12px;*/
     width: 100%;
     position: relative;
     top: -12px;
@@ -204,7 +166,6 @@
 }
 
 .gmxTimeline .vis {
-/*    background-color: white;*/
 	padding-left: 10px;
 	padding-right: 10px;
 	padding-bottom: 10px;
@@ -219,7 +180,6 @@
     margin-bottom: 0px;
 	margin-left: 6px;
 	height: 26px;
-	/*	text-align: center;	*/
 }
 .tabs .clicked:hover {
     background-color: lightgray;
@@ -228,10 +188,6 @@
     padding-left: 6px;
     padding-right: 6px;
 	padding-top: 12px;
-    /*display: inline-block;
-    width: 25px;
-    height: 25px;
-	*/
     background-color: white;
 	cursor: pointer;
 }
@@ -243,14 +199,6 @@
     padding-bottom: 6px;
     position: relative;
     top: -5px;
-	/*
-	height: 22px;
-	vertical-align: top;
-    position: relative;
-    line-height: 24px;
-	font-size: 14px;
-    top: -5px;
-	*/
 }
 
 .tabs ul li {
@@ -258,8 +206,6 @@
     padding-right: 5px;
     display: inline-block;
 	width: 185px;
-	/*height: 21px;
-	*/
     border-style: solid;
     border-width: 1px;
     border-color: gray;
@@ -292,11 +238,6 @@
 	position: absolute;
 	left: 22px;
     overflow: hidden;
-/*    height: 21px;
-    display: block;
-	font-family: Roboto reg;
-    font-size: 10px;
-	*/
     font-family: tahoma;
     font-size: 12px;    
 }
@@ -345,9 +286,6 @@
 .tabs svg {
     height: 22px;
     width: 22px;
-   /* margin-left: 4px;
-    margin-right: 4px;
-    margin-top: 4px;*/
     pointer-events: none;
 }
 .gmxTimeline .switch  {
@@ -361,9 +299,6 @@
     right: 44px;
 	width: auto;
     top: 6px;
-/*    background-color: #2a3a47;
-    vertical-align: middle;
-	*/
 }
 .gmxTimeline .switch .diamond {
     position: absolute;
@@ -376,22 +311,6 @@
     transform-origin: 0 100%;
 }
 .gmxTimeline .modeScreen, .gmxTimeline .modeCenter  {
- /*   float: right;
-    color: black;
-    padding: 8px;
-    font-size: 16px;
-    width: 100px;
-    height: 30px;
-    line-height: 30px;
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    height: 24px;
-    padding: 8px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: gray;
-    background-color: white;	
-	*/
     background-color: white;
     width: 90px;
     line-height: 24px;

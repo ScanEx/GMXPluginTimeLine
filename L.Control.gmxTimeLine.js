@@ -359,14 +359,11 @@
 			}
 			if (!this._timeline) {
 				this._initTimeline(res);
-			} else {
-				if (timeLineType === 'timeline') {
-					this._timeline.draw(res);
-				} else {
-					this._items.clear();
-					this._items.add(res);
-				}
 			}
+			this._timeline.clearItems();
+			this._setWindow(data.oInterval);
+			this._timeline.setData(res);
+			
 			if (selected.length) {
 				this._timeline.setSelection(selected);
 			} else {
@@ -378,6 +375,13 @@
 				L.DomUtil.removeClass(clickId, 'gmx-hidden');
 			} else {
 				L.DomUtil.addClass(clickId, 'gmx-hidden');
+			}
+		},
+
+		_setWindow: function (dInterval) {
+			if (this._timeline) {
+				var setWindow = this._timeline.setWindow ? 'setWindow' : 'setVisibleChartRange';
+				this._timeline[setWindow](dInterval.beginDate, dInterval.endDate, false);
 			}
 		},
 
@@ -533,13 +537,6 @@
 			}
 		},
 
-		_setWindow: function (dInterval) {
-			if (this._timeline) {
-				var setWindow = this._timeline.setWindow ? 'setWindow' : 'setVisibleChartRange';
-				this._timeline[setWindow](dInterval.beginDate, dInterval.endDate);
-			}
-		},
-
 		removeLayer: function (gmxLayer) {
 			var opt = gmxLayer.getGmxProperties(),
 				layerID = opt.name,
@@ -628,7 +625,7 @@
 				state.oInterval = { beginDate: dInterval.beginDate, endDate: dInterval.endDate };
 				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
 				if (!this.options.moveable) { delete state.dInterval; }
-				if (this._timeline) { this._setWindow(dInterval); }
+				// if (this._timeline) { this._setWindow(dInterval); }
 				this._setDateScroll();
 				this._bboxUpdate();
 			}
