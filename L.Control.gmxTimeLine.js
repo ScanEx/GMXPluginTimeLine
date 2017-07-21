@@ -124,6 +124,7 @@
 						currentBounds: state.currentBounds,
 						selected: state.selected,
 						clickedUTM: state.clickedUTM,
+						rollClickedFlag: state.rollClickedFlag,
 						skipUnClicked: state.skipUnClicked,
 						items: state.items
 					};
@@ -193,10 +194,15 @@
 				.on(spaneye, 'click', stop)
 				.on(spaneye, 'click', function (ev) {
 					var state = this.getCurrentState();
-					if (state.layerID === layerID && state.clickedUTM) {
+					if (state.layerID === layerID) {
 						liItem._eye = !liItem._eye;
 						spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
-						this.setCommand(' ');
+						// this.setCommand(' ');
+						if (liItem._eye) {
+							if (!state.gmxLayer._map) { this._map.addLayer(state.gmxLayer); }
+						} else {
+							if (state.gmxLayer._map) { this._map.removeLayer(state.gmxLayer); }
+						}
 					}
 			}, this);
 			return liItem;
@@ -243,6 +249,7 @@
 				}
 				this._setCurrentTab(layerID);
 				this._setDateScroll();
+				this._chkScrollChange();
 			}
 			return this;
 		},
@@ -346,7 +353,7 @@
 				
 				if (dSelected[utm]) {
 					className += ' item-selected';
-					selected.push(count);
+					// selected.push({row: count});
 				}
 				item.className = className;
 				// res[count] = item;
@@ -364,11 +371,11 @@
 			this._setWindow(data.oInterval);
 			this._timeline.setData(res);
 			
-			if (selected.length) {
-				this._timeline.setSelection(selected);
-			} else {
+			// if (selected.length) {
+				// this._timeline.setSelection(selected);
+			// } else {
 				this._chkSelection(data);
-			}
+			// }
 			var clickId = this._containers.clickId;
 			if (clickIdCount) {
 				clickId.innerHTML = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)) + ' (' + clickIdCount + ')';
@@ -386,21 +393,29 @@
 		},
 
 		_chkSelection: function (state) {
-			if (!state.selected) {
+			// if (!state.selected) {
 				var dInterval = state.dInterval || state.oInterval,
 					beginDate = new Date(dInterval.beginDate.valueOf() + tzm),
-					endDate = new Date(dInterval.endDate.valueOf() + tzm);
+					endDate = new Date(dInterval.endDate.valueOf() + tzm),
+					clickedUTM = state.clickedUTM ? String(state.clickedUTM) : null,
+					selectedLength = state.selected ? Object.keys(state.selected).length : 0,
+					lastDom = null;
 
 				this._timeline.items.forEach(function(it) {
-					if (it.dom) {
-						if (it.start >= beginDate && it.start < endDate) {
-							L.DomUtil.addClass(it.dom, 'item-selected');
-						} else {
-							L.DomUtil.removeClass(it.dom, 'item-selected');
+					if (it.dom.parentNode) {
+						lastDom = it.dom;
+						if (!clickedUTM) {
+							if (it.start >= beginDate && it.start < endDate) {
+								L.DomUtil.addClass(lastDom, 'item-range');
+							} else {
+								L.DomUtil.removeClass(lastDom, 'item-range');
+							}
 						}
+					} else if (clickedUTM === it.utm && lastDom) {
+						L.DomUtil.addClass(lastDom, 'item-clicked');
 					}
 				});
-			}
+			// }
 		},
 
 		_setEvents: function (tl) {
@@ -469,6 +484,7 @@
 
 		initialize: function (options) {
 			L.Control.prototype.initialize.call(this, options);
+			this._commandKeys = ['ArrowLeft', 'ArrowRight', ' ', 's'];
 
 			this._state = {
 				data: {},
@@ -581,6 +597,9 @@
 					if (options.skipUnClicked) {
 						data.skipUnClicked = options.skipUnClicked;
 					}
+					if (options.rollClickedFlag) {
+						data.rollClickedFlag = options.rollClickedFlag;
+					}
 				}
 
 				gmxLayer
@@ -637,28 +656,41 @@
 		},
 
 		setCommand: function (key) {
-			this._setFocuse();
+			if (this._commandKeys.indexOf(key) !== -1) {
+				this._setFocuse();
 
-			var state = this.getCurrentState();
-			if (state && state.clickedUTM) {
-				var clickedUTM = String(state.clickedUTM);
-				var tl = this._timeline,
-					arr = tl.getData(),
-					rollClicked = this.options.rollClicked;
-				for (var i = 0, len = arr.length - 1; i <= len; i++) {
-					if (arr[i].utm === clickedUTM) {
-						if (key === 'ArrowLeft') {
-							clickedUTM = arr[i > 0 ? i - 1 : (rollClicked ? len : 0)].utm;
-						} else if (key === 'ArrowRight') {
-							clickedUTM = arr[i < len ? i + 1 : (rollClicked ? 0 : len)].utm;
-						} else if (key === ' ') {
-							state.skipUnClicked = !state.skipUnClicked;
-						}
-						state.clickedUTM = Number(clickedUTM);
-						state.needResort = [];
-						this._chkObserver(state);
-						break;
+				var state = this.getCurrentState();
+				if (state && state.clickedUTM) {
+					if (key === ' ') {
+						state.skipUnClicked = !state.skipUnClicked;
+					} else if (key === 's') {
+						state.rollClickedFlag = !state.rollClickedFlag;
 					}
+					var clickedUTM = String(state.clickedUTM),
+						rollClicked = this.options.rollClicked,
+						arr = [];
+					if (state.rollClickedFlag) {
+						arr = Object.keys(state.selected).sort().map(function (it) { return {utm: it}});
+					} else {
+						arr = this._timeline.getData();
+					}
+					for (var i = 0, len = arr.length; i < len; i++) {
+						if (Number(arr[i].utm) > state.clickedUTM) {
+							break;
+						}
+					}
+					if (key === 'ArrowLeft') {
+						i = i > 1 ? i - 2 : (rollClicked ? len - 1: 0);
+					} else if (key === 'ArrowRight') {
+						i = i < len - 1 ? i: (rollClicked ? 0 : len - 1);
+					} else if (key === 's') {
+						i = i === 0 ? 0 : i - 1;
+					}
+					if (key !== ' ') {
+						state.clickedUTM = Number(arr[i].utm);
+					}
+					state.needResort = [];
+					this._chkObserver(state);
 				}
 			}
 		},
@@ -672,38 +704,42 @@
 
 		_clickOnTimeline: function (ev) {
 			var tl = this._timeline,
-				state = this.getCurrentState();
+				state = this.getCurrentState(),
+				selected = state.selected || {};
 
 			if (ev) {
 				var it = tl.getItem(ev.index),
+					ctrlKey = ev.originalEvent.ctrlKey,
 					title = '',
 					clickId = this._containers.clickId,
 					utm = Number(it.utm);
 
-				if (state.clickedUTM === utm) {	// выключение выбранной метки
-					L.DomUtil.addClass(clickId, 'gmx-hidden');
-					if (!state.liItem._eye) {
-						state.liItem._eye = true;
-						var eye = state.liItem.getElementsByClassName('eye')[0];
-						eye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
+				if (ctrlKey) {
+					if (selected[utm]) {
+						delete selected[utm];
+						if (Object.keys(selected).length === 0) {
+							state.clickedUTM = null;
+							selected = null;
+						}
+					} else {
+						selected[utm] = true;
+						state.clickedUTM = utm;
+						delete state.dInterval;
 					}
-					// this.setCommand(' ');
-					state.clickedUTM = null;
-					state.skipUnClicked = false;
-					this._chkObserver(state);
-				} else {
+				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
+					selected = {};
+					// selected[utm] = true;
 					state.clickedUTM = utm;
-					// this.setCommand(' ');
-					state.needResort = [];
-					this._chkObserver(state);
-					// var observer = state.observer;
-					// observer.activate();
-					// observer.needRefresh = true;
-					// state.gmxLayer.getDataManager().checkObserver(observer);
-					title = tl.getUTCTimeString(it.start) + (it.items > 1 ? ' (' + it.items + ')': '');
-					L.DomUtil.removeClass(clickId, 'gmx-hidden');
+					delete state.dInterval;
 				}
-				clickId.innerHTML = title;
+				state.selected = selected;
+				state.skipUnClicked = state.clickedUTM ? true : false;
+				state.gmxLayer.repaint();
+				this._chkScrollChange();
+				this._setDateScroll();
+				
+				// this._bboxUpdate();
+
 				this._redrawTimeline();
 			} else {
 				var selectedPrev = state.selected || {},
@@ -754,7 +790,7 @@
 
 			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>';
 			str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center gmx-hidden">' + this._addSvgIcon('center') + '</span><span class="clicked click-id gmx-hidden"></span><ul class="layers-tab"></ul></div>\
-			<div class="switch"><div class="diamond"></div><div class="modeScreen on" title=""></div><div class="modeCenter" title=""></div></div>\
+			<div class="switch"><div class="diamond"></div><div class="modeSelectedOff on" title=""></div><div class="modeSelectedOn" title=""></div></div>\
 			<div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
 			container.innerHTML = str;
 			container._id = this.options.id;
@@ -769,8 +805,8 @@
 				clickRight = container.getElementsByClassName('click-right')[0],
 				clickCenter = container.getElementsByClassName('click-center')[0],
 				clickId = container.getElementsByClassName('click-id')[0],
-				modeCenter = container.getElementsByClassName('modeCenter')[0],
-				modeScreen = container.getElementsByClassName('modeScreen')[0],
+				modeSelectedOn = container.getElementsByClassName('modeSelectedOn')[0],
+				modeSelectedOff = container.getElementsByClassName('modeSelectedOff')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
 				visContainer = container.getElementsByClassName('vis-container')[0],
@@ -782,15 +818,15 @@
 				internalContainer: internalContainer,
 				layersTab: layersTab,
 				clickId: clickId,
-				modeScreen: modeScreen,
-				modeCenter: modeCenter,
+				modeSelectedOff: modeSelectedOff,
+				modeSelectedOn: modeSelectedOn,
 				hideButton: hideButton,
 				lScroll: lScroll,
 				rScroll: rScroll,
 				cScroll: cScroll
 			};
-			modeScreen.innerHTML = translate.modeScreen;
-			modeCenter.innerHTML = translate.modeCenter;
+			modeSelectedOff.innerHTML = translate.modeSelectedOff;
+			modeSelectedOn.innerHTML = translate.modeSelectedOn;
 			L.DomEvent
 				.on(document, 'keydown', this._keydown, this);
 			map
@@ -818,19 +854,27 @@
 				.on(clickRight, 'click', function (ev) {
 					this.setCommand('ArrowRight');
 				}, this)
-				.on(modeScreen, 'click', function (ev) {
-					if (this.options.modeBbox === 'thirdpart') { return; }
-					this.options.modeBbox = 'thirdpart';
-					for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
-					L.DomUtil.addClass(modeScreen, 'on');
-					L.DomUtil.removeClass(modeCenter, 'on');
+				.on(modeSelectedOff, 'click', function (ev) {
+					this.setCommand('s');
+					// var state = this.getCurrentState();
+					// state.rollClickedFlag = false;
+
+					// if (this.options.modeBbox === 'thirdpart') { return; }
+					// this.options.modeBbox = 'thirdpart';
+					// for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
+					L.DomUtil.addClass(modeSelectedOff, 'on');
+					L.DomUtil.removeClass(modeSelectedOn, 'on');
 				}, this)
-				.on(modeCenter, 'click', function (ev) {
-					if (this.options.modeBbox === 'center') { return; }
-					this.options.modeBbox = 'center';
-					for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
-					L.DomUtil.addClass(modeCenter, 'on');
-					L.DomUtil.removeClass(modeScreen, 'on');
+				.on(modeSelectedOn, 'click', function (ev) {
+					this.setCommand('s');
+					// var state = this.getCurrentState();
+					// state.rollClickedFlag = true;
+
+					// if (this.options.modeBbox === 'center') { return; }
+					// this.options.modeBbox = 'center';
+					// for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
+					L.DomUtil.addClass(modeSelectedOn, 'on');
+					L.DomUtil.removeClass(modeSelectedOff, 'on');
 				}, this)
 				.on(hideButton, 'click', function (ev) {
 					var isVisible = !L.DomUtil.hasClass(visContainer, 'gmx-hidden'),
@@ -908,6 +952,21 @@
 					}
 				};
 			this._dIntervalUpdate = dragend;
+			this._chkScrollChange = function (state) {
+				state = state || _this.getCurrentState();
+				var disabled = 'gmx-disabled';
+				if (state && state.clickedUTM) {
+					L.DomUtil.addClass(lScroll, disabled);
+					L.DomUtil.addClass(rScroll, disabled);
+					L.DomUtil.removeClass(clickLeft, disabled);
+					L.DomUtil.removeClass(clickRight, disabled);
+				} else {
+					L.DomUtil.removeClass(lScroll, disabled);
+					L.DomUtil.removeClass(rScroll, disabled);
+					L.DomUtil.addClass(clickLeft, disabled);
+					L.DomUtil.addClass(clickRight, disabled);
+				}
+			};
 			this._setDateScroll = function () {
 				var state = _this.getCurrentState();
 				if (state) {
@@ -968,6 +1027,7 @@
 
 			if (!map.keyboard._focused) { this._setFocuse(); }
 
+			this._chkScrollChange();
 			return container;
 		}
 	});
@@ -994,13 +1054,13 @@
 
 				if (options.locale === 'ru') {
 					translate = {
-						modeScreen: 'Весь экран',
-						modeCenter: 'Центр'
+						modeSelectedOff: 'По всем',
+						modeSelectedOn: 'По выделенным'
 					};
 				} else {
 					translate = {
-						modeScreen: 'Screen',
-						modeCenter: 'Center'
+						modeSelectedOff: 'By all',
+						modeSelectedOn: 'By selected'
 					};
 				}
 
@@ -1144,8 +1204,8 @@
 				gmxCore.loadScriptWithCheck([
 					{
 						check: function(){ return window.links; },
-						script: filePrefix + '.js',
-						css: filePrefix + '.css'
+						script: filePrefix + '.js?v2',
+						css: filePrefix + '.css?v2'
 					}
 				]).done(function() {
 					def.resolve();
