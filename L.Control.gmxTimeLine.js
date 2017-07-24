@@ -31,7 +31,8 @@
 						timeColumnName = dmOpt.MetaProperties.timeColumnName ? dmOpt.MetaProperties.timeColumnName.Value : null,
 						timeKeyNum = timeColumnName ? dm.tileAttributeIndexes[timeColumnName] : null,
 						dInterval = gmxLayer.getDateInterval(),
-						opt = gmxLayer.getGmxProperties();
+						opt = gmxLayer.getGmxProperties(),
+						type = (opt.GeometryType || 'point').toLowerCase();
 
 					if (!dInterval.beginDate || !dInterval.endDate) {
 						var cInterval;
@@ -55,15 +56,18 @@
 						layerID: opt.name, title: opt.title, //dmID: dmOpt.name,
 						tmpKeyNum: tmpKeyNum,
 						timeKeyNum: timeKeyNum,
+						modeBbox: type === 'polygon' ? 'center' : 'thirdpart',
 						TemporalColumnName: dmOpt.TemporalColumnName,
 						temporalColumnType: dm.temporalColumnType,
 						// dInterval: dInterval,
 						oInterval: dInterval,
-						uTimeStamp: [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000],
+						uTimeStamp: [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000]
+						,
 						observer: dm.addObserver({
 							type: 'resend',
 							filters: ['clipFilter', 'userFilter', 'userFilter_timeline', 'styleFilter'],
 							active: false,
+							layerID: opt.name,
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
 								var arr = it.properties;
@@ -78,6 +82,7 @@
 							},
 							callback: function(data) {
 								var out = this.cache || {};
+// console.log('observer', opt.name, Object.keys(out).length);
 								this.cache = {};
 								if (state.needResort) {
 									gmxLayer.setReorderArrays(state.needResort);
@@ -87,7 +92,39 @@
 								return out;
 							}
 						})
+						/**/
 					};
+/*
+					state.observer = dm.addObserver({
+						type: 'resend',
+						filters: ['clipFilter', 'userFilter', 'userFilter_timeline', 'styleFilter'],
+						active: false,
+						layerID: opt.name,
+						itemHook: function(it) {
+							if (!state.cache) { state.cache = {}; }
+							var arr = it.properties;
+							if (this.intersectsWithGeometry(arr[arr.length - 1])) {
+								var utm = Number(arr[tmpKeyNum]);
+								if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
+								state.cache[utm] = 1 + (state.cache[utm] || 0);
+								if (state.needResort && state.clickedUTM === utm) {
+									state.needResort[state.needResort.length] = it.id;
+								}
+							}
+						},
+						callback: function(data) {
+							var out = state.cache || {};
+// console.log('observer', opt.name, Object.keys(out).length);
+							state.cache = {};
+							if (state.needResort) {
+								gmxLayer.setReorderArrays(state.needResort);
+								state.needResort = null;
+							}
+							gmxLayer.repaint();
+							return out;
+						}
+					});
+*/
 					// gmxLayer.repaintObservers[state.observer.id] = true;
 				}
 			}
@@ -103,7 +140,7 @@
 			locale: 'ru',
 			rollClicked: false,		// режим кругового обхода для clickedUTM
 			modeSelect: 'range',	// selected
-			modeBbox: 'thirdpart',		// screen, center, thirdpart
+			// modeBbox: 'thirdpart',		// screen, center, thirdpart
 			centerBuffer: 10,		// буфер центра в пикселях
 			groups: false,
 			moveable: false
@@ -124,6 +161,7 @@
 						currentBounds: state.currentBounds,
 						selected: state.selected,
 						clickedUTM: state.clickedUTM,
+						modeBbox: state.modeBbox,
 						rollClickedFlag: state.rollClickedFlag,
 						skipUnClicked: state.skipUnClicked,
 						items: state.items
@@ -177,12 +215,17 @@
 				spaneye = L.DomUtil.create('span', 'eye', liItem),
 				span = L.DomUtil.create('span', '', liItem),
 				closeButton = L.DomUtil.create('span', 'close-button', liItem),
-				stop = L.DomEvent.stopPropagation;
+				stop = L.DomEvent.stopPropagation,
+				gmxLayer = this._state.data[layerID].gmxLayer,
+				chkVisible = function (flag) {
+					liItem._eye = flag;
+					spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
+				};
 
 			liItem._eye = true;
 			liItem._layerID = layerID;
 			span.innerHTML = title;
-			spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
+			// spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
 
 			L.DomEvent
 				.on(closeButton, 'click', stop)
@@ -199,12 +242,17 @@
 						spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
 						// this.setCommand(' ');
 						if (liItem._eye) {
-							if (!state.gmxLayer._map) { this._map.addLayer(state.gmxLayer); }
+							if (!gmxLayer._map) { this._map.addLayer(gmxLayer); }
 						} else {
-							if (state.gmxLayer._map) { this._map.removeLayer(state.gmxLayer); }
+							if (gmxLayer._map) { this._map.removeLayer(gmxLayer); }
 						}
 					}
 			}, this);
+			gmxLayer
+				.on('add', function () { chkVisible(true); }, this)
+				.on('remove', function () { chkVisible(false); }, this);
+
+			chkVisible(gmxLayer._map ? true : false);
 			return liItem;
 		},
 
@@ -238,8 +286,14 @@
 
 				if (dataSource.observer) {
 					dataSource.observer.on('data', function(ev) {
-						this._state.data[currentDmID].items = ev.data;
-						this._redrawTimeline();
+						var state = this.getCurrentState(),
+							tLayerID = ev.target.layerID;
+						
+						this._state.data[tLayerID].items = ev.data;
+// console.log('addDataSource', tLayerID, currentDmID, Object.keys(ev.data).length, state.layerID);
+						if (tLayerID === state.layerID) {
+							this._redrawTimeline();
+						}
 					}, this);
 				}
 				L.DomUtil.removeClass(this._containers.vis, 'gmx-hidden');
@@ -284,7 +338,7 @@
 			var map = this._map,
 				sw, ne, delta;
 
-			if (this.options.modeBbox === 'center')	{
+			if (state.modeBbox === 'center')	{
 				var cp = map._getCenterLayerPoint(),
 					buffer = this.options.centerBuffer;
 				delta = [buffer, buffer];
@@ -370,6 +424,7 @@
 			this._timeline.clearItems();
 			this._setWindow(data.oInterval);
 			this._timeline.setData(res);
+// console.log('_redrawTimeline', data.layerID, res, count, data.oInterval);
 			
 			// if (selected.length) {
 				// this._timeline.setSelection(selected);
@@ -480,6 +535,7 @@
 				}
 			}
 			this._setDateScroll();
+			L.gmx.layersVersion.now();
 		},
 
 		initialize: function (options) {
@@ -600,6 +656,9 @@
 					if (options.rollClickedFlag) {
 						data.rollClickedFlag = options.rollClickedFlag;
 					}
+					if (options.modeBbox) {
+						data.modeBbox = options.modeBbox;
+					}
 				}
 
 				gmxLayer
@@ -636,17 +695,22 @@
 
 		_dateIntervalChanged: function (ev) {
 			var gmxLayer = ev.target,
-				state = this.getCurrentState(),
 				opt = gmxLayer.getGmxProperties(),
+				state = this._state.data[opt.name],
+				// state = this.getCurrentState(),
 				dInterval = gmxLayer.getDateInterval();
 
-			if (state && state.layerID === opt.name && dInterval.beginDate) {
+// console.log('_dateIntervalChanged', opt.name, state.layerID, dInterval);
+			if (state && dInterval.beginDate) {
 				state.oInterval = { beginDate: dInterval.beginDate, endDate: dInterval.endDate };
 				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
-				if (!this.options.moveable) { delete state.dInterval; }
-				// if (this._timeline) { this._setWindow(dInterval); }
-				this._setDateScroll();
-				this._bboxUpdate();
+
+				if (state.layerID === opt.name) {
+					if (!this.options.moveable) { delete state.dInterval; }
+					// if (this._timeline) { this._setWindow(dInterval); }
+					this._setDateScroll();
+					this._bboxUpdate();
+				}
 			}
 		},
 
@@ -834,7 +898,7 @@
 				.on('blur', this._setFocuse, this);
 
 			L.DomEvent
-				// .on(container, 'mousemove', stop)
+				.on(container, 'mousemove', stop)
 				.on(container, 'contextmenu', stop)
 				.on(container, 'touchstart', stop)
 				.on(container, 'mousedown', stop)
@@ -1049,7 +1113,7 @@
 					layersByID = nsGmx.gmxMap.layersByID;
 
 				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : params.moveable; }
-				if (params.modeBbox) { options.modeBbox = params.modeBbox; }
+				// if (params.modeBbox) { options.modeBbox = params.modeBbox; }
 				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : params.rollClicked; }
 
 				if (options.locale === 'ru') {

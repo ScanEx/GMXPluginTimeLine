@@ -125,6 +125,7 @@
 
 .gmxTimeline .item-clicked .timeline-event-content {
 	display: block;
+    cursor: pointer;
 }
 .gmxTimeline .item-clicked .timeline-event-dot {
 	/*
@@ -165,34 +166,28 @@
 	padding-left: 10px;
 	padding-right: 10px;
 }
-.gmxTimeline .w-scroll .l-scroll {
+.gmxTimeline .w-scroll .l-scroll, .gmxTimeline .w-scroll .r-scroll{
 	cursor: col-resize;
-    margin-left: -6px;
-    width: 15px;
-    height: 15px;
-    background-color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    border-radius: 50%;
     position: absolute;
     top: 4px;
+    width: 15px;
+    height: 15px;
+    background-color: rgb(69, 175, 215);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-radius: 50%;
+}
+.gmxTimeline .w-scroll .l-scroll {
+    margin-left: -6px;
+}
+.gmxTimeline .w-scroll .r-scroll {
+	margin-right: 10px;
+    right: -6px;
 }
 .gmxTimeline .w-scroll .l-scroll-title {
     width: 20px;
     height: 20px;
     background-color: red;
     margin-top: -23px;
-}
-.gmxTimeline .w-scroll .r-scroll {
-	cursor: col-resize;
-	margin-right: 10px;
-    width: 15px;
-    height: 15px;
-    background-color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    border-radius: 50%;
-    position: absolute;
-    right: -6px;
-    top: 4px;
 }
 
 .gmxTimeline .w-scroll .g-scroll {
@@ -344,8 +339,13 @@
     pointer-events: none;
 }
 
+.gmxTimeline .selected .eye  {
+	opacity: 1;
+}
+
 .gmxTimeline .eye  {
 	left: 0px;
+	opacity: 0.3;
 }
 .tabs svg {
     height: 22px;
