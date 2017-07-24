@@ -354,7 +354,7 @@
 }
 .gmxTimeline .switch  {
     font-size: 0;
-    display: inline-block;
+/*    display: inline-block;*/
 	float: right;
     color: #82909b;
     padding: 4px;

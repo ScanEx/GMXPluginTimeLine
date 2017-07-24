@@ -528,13 +528,21 @@
 			this._map.fire('gmxTimeLine.currentTabChanged', {currentTab: layerID});
 			this._bboxUpdate();
 			if (this._timeline) {
-				var state = this.getCurrentState(),
-					oInterval = state.oInterval;
+				var oInterval = state.oInterval;
 				if (timeLineType === 'timeline') {
 					this._setWindow(oInterval);
 				}
 			}
 			this._setDateScroll();
+
+			if (Object.keys(state.selected || {}).length > 1) {
+				L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
+			}
+			if (state.rollClickedFlag) {
+				// this.setCommand('s');
+				L.DomUtil.removeClass(this._containers.modeSelectedOff, 'on');
+				L.DomUtil.addClass(this._containers.modeSelectedOn, 'on');
+			}
 			L.gmx.layersVersion.now();
 		},
 
@@ -750,7 +758,7 @@
 					} else if (key === 's') {
 						i = i === 0 ? 0 : i - 1;
 					}
-					if (key !== ' ') {
+					if (key !== ' ' && arr[i]) {
 						state.clickedUTM = Number(arr[i].utm);
 					}
 					state.needResort = [];
@@ -784,17 +792,30 @@
 						if (Object.keys(selected).length === 0) {
 							state.clickedUTM = null;
 							selected = null;
+							state.rollClickedFlag = false;
+							L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
 						}
 					} else {
 						selected[utm] = true;
 						state.clickedUTM = utm;
 						delete state.dInterval;
+						if (Object.keys(selected).length > 1) {
+							L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
+							L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
+							L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
+						}
 					}
 				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
 					selected = {};
-					// selected[utm] = true;
-					state.clickedUTM = utm;
+					state.rollClickedFlag = false;
+					L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
 					delete state.dInterval;
+					// selected[utm] = true;
+					if (state.clickedUTM !== utm) {
+						state.clickedUTM = utm;
+					} else {
+						state.clickedUTM = null;
+					}
 				}
 				state.selected = selected;
 				state.skipUnClicked = state.clickedUTM ? true : false;
@@ -848,13 +869,14 @@
 
 		onAdd: function (map) {
 			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden'),
-				stop = L.DomEvent.stopPropagation;
+				stop = L.DomEvent.stopPropagation,
+				preventDefault = L.DomEvent.preventDefault;
 
 			container.tabindex = '0';
 
 			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>';
 			str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center gmx-hidden">' + this._addSvgIcon('center') + '</span><span class="clicked click-id gmx-hidden"></span><ul class="layers-tab"></ul></div>\
-			<div class="switch"><div class="diamond"></div><div class="modeSelectedOff on" title=""></div><div class="modeSelectedOn" title=""></div></div>\
+			<div class="switch gmx-hidden"><div class="diamond"></div><div class="modeSelectedOff on" title=""></div><div class="modeSelectedOn" title=""></div></div>\
 			<div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
 			container.innerHTML = str;
 			container._id = this.options.id;
@@ -869,6 +891,7 @@
 				clickRight = container.getElementsByClassName('click-right')[0],
 				clickCenter = container.getElementsByClassName('click-center')[0],
 				clickId = container.getElementsByClassName('click-id')[0],
+				switchDiv = container.getElementsByClassName('switch')[0],
 				modeSelectedOn = container.getElementsByClassName('modeSelectedOn')[0],
 				modeSelectedOff = container.getElementsByClassName('modeSelectedOff')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
@@ -882,6 +905,7 @@
 				internalContainer: internalContainer,
 				layersTab: layersTab,
 				clickId: clickId,
+				switchDiv: switchDiv,
 				modeSelectedOff: modeSelectedOff,
 				modeSelectedOn: modeSelectedOn,
 				hideButton: hideButton,
@@ -898,7 +922,6 @@
 				.on('blur', this._setFocuse, this);
 
 			L.DomEvent
-				.on(container, 'mousemove', stop)
 				.on(container, 'contextmenu', stop)
 				.on(container, 'touchstart', stop)
 				.on(container, 'mousedown', stop)
@@ -912,31 +935,21 @@
 				.on(clickCenter, 'click', function (ev) {
 					// this.setCommand(' ');
 				}, this)
+				.on(clickLeft, 'mousemove', stop)
 				.on(clickLeft, 'click', function (ev) {
 					this.setCommand('ArrowLeft');
 				}, this)
+				.on(clickRight, 'mousemove', stop)
 				.on(clickRight, 'click', function (ev) {
 					this.setCommand('ArrowRight');
 				}, this)
 				.on(modeSelectedOff, 'click', function (ev) {
 					this.setCommand('s');
-					// var state = this.getCurrentState();
-					// state.rollClickedFlag = false;
-
-					// if (this.options.modeBbox === 'thirdpart') { return; }
-					// this.options.modeBbox = 'thirdpart';
-					// for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
 					L.DomUtil.addClass(modeSelectedOff, 'on');
 					L.DomUtil.removeClass(modeSelectedOn, 'on');
 				}, this)
 				.on(modeSelectedOn, 'click', function (ev) {
 					this.setCommand('s');
-					// var state = this.getCurrentState();
-					// state.rollClickedFlag = true;
-
-					// if (this.options.modeBbox === 'center') { return; }
-					// this.options.modeBbox = 'center';
-					// for (var id in this._state.data) { this._triggerObserver(this._state.data[id]); }
 					L.DomUtil.addClass(modeSelectedOn, 'on');
 					L.DomUtil.removeClass(modeSelectedOff, 'on');
 				}, this)
@@ -967,6 +980,7 @@
 				}
 
 			L.DomEvent
+				.on(lScroll, 'mousemove', stop)
 				.on(lScroll, 'mouseover', function (ev) {
 					var state = this.getCurrentState(),
 						dt = (state.dInterval || state.oInterval).beginDate,
