@@ -799,7 +799,7 @@
 						selected[utm] = true;
 						state.clickedUTM = utm;
 						delete state.dInterval;
-						if (Object.keys(selected).length > 1) {
+						if (!state.rollClickedFlag && Object.keys(selected).length > 1) {
 							L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
 							L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
 							L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
