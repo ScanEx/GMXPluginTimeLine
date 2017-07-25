@@ -806,7 +806,7 @@
 						}
 					}
 				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
-					selected = {};
+					selected = null;
 					state.rollClickedFlag = false;
 					L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
 					delete state.dInterval;
@@ -823,9 +823,9 @@
 				this._chkScrollChange();
 				this._setDateScroll();
 				
-				// this._bboxUpdate();
+				this._bboxUpdate();
 
-				this._redrawTimeline();
+				// this._redrawTimeline();
 			} else {
 				var selectedPrev = state.selected || {},
 					selected = {};
