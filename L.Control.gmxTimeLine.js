@@ -540,8 +540,7 @@
 			}
 			if (state.rollClickedFlag) {
 				// this.setCommand('s');
-				L.DomUtil.removeClass(this._containers.modeSelectedOff, 'on');
-				L.DomUtil.addClass(this._containers.modeSelectedOn, 'on');
+				this._chkRollClickedFlag(state);
 			}
 			L.gmx.layersVersion.now();
 		},
@@ -774,6 +773,16 @@
 			state.gmxLayer.getDataManager().checkObserver(observer);
 		},
 
+		_chkRollClickedFlag: function (state) {
+			if (state.rollClickedFlag) {
+				L.DomUtil.removeClass(this._containers.modeSelectedOff, 'on');
+				L.DomUtil.addClass(this._containers.modeSelectedOn, 'on');
+			} else {
+				L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
+				L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
+			}
+		},
+
 		_clickOnTimeline: function (ev) {
 			var tl = this._timeline,
 				state = this.getCurrentState(),
@@ -801,8 +810,9 @@
 						delete state.dInterval;
 						if (!state.rollClickedFlag && Object.keys(selected).length > 1) {
 							L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
-							L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
-							L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
+							this._chkRollClickedFlag(state);
+							// L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
+							// L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
 						}
 					}
 				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
