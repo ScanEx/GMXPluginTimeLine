@@ -652,6 +652,7 @@
 							beginDate: new Date(options.dInterval.beginDate),
 							endDate: new Date(options.dInterval.endDate)
 						};
+						data.uTimeStamp = [data.dInterval.beginDate.getTime()/1000, data.dInterval.endDate.getTime()/1000];
 					}
 					data.selected = options.selected;
 					if (options.clickedUTM) {
@@ -808,6 +809,7 @@
 						selected[utm] = true;
 						state.clickedUTM = utm;
 						delete state.dInterval;
+						state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
 						if (!state.rollClickedFlag && Object.keys(selected).length > 1) {
 							L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
 							this._chkRollClickedFlag(state);
@@ -820,6 +822,7 @@
 					state.rollClickedFlag = false;
 					L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
 					delete state.dInterval;
+					state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
 					// selected[utm] = true;
 					if (state.clickedUTM !== utm) {
 						state.clickedUTM = utm;

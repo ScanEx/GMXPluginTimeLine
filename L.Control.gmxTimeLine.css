@@ -255,8 +255,8 @@
 .tabs .click-id {
     background-color: rgb(39, 199, 125);
     width: auto;
-    padding-top: 7px;
-    padding-bottom: 6px;
+    padding-top: 3px;
+ /*   padding-bottom: 6px;*/
     position: relative;
     top: -5px;
 }
