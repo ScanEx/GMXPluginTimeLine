@@ -548,7 +548,7 @@
 
 		initialize: function (options) {
 			L.Control.prototype.initialize.call(this, options);
-			this._commandKeys = ['ArrowLeft', 'ArrowRight', ' ', 's'];
+			this._commandKeys = ['ArrowLeft', 'ArrowRight', 'Left', 'Right', ' ', 's'];
 
 			this._state = {
 				data: {},
@@ -751,9 +751,9 @@
 							break;
 						}
 					}
-					if (key === 'ArrowLeft') {
+					if (key === 'ArrowLeft' || key === 'Left') {
 						i = i > 1 ? i - 2 : (rollClicked ? len - 1: 0);
-					} else if (key === 'ArrowRight') {
+					} else if (key === 'ArrowRight' || key === 'Right') {
 						i = i < len - 1 ? i: (rollClicked ? 0 : len - 1);
 					} else if (key === 's') {
 						i = i === 0 ? 0 : i - 1;
