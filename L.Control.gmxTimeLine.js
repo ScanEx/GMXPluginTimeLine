@@ -671,14 +671,14 @@
 
 				gmxLayer
 					.on('dateIntervalChanged', this._dateIntervalChanged, this)
-					.on('click', function (ev) {
-						var state = this._state.data[opt.name] || {},
-							it = ev.gmx.target,
-							dt = it.properties[state.tmpKeyNum];
+					// .on('click', function (ev) {		// МихаП: убери выделение на таймлайне по клику на карте - лишнее пока
+						// var state = this._state.data[opt.name] || {},
+							// it = ev.gmx.target,
+							// dt = it.properties[state.tmpKeyNum];
 
-						state.clickedUTM = dt;
-						this._redrawTimeline();
-					}, this)
+						// state.clickedUTM = dt;
+						// this._redrawTimeline();
+					// }, this)
 					.addLayerFilter(function (it) {
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
