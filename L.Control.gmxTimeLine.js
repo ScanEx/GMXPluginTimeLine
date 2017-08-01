@@ -10,6 +10,8 @@
 		timeLineType = 'timeline',	// vis timeline vis-timeline
 		timeLinePrefix = '../../timeline/' + (timeLineType === 'timeline' ? '2.9.1/' : '/'),
         pluginName = 'gmxTimeLine',
+		filesToLoad = null,
+		promisesArr = null,
 		tzs = (new Date()).getTimezoneOffset() * 60,
 		// tzs = 0,
 		tzm = tzs * 1000,
@@ -19,6 +21,7 @@
 		translate = {},
 		currentLayerID,
 		currentDmID,
+		currentDmIDPermalink,
 
 		getDataSource = function (gmxLayer) {
 			// var gmxLayer = nsGmx.gmxMap.layersByID[id];
@@ -542,12 +545,13 @@
 				// this.setCommand('s');
 				this._chkRollClickedFlag(state);
 			}
+			this._chkScrollChange();
 			L.gmx.layersVersion.now();
 		},
 
 		initialize: function (options) {
 			L.Control.prototype.initialize.call(this, options);
-			this._commandKeys = ['ArrowLeft', 'ArrowRight', 'Left', 'Right', ' ', 's'];
+			this._commandKeys = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Down', 'Up', 'Left', 'Right', ' ', 's'];
 
 			this._state = {
 				data: {},
@@ -697,7 +701,19 @@
 					}.bind(this)
 					, {target: 'screen', id: pluginName});
 
-				this.addDataSource(data);
+				if (filesToLoad && !promisesArr) {
+					promisesArr = filesToLoad.map(function(href) {
+						return L.gmxUtil.requestLink(href);
+					});
+				}
+				Promise.all(promisesArr).then(function() {
+// console.log('Promise', arguments);
+					this.addDataSource(data);
+					if (currentDmIDPermalink) {
+						this.setCurrentTab(currentDmIDPermalink);
+						currentDmIDPermalink = null;
+					}
+				}.bind(this));
 			}
 		},
 
@@ -724,42 +740,74 @@
 
 		_keydown: function (ev) {
 			if (!this._map || this._map.keyboard._focused) { return; }
-			this.setCommand(ev.key);
+			this.setCommand(ev.key, ev.ctrlKey);
 		},
 
-		setCommand: function (key) {
+		setCommand: function (key, ctrlKey) {
 			if (this._commandKeys.indexOf(key) !== -1) {
 				this._setFocuse();
 
-				var state = this.getCurrentState();
+				var state = this.getCurrentState(),
+					setClickedUTMFlag = true;
 				if (state && state.clickedUTM) {
 					if (key === ' ') {
 						state.skipUnClicked = !state.skipUnClicked;
+						setClickedUTMFlag = false;
+					} else if (key === 'ArrowUp' || key === 'Up') {
+						if (ctrlKey) {
+							this._addSelected(state.clickedUTM, state);
+							// if (!state.selected) { state.selected = {}; }
+							// state.selected[state.clickedUTM] = true;
+							setClickedUTMFlag = false;
+						} else {
+							if (!state.selected || Object.keys(state.selected).length < 2) {
+								return;
+							}
+							state.rollClickedFlag = true;
+							this._chkRollClickedFlag(state);
+							if (state.selected && state.selected[state.clickedUTM]) {
+								setClickedUTMFlag = false;
+							} else {
+								key = 'Left';
+							}
+						}
+					} else if (key === 'ArrowDown' || key === 'Down') {
+						if (ctrlKey) {
+							this._removeSelected(state.clickedUTM, state);
+							// if (state.selected) { delete state.selected[state.clickedUTM]; }
+						} else {
+							state.rollClickedFlag = false;
+							this._chkRollClickedFlag(state);
+						}
+						setClickedUTMFlag = false;
 					} else if (key === 's') {
 						state.rollClickedFlag = !state.rollClickedFlag;
 					}
-					var clickedUTM = String(state.clickedUTM),
-						rollClicked = this.options.rollClicked,
-						arr = [];
-					if (state.rollClickedFlag) {
-						arr = Object.keys(state.selected).sort().map(function (it) { return {utm: it}});
-					} else {
-						arr = this._timeline.getData();
-					}
-					for (var i = 0, len = arr.length; i < len; i++) {
-						if (Number(arr[i].utm) > state.clickedUTM) {
-							break;
+					if (setClickedUTMFlag) {
+						var clickedUTM = String(state.clickedUTM),
+							rollClicked = this.options.rollClicked,
+							arr = [];
+						if (state.selected && state.rollClickedFlag) {
+							arr = Object.keys(state.selected).sort().map(function (it) { return {utm: it}});
+						} else {
+							arr = this._timeline.getData();
 						}
-					}
-					if (key === 'ArrowLeft' || key === 'Left') {
-						i = i > 1 ? i - 2 : (rollClicked ? len - 1: 0);
-					} else if (key === 'ArrowRight' || key === 'Right') {
-						i = i < len - 1 ? i: (rollClicked ? 0 : len - 1);
-					} else if (key === 's') {
-						i = i === 0 ? 0 : i - 1;
-					}
-					if (key !== ' ' && arr[i]) {
-						state.clickedUTM = Number(arr[i].utm);
+						for (var i = 0, len = arr.length - 1; i <= len; i++) {
+							if (Number(arr[i].utm) > state.clickedUTM) {
+								break;
+							}
+						}
+
+						if (key === 'ArrowLeft' || key === 'Left') {
+							i = ctrlKey ? 0 : (i > 1 ? i - 2 : (rollClicked ? len : 0));
+						} else if (key === 'ArrowRight' || key === 'Right') {
+							i = ctrlKey ? len : (i < len ? i: (rollClicked ? 0 : len));
+						} else if (key === 's') {
+							i = i === 0 ? 0 : i - 1;
+						}
+						if (arr[i]) {
+							state.clickedUTM = Number(arr[i].utm);
+						}
 					}
 					state.needResort = [];
 					this._chkObserver(state);
@@ -784,10 +832,32 @@
 			}
 		},
 
+		_removeSelected: function (utm, state) {
+			state = state || this.getCurrentState();
+			delete state.selected[utm];
+			if (!state.selected || Object.keys(state.selected).length === 0) {
+				state.clickedUTM = null;
+				state.selected = null;
+				state.rollClickedFlag = false;
+				L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
+			}
+		},
+
+		_addSelected: function (utm, state) {
+			state = state || this.getCurrentState();
+			if (!state.selected) { state.selected = {}; }
+			state.selected[utm] = true;
+			delete state.dInterval;
+			state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
+			if (!state.rollClickedFlag && Object.keys(state.selected).length > 1) {
+				L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
+				this._chkRollClickedFlag(state);
+			}
+		},
+
 		_clickOnTimeline: function (ev) {
 			var tl = this._timeline,
-				state = this.getCurrentState(),
-				selected = state.selected || {};
+				state = this.getCurrentState();
 
 			if (ev) {
 				var it = tl.getItem(ev.index),
@@ -797,17 +867,19 @@
 					utm = Number(it.utm);
 
 				if (ctrlKey) {
-					if (selected[utm]) {
-						delete selected[utm];
+					if (state.selected && state.selected[utm]) {
+						this._removeSelected(utm, state);
+/*						delete selected[utm];
 						if (Object.keys(selected).length === 0) {
 							state.clickedUTM = null;
 							selected = null;
 							state.rollClickedFlag = false;
 							L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
-						}
+						}*/
 					} else {
-						selected[utm] = true;
 						state.clickedUTM = utm;
+						this._addSelected(utm, state);
+/*						selected[utm] = true;
 						delete state.dInterval;
 						state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
 						if (!state.rollClickedFlag && Object.keys(selected).length > 1) {
@@ -815,10 +887,10 @@
 							this._chkRollClickedFlag(state);
 							// L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
 							// L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
-						}
+						}*/
 					}
 				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
-					selected = null;
+					state.selected = null;
 					state.rollClickedFlag = false;
 					L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
 					delete state.dInterval;
@@ -830,7 +902,7 @@
 						state.clickedUTM = null;
 					}
 				}
-				state.selected = selected;
+				// state.selected = selected;
 				state.skipUnClicked = state.clickedUTM ? true : false;
 				state.gmxLayer.repaint();
 				this._chkScrollChange();
@@ -1246,32 +1318,17 @@
         },
         loadState: function(state, map) {
 			if (state.dataSources) {
+				if (state.currentTab) {
+					currentDmIDPermalink = state.currentTab;
+					//timeLineControl.setCurrentTab(state.currentTab);
+				}
 				var layersByID = nsGmx.gmxMap.layersByID;
 				state.dataSources.forEach(function (it) {
 					var gmxLayer = layersByID[it.layerID];
 					if (gmxLayer) {
 						timeLineControl.addLayer(gmxLayer, it);
-						// var data = getDataSource(gmxLayer);
-						// if (data) {
-							// data.oInterval = {
-								// beginDate: new Date(it.oInterval.beginDate),
-								// endDate: new Date(it.oInterval.endDate)
-							// };
-							// if (it.dInterval) {
-								// data.dInterval = {
-									// beginDate: new Date(it.dInterval.beginDate),
-									// endDate: new Date(it.dInterval.endDate)
-								// };
-							// }
-							// data.selected = it.selected;
-							// timeLineControl.addDataSource(data);
-							// gmxLayer.addLayerFilter(filter.bind(gmxLayer), {type: 'screen', id: pluginName});
-						// }
 					}
 				});
-				if (state.currentTab) {
-					timeLineControl.setCurrentTab(state.currentTab);
-				}
 			}
         },
         saveState: function() {
@@ -1283,28 +1340,38 @@
                 gmxTimeline = gmxControlsManager.get('gmxTimeline');
 
 			gmxControlsManager.remove(gmxTimeline);
-        }
+        },
+        getPluginPath: function() {
+		}
     };
 
     if (window.gmxCore) {
 		window.gmxCore.addModule(pluginName, publicInterface, {
-			css: 'L.Control.gmxTimeLine.css',
-			init: function(module, path) {
-				var filePrefix = path + timeLinePrefix + timeLineType,
-					def = $.Deferred();
-				gmxCore.loadScriptWithCheck([
-					{
-						check: function(){ return window.links; },
-						script: filePrefix + '.js?v2',
-						css: filePrefix + '.css?v2'
-					}
-				]).done(function() {
-					def.resolve();
-				});
+			// css: 'L.Control.gmxTimeLine.css'
+			// ,
+			// init: function(module, path) {
+				// var filePrefix = path + timeLinePrefix + timeLineType,
+					// def = $.Deferred();
+				// gmxCore.loadScriptWithCheck([
+					// {
+						// check: function(){ return window.links; },
+						// script: filePrefix + '.js',
+						// css: filePrefix + '.css'
+					// }
+				// ]).done(function() {
+					// def.resolve();
+				// });
 				
-				return def;
-			}
+				// return def;
+			// }
 		});
+		var path = gmxCore.getModulePath('gmxTimeLine'),
+			timeLinePath = path + timeLinePrefix + timeLineType;
+		filesToLoad = [
+			timeLinePath + '.js',
+			timeLinePath + '.css',
+			path + 'L.Control.gmxTimeLine.css'
+		];
 	} else {
 		window.nsGmx[pluginName] = publicInterface;
 	}
