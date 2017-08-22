@@ -146,7 +146,7 @@
 			// modeBbox: 'thirdpart',		// screen, center, thirdpart
 			centerBuffer: 10,		// буфер центра в пикселях
 			groups: false,
-			moveable: false
+			moveable: true
         },
 
 		saveState: function() {
@@ -686,6 +686,7 @@
 					.addLayerFilter(function (it) {
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
+// console.log('addLayerFilter', opt.name, it);
 
 						if (state.skipUnClicked) {
 							return state.clickedUTM === dt;
@@ -706,8 +707,8 @@
 						return L.gmxUtil.requestLink(href);
 					});
 				}
-				Promise.all(promisesArr).then(function() {
-// console.log('Promise', arguments);
+				Promise.all(promisesArr || []).then(function() {
+//console.log('Promise', arguments);
 					this.addDataSource(data);
 					if (currentDmIDPermalink) {
 						this.setCurrentTab(currentDmIDPermalink);
