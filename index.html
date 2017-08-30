@@ -27,6 +27,7 @@
     </style>
 
 	<link rel="stylesheet" href="http://www.kosmosnimki.ru/lib/geomixer/geomixer.css" />
+	<script src="http://www.kosmosnimki.ru/lib/geomixer/polyfill-src.js?key=U92596WMIH"></script>
 	<script src="http://www.kosmosnimki.ru/lib/geomixer/geomixer-src.js?key=U92596WMIH"></script>
 
 	<link rel="stylesheet" href="http://maps.kosmosnimki.ru/api/plugins/timeline/2.9.1/timeline.css" />
@@ -44,7 +45,7 @@
         </div>
 	</div>
 	<script>
-		var map = L.map('map').setView([44, 50], 2);
+		var map = L.map('map').setView([53.366942995161345, 49.5758056640625], 10);
 
 		var osm = L.tileLayer('http://{s}.tile.osm.kosmosnimki.ru/kosmo/{z}/{x}/{y}.png', {
 			maxZoom: 18
@@ -71,7 +72,7 @@
 
 			hotSpotsGlobal.setDateInterval(beginDate, endDate);
 			control.addLayer(hotSpotsGlobal);
-			map.addLayer(hotSpotsGlobal);
+			//map.addLayer(hotSpotsGlobal);
 
 			var add = document.getElementsByClassName('add')[0],
 				view = document.getElementsByClassName('view')[0],

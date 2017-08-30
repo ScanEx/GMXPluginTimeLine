@@ -8,7 +8,7 @@
 		iconLayers,
 		timeClass,
 		timeLineType = 'timeline',	// vis timeline vis-timeline
-		timeLinePrefix = '../../timeline/' + (timeLineType === 'timeline' ? '2.9.1/' : '/'),
+		timeLinePrefix = '../../timeline/2.9.1/',
         pluginName = 'gmxTimeLine',
 		filesToLoad = null,
 		promisesArr = null,
@@ -18,7 +18,10 @@
 		ns = {},
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
-		translate = {},
+		translate = {
+			modeSelectedOff: 'By all',
+			modeSelectedOn: 'By selected'
+		},
 		currentLayerID,
 		currentDmID,
 		currentDmIDPermalink,
@@ -35,8 +38,13 @@
 						timeKeyNum = timeColumnName ? dm.tileAttributeIndexes[timeColumnName] : null,
 						dInterval = gmxLayer.getDateInterval(),
 						opt = gmxLayer.getGmxProperties(),
-						type = (opt.GeometryType || 'point').toLowerCase();
+						type = (opt.GeometryType || 'point').toLowerCase(),
+						oneDay = 1000 * 60 * 60 * 24;
 
+					dInterval = {
+						beginDate: new Date(opt.DateBeginUTC * 1000 - oneDay),
+						endDate: new Date((1 + opt.DateEndUTC) * 1000 + oneDay)
+					};
 					if (!dInterval.beginDate || !dInterval.endDate) {
 						var cInterval;
 						if (calendar) {
@@ -146,7 +154,7 @@
 			// modeBbox: 'thirdpart',		// screen, center, thirdpart
 			centerBuffer: 10,		// буфер центра в пикселях
 			groups: false,
-			moveable: true
+			moveable: false
         },
 
 		saveState: function() {
@@ -367,7 +375,7 @@
 
 		_redrawTimeline: function () {
 			var count = 0,
-				type = timeLineType === 'timeline' ? 'dot' : 'point',
+				type = 'dot',
 				selected = [],
 				res = [],
 				needGroup = this.options.groups,
@@ -377,9 +385,10 @@
 				dInterval = data.dInterval || data.oInterval,
 				beginDate = dInterval.beginDate.valueOf() / 1000,
 				endDate = dInterval.endDate.valueOf() / 1000,
-				clickedUTM = String(data.clickedUTM),
+				clickedUTM = String(data.clickedUTM || ''),
 				dSelected = data.selected || {},
-				clickIdCount = 0;
+				clickIdCount = 0,
+				maxUTM = 0;
 
 			for (var utm in data.items) {
 				var start = new Date(utm * 1000 + tzm),
@@ -403,6 +412,9 @@
 				groupInterval[0] = Math.min(start, groupInterval[0]);
 				groupInterval[1] = Math.max(start, groupInterval[1]);
 				var className = '';
+				if (utm > maxUTM) {
+					maxUTM = utm;
+				}
 				if (clickedUTM === utm) {
 					className = 'item-clicked';
 					clickIdCount = item.items;
@@ -417,6 +429,10 @@
 				res.push(item);
 				count++;
 			}
+			if (!clickedUTM && maxUTM) {
+				data.clickedUTM = Number(maxUTM);
+				data.skipUnClicked = true;
+			}
 			if (count && needGroup) {
 				res.push({id: 'background_' + currentDmID, start: groupInterval[0], end: groupInterval[1], type: 'background', className: 'negative',group:currentDmID});
 				count++;
@@ -428,18 +444,28 @@
 			this._setWindow(data.oInterval);
 			this._timeline.setData(res);
 // console.log('_redrawTimeline', data.layerID, res, count, data.oInterval);
+			if (!clickedUTM) {
+				this.setCommand('Right');
+			}
 			
 			// if (selected.length) {
 				// this._timeline.setSelection(selected);
 			// } else {
 				this._chkSelection(data);
 			// }
-			var clickId = this._containers.clickId;
+			
+			var cont = this._containers,
+				clickCalendar = cont.clickCalendar;
 			if (clickIdCount) {
-				clickId.innerHTML = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)) + ' (' + clickIdCount + ')';
-				L.DomUtil.removeClass(clickId, 'gmx-hidden');
+				var tm = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)),
+					arr = tm.split(' '),
+					arr1 = arr[1].split(':');
+				// clickId.innerHTML = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)) + ' (' + clickIdCount + ')';
+				cont.clickId.innerHTML = arr[0];
+				cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
+				L.DomUtil.removeClass(clickCalendar, 'gmx-hidden');
 			} else {
-				L.DomUtil.addClass(clickId, 'gmx-hidden');
+				L.DomUtil.addClass(clickCalendar, 'gmx-hidden');
 			}
 		},
 
@@ -477,17 +503,10 @@
 		},
 
 		_setEvents: function (tl) {
-			if (timeLineType === 'timeline') {
-				var events = L.gmx.timeline.events;
-				events.addListener(tl, 'rangechange', this._rangechanged.bind(this));
-				events.addListener(tl, 'rangechanged', this._rangechanged.bind(this));
-				events.addListener(tl, 'select', this._clickOnTimeline.bind(this));
-			} else {
-				tl
-					.on('rangechange', this._rangechanged.bind(this))
-					.on('rangechanged', this._rangechanged.bind(this))
-					.on('click', this._clickOnTimeline.bind(this));
-			}
+			var events = L.gmx.timeline.events;
+			events.addListener(tl, 'rangechange', this._rangechanged.bind(this));
+			events.addListener(tl, 'rangechanged', this._rangechanged.bind(this));
+			events.addListener(tl, 'select', this._clickOnTimeline.bind(this));
 		},
 
 		_rangechange: function (ev) {
@@ -531,10 +550,7 @@
 			this._map.fire('gmxTimeLine.currentTabChanged', {currentTab: layerID});
 			this._bboxUpdate();
 			if (this._timeline) {
-				var oInterval = state.oInterval;
-				if (timeLineType === 'timeline') {
-					this._setWindow(oInterval);
-				}
+				this._setWindow(state.oInterval);
 			}
 			this._setDateScroll();
 
@@ -556,31 +572,19 @@
 			this._state = {
 				data: {},
 				timeLineOptions: {
-					vis: {
-						moment: function(date) {
-							return vis.moment.duration ? vis.moment(date).utc() : null;
-						},
-						moveable: this.options.moveable || false,
-						stack: false,
-						multiselect: true,
-						orientation: 'top',
-						rollingMode: false
-					},
-					timeline: {
-						locale: options.locale,
-						zoomable: this.options.moveable || false,
-						moveable: this.options.moveable || false,
-						timeChangeable: false,
-						// unselectable: false,
-						animateZoom: false,
-						autoHeight: false,
-						stackEvents: false,
-						axisOnTop: true,
-						'box.align': 'center',
-						zoomMin: 1000 * 60 * 60 * 10,
-						width:  '100%',
-						height: '81px'
-					}
+					locale: options.locale,
+					zoomable: this.options.moveable || false,
+					moveable: this.options.moveable || false,
+					timeChangeable: false,
+					// unselectable: false,
+					animateZoom: false,
+					autoHeight: false,
+					stackEvents: false,
+					axisOnTop: true,
+					'box.align': 'center',
+					zoomMin: 1000 * 60 * 60 * 10,
+					width:  '100%',
+					height: '81px'
 				},
 				zeroDate: zeroDate.getTime(),
 				maxDate: new Date(2980, 0, 1).getTime()
@@ -596,7 +600,7 @@
 						content: state.title,
 						layerID: state.layerID
 					}] : null,
-					options = this._state.timeLineOptions[timeLineType];
+					options = this._state.timeLineOptions;
 
 				if (state.oInterval) {
 					options.start = state.oInterval.beginDate;
@@ -604,19 +608,11 @@
 				}
 				this._containers.vis.innerHTML = '';
 
-				var _this = this;
-				if (timeLineType === 'timeline') {
-					this._timeline = new L.gmx.timeline.Timeline(this._containers.vis, options);
-					var c = this._timeline.getCurrentTime();
-					this._timeline.setCurrentTime(new Date(c.valueOf() + c.getTimezoneOffset() * 60000));
-					this._timeline.draw(data);
-				} else {
-					this._items = new vis.DataSet(data);
-					this._timeline = new vis.Timeline(this._containers.vis, this._items, groups, options);
-				}
+				this._timeline = new L.gmx.timeline.Timeline(this._containers.vis, options);
+				var c = this._timeline.getCurrentTime();
+				this._timeline.setCurrentTime(new Date(c.valueOf() + c.getTimezoneOffset() * 60000));
+				this._timeline.draw(data);
 				this._setEvents(this._timeline);
-			} else {
-				
 			}
 		},
 
@@ -626,8 +622,8 @@
 				data = getDataSource(gmxLayer);
 			if (data) {
 				gmxLayer
-					.removeLayerFilter({type: 'screen', id: pluginName})
-					.off('dateIntervalChanged', this._dateIntervalChanged, this);
+					.removeLayerFilter({type: 'screen', id: pluginName});
+					// .off('dateIntervalChanged', this._dateIntervalChanged, this);
 				var layersTab = this._containers.layersTab;
 				for (var i = 0, len = layersTab.children.length; i < len; i++) {
 					var li = layersTab.children[i];
@@ -637,12 +633,15 @@
 					}
 				}
 			}
+			if (this.options.moveable && calendar) { calendar.bindLayer(opt.name); }
 			return this;
 		},
 
 		addLayer: function (gmxLayer, options) {
 			var opt = gmxLayer.getGmxProperties(),
 				data = getDataSource(gmxLayer);
+			
+			if (this.options.moveable && calendar) { calendar.unbindLayer(opt.name); }
 			if (data) {
 				if (options) {
 					if (options.oInterval) {
@@ -673,8 +672,14 @@
 					}
 				}
 
+				if (this.options.moveable) {
+					gmxLayer.setDateInterval(data.oInterval.beginDate, data.oInterval.endDate);
+					data.uTimeStamp = [data.oInterval.beginDate.getTime()/1000, data.oInterval.endDate.getTime()/1000];
+					// data.clickedUTM = data.uTimeStamp[1];
+					data.skipUnClicked = true;
+				}
 				gmxLayer
-					.on('dateIntervalChanged', this._dateIntervalChanged, this)
+					// .on('dateIntervalChanged', this._dateIntervalChanged, this)
 					// .on('click', function (ev) {		// МихаП: убери выделение на таймлайне по клику на карте - лишнее пока
 						// var state = this._state.data[opt.name] || {},
 							// it = ev.gmx.target,
@@ -686,7 +691,6 @@
 					.addLayerFilter(function (it) {
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
-// console.log('addLayerFilter', opt.name, it);
 
 						if (state.skipUnClicked) {
 							return state.clickedUTM === dt;
@@ -708,7 +712,7 @@
 					});
 				}
 				Promise.all(promisesArr || []).then(function() {
-//console.log('Promise', arguments);
+// console.log('Promise', arguments);
 					this.addDataSource(data);
 					if (currentDmIDPermalink) {
 						this.setCurrentTab(currentDmIDPermalink);
@@ -717,7 +721,7 @@
 				}.bind(this));
 			}
 		},
-
+/*
 		_dateIntervalChanged: function (ev) {
 			var gmxLayer = ev.target,
 				opt = gmxLayer.getGmxProperties(),
@@ -738,7 +742,7 @@
 				}
 			}
 		},
-
+*/
 		_keydown: function (ev) {
 			if (!this._map || this._map.keyboard._focused) { return; }
 			this.setCommand(ev.key, ev.ctrlKey);
@@ -960,27 +964,82 @@
 
 			container.tabindex = '0';
 
-			var str = '<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>';
-			str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center gmx-hidden">' + this._addSvgIcon('center') + '</span><span class="clicked click-id gmx-hidden"></span><ul class="layers-tab"></ul></div>\
-			<div class="switch gmx-hidden"><div class="diamond"></div><div class="modeSelectedOff on" title=""></div><div class="modeSelectedOn" title=""></div></div>\
-			<div class="internal-container"><div class="w-scroll"><div class="g-scroll"></div><div class="c-scroll"><div class="c-borders"></div></div><div class="l-scroll"><div class="l-scroll-title gmx-hidden"></div></div><div class="r-scroll"><div class="r-scroll-title gmx-hidden"></div></div></div><div class="vis"></div></div></div>';
+// str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center gmx-hidden">' + this._addSvgIcon('center') + '</span><span class="clicked click-id gmx-hidden"></span><ul class="layers-tab"></ul></div>
+//<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>
+var str = '\
+<div class="vis-container">\
+	<div class="tabs"><ul class="layers-tab"></ul></div>\
+	<div class="internal-container">\
+		<div class="w-scroll">\
+			<div class="clicked el-left gmx-hidden"><div class="el-act">по1 всем</div><div class="el-pass">по избранным</div></div>\
+			<div class="el-center">\
+				<span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span>\
+				<span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span>\
+				&nbsp;&nbsp;\
+				<div class="el-act-cent-1">\
+					<span class="favorite"></span>\
+					<span class="line">|</span>\
+					<span class="remove"></span>\
+					<span class="line">|</span>\
+					<span class="trash"></span>\
+				</div>\
+				&nbsp;&nbsp;\
+				<div class="el-act-cent-2">\
+					<span class="calendar"></span>\
+					<span class="calendar-text">26.11.2017</span>\
+					<span class="line1">|</span>\
+					<span class="clock"></span>\
+					<span class="clock-text">00:00</span>\
+				</div>\
+				&nbsp;&nbsp;\
+				<div class="el-act-cent-3">\
+					<span class="cloud"></span>\
+					<span class="cloud-text">ДО 50%</span>\
+					&nbsp;&nbsp;\
+					<span class="arrow-small"></span>\
+				</div>\
+			</div>\
+			<div class="el-right">\
+				<span class="el-act-right-1">\
+					<span class="blue"><span class="link1"></span></span>\
+					<span class="line">|</span><span class="link"></span>\
+				</span>\
+				<span class="el-act-right-2"><span class="ques"></span></span>\
+				<span class="el-act-right-3"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
+			</div>\
+			<div class="g-scroll"></div>\
+			<div class="c-scroll">\
+				<div class="c-borders"></div>\
+			</div>\
+		</div>\
+		<div class="hr1"></div>\
+		<div class="hr2"></div>\
+		<div class="vis"></div>\
+	</div>\
+</div>';
+//			<div class="internal-container"><div class="vis"></div></div></div>';
 			container.innerHTML = str;
 			container._id = this.options.id;
 			this._map = map;
-			var lScroll = container.getElementsByClassName('l-scroll')[0],
-				lScrollTitle = container.getElementsByClassName('l-scroll-title')[0],
-				rScroll = container.getElementsByClassName('r-scroll')[0],
-				rScrollTitle = container.getElementsByClassName('r-scroll-title')[0],
-				cScroll = container.getElementsByClassName('c-scroll')[0],
-				wScroll = container.getElementsByClassName('w-scroll')[0],
-				clickLeft = container.getElementsByClassName('click-left')[0],
+			// var lScroll = container.getElementsByClassName('l-scroll')[0],
+				// lScrollTitle = container.getElementsByClassName('l-scroll-title')[0],
+				// rScroll = container.getElementsByClassName('r-scroll')[0],
+				// rScrollTitle = container.getElementsByClassName('r-scroll-title')[0],
+				// cScroll = container.getElementsByClassName('c-scroll')[0],
+				// wScroll = container.getElementsByClassName('w-scroll')[0],
+			var	clickLeft = container.getElementsByClassName('click-left')[0],
 				clickRight = container.getElementsByClassName('click-right')[0],
-				clickCenter = container.getElementsByClassName('click-center')[0],
-				clickId = container.getElementsByClassName('click-id')[0],
-				switchDiv = container.getElementsByClassName('switch')[0],
-				modeSelectedOn = container.getElementsByClassName('modeSelectedOn')[0],
-				modeSelectedOff = container.getElementsByClassName('modeSelectedOff')[0],
+				// clickCenter = container.getElementsByClassName('click-center')[0],
+				clickCalendar = container.getElementsByClassName('el-act-cent-2')[0],
+				clickId = container.getElementsByClassName('calendar-text')[0],
+				clickIdTime = container.getElementsByClassName('clock-text')[0],
+				switchDiv = container.getElementsByClassName('el-left')[0],
+				modeSelectedOn = container.getElementsByClassName('el-pass')[0],
+				modeSelectedOff = container.getElementsByClassName('el-act')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
+				favorite = container.getElementsByClassName('favorite')[0],
+				remove = container.getElementsByClassName('remove')[0],
+				trash = container.getElementsByClassName('trash')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
 				visContainer = container.getElementsByClassName('vis-container')[0],
 				internalContainer = container.getElementsByClassName('internal-container')[0],
@@ -990,14 +1049,17 @@
 				vis: container.getElementsByClassName('vis')[0],
 				internalContainer: internalContainer,
 				layersTab: layersTab,
+				clickCalendar: clickCalendar,
 				clickId: clickId,
+				clickIdTime: clickIdTime,
 				switchDiv: switchDiv,
 				modeSelectedOff: modeSelectedOff,
 				modeSelectedOn: modeSelectedOn,
-				hideButton: hideButton,
-				lScroll: lScroll,
-				rScroll: rScroll,
-				cScroll: cScroll
+				hideButton: hideButton
+				// ,
+				// lScroll: lScroll,
+				// rScroll: rScroll,
+				// cScroll: cScroll
 			};
 			modeSelectedOff.innerHTML = translate.modeSelectedOff;
 			modeSelectedOn.innerHTML = translate.modeSelectedOn;
@@ -1018,8 +1080,18 @@
 				.on(container, 'click', this._setFocuse, this);
 
 			L.DomEvent
-				.on(clickCenter, 'click', function (ev) {
-					// this.setCommand(' ');
+				.on(favorite, 'click', function (ev) {
+					this.setCommand('Up', true);
+				}, this)
+				.on(remove, 'click', function (ev) {
+					this.setCommand('Down', true);
+				}, this)
+				.on(trash, 'click', function (ev) {
+					// this.setCommand('Down', true);
+					var state = this.getCurrentState();
+					state.selected = null;
+					//state.rollClickedFlag = false;
+					this._redrawTimeline();
 				}, this)
 				.on(clickLeft, 'mousemove', stop)
 				.on(clickLeft, 'click', function (ev) {
@@ -1065,32 +1137,34 @@
 					hideButton.style.top = '4px';
 				}
 
-			L.DomEvent
-				.on(lScroll, 'mousemove', stop)
-				.on(lScroll, 'mouseover', function (ev) {
-					var state = this.getCurrentState(),
-						dt = (state.dInterval || state.oInterval).beginDate,
-						str = this._timeline.getUTCTimeString(dt);
-					lScroll.title = str;
-				}, this);
+			// L.DomEvent
+				// .on(lScroll, 'mousemove', stop)
+				// .on(lScroll, 'mouseover', function (ev) {
+					// var state = this.getCurrentState(),
+						// dt = (state.dInterval || state.oInterval).beginDate,
+						// str = this._timeline.getUTCTimeString(dt);
+					// lScroll.title = str;
+				// }, this);
 
-			L.DomEvent
-				.on(rScroll, 'mouseover', function (ev) {
-					var state = this.getCurrentState(),
-						dt = (state.dInterval || state.oInterval).endDate,
-						str = this._timeline.getUTCTimeString(new Date(dt - 1));
-					rScroll.title = str;
-				}, this);
+			// L.DomEvent
+				// .on(rScroll, 'mouseover', function (ev) {
+					// var state = this.getCurrentState(),
+						// dt = (state.dInterval || state.oInterval).endDate,
+						// str = this._timeline.getUTCTimeString(new Date(dt - 1));
+					// rScroll.title = str;
+				// }, this);
 
-			L.DomEvent
-				.on(layersTab, 'click', function (ev) {
-					var target = ev.target,
-						_layerID = target._layerID || target.parentNode._layerID;
-					this._setCurrentTab(_layerID);
-				}, this);
+			// L.DomEvent
+				// .on(layersTab, 'click', function (ev) {
+					// var target = ev.target,
+						// _layerID = target._layerID || target.parentNode._layerID;
+					// this._setCurrentTab(_layerID);
+				// }, this);
 
-			L.DomUtil.setPosition(lScroll, new L.Point(0, 0));
-			L.DomUtil.setPosition(rScroll, new L.Point(0, 0));
+			// L.DomUtil.setPosition(lScroll, new L.Point(0, 0));
+			// L.DomUtil.setPosition(rScroll, new L.Point(0, 0));
+			var _this = this;
+/*			
 			var _this = this,
 				dragend = function () {
 					var state = _this.getCurrentState(),
@@ -1115,9 +1189,11 @@
 						_this._chkSelection(state);
 					}
 				};
-			this._dIntervalUpdate = dragend;
+			// this._dIntervalUpdate = dragend;
+*/
 			this._chkScrollChange = function (state) {
 				state = state || _this.getCurrentState();
+/*				
 				var disabled = 'gmx-disabled';
 				if (state && state.clickedUTM) {
 					L.DomUtil.addClass(lScroll, disabled);
@@ -1130,10 +1206,12 @@
 					L.DomUtil.addClass(clickLeft, disabled);
 					L.DomUtil.addClass(clickRight, disabled);
 				}
+*/
 			};
 			this._setDateScroll = function () {
 				var state = _this.getCurrentState();
 				if (state) {
+/*					
 					var oInterval = state.oInterval,
 						// dInterval = oInterval,
 						dInterval = state.dInterval || oInterval,
@@ -1150,9 +1228,11 @@
 					L.DomUtil.setPosition(cScroll, point);
 					L.DomUtil.setPosition(rScroll, new L.Point(x2, 0));
 					cScroll.style.width = (ww + x2 - x1 - 24) + 'px';
+*/
 					this._chkSelection(state);
 				}
 			};
+/*
 			(new L.Draggable(lScroll))
 				.on('dragend ', dragend, this)
 				.on('drag', function (ev) {
@@ -1181,7 +1261,7 @@
 					cScroll.style.width = (x1 + x - 24) + 'px';
 				})
 				.enable();
-
+*/
 			if (map.gmxControlsManager) {
 				map.gmxControlsManager.add(this);
 			}
@@ -1212,14 +1292,14 @@
 					nsGmx = window.nsGmx,
 					layersByID = nsGmx.gmxMap.layersByID;
 
-				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : params.moveable; }
+				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : true; }
 				// if (params.modeBbox) { options.modeBbox = params.modeBbox; }
-				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : params.rollClicked; }
+				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : true; }
 
 				if (options.locale === 'ru') {
 					translate = {
 						modeSelectedOff: 'По всем',
-						modeSelectedOn: 'По выделенным'
+						modeSelectedOn: 'По избранным'
 					};
 				} else {
 					translate = {
@@ -1228,8 +1308,8 @@
 					};
 				}
 
-				if (nsGmx.widgets && nsGmx.commonCalendar) {
-					calendar = nsGmx.commonCalendar;
+				if (nsGmx.widgets && nsGmx.widgets.commonCalendar) {
+					calendar = nsGmx.widgets.commonCalendar;
 				}
 				iconLayers = map.gmxControlsManager.get('iconLayers');
 
@@ -1239,11 +1319,11 @@
 							d2 = ev.endDate,
 							gmxLayer = layersByID[ev.layerID];
 
-						if (map.hasLayer(gmxLayer) && calendar) {
-							calendar.setDateInterval(d1, d2, gmxLayer);
-						} else {
+						// if (map.hasLayer(gmxLayer) && calendar) {
+							// calendar.setDateInterval(d1, d2, gmxLayer);
+						// } else {
 							gmxLayer.setDateInterval(d1, d2);
-						}
+						// }
 					})
 					.on('click', function (ev) {
 						layersByID[ev.layerID].repaint();
@@ -1351,7 +1431,7 @@
 			// css: 'L.Control.gmxTimeLine.css'
 			// ,
 			// init: function(module, path) {
-				// var filePrefix = path + timeLinePrefix + timeLineType,
+				// var filePrefix = path + timeLinePrefix + 'timeline',
 					// def = $.Deferred();
 				// gmxCore.loadScriptWithCheck([
 					// {
@@ -1367,7 +1447,7 @@
 			// }
 		});
 		var path = gmxCore.getModulePath('gmxTimeLine'),
-			timeLinePath = path + timeLinePrefix + timeLineType;
+			timeLinePath = path + timeLinePrefix + 'timeline';
 		filesToLoad = [
 			timeLinePath + '.js',
 			timeLinePath + '.css',
