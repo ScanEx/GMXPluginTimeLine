@@ -977,23 +977,23 @@ var str = '\
 				<span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span>\
 				&nbsp;&nbsp;\
 				<div class="el-act-cent-1">\
-					<span class="favorite"></span>\
+					<span class="favorite">' + this._addSvgIcon('tl-favorites') + '</span>\
 					<span class="line">|</span>\
-					<span class="remove"></span>\
+					<span class="remove">' + this._addSvgIcon('tl-remove') + '</span>\
 					<span class="line">|</span>\
-					<span class="trash"></span>\
+					<span class="trash">' + this._addSvgIcon('tl-remove') + '</span>\
 				</div>\
 				&nbsp;&nbsp;\
 				<div class="el-act-cent-2">\
-					<span class="calendar"></span>\
+					<span class="calendar">' + this._addSvgIcon('tl-date') + '</span>\
 					<span class="calendar-text">26.11.2017</span>\
 					<span class="line1">|</span>\
-					<span class="clock"></span>\
+					<span class="clock">' + this._addSvgIcon('tl-time') + '</span>\
 					<span class="clock-text">00:00</span>\
 				</div>\
 				&nbsp;&nbsp;\
 				<div class="el-act-cent-3">\
-					<span class="cloud"></span>\
+					<span class="cloud">' + this._addSvgIcon('tl-cloud-cover') + '</span>\
 					<span class="cloud-text">ДО 50%</span>\
 					&nbsp;&nbsp;\
 					<span class="arrow-small"></span>\
@@ -1001,10 +1001,10 @@ var str = '\
 			</div>\
 			<div class="el-right">\
 				<span class="el-act-right-1">\
-					<span class="blue"><span class="link1"></span></span>\
-					<span class="line">|</span><span class="link"></span>\
+					<span class="blue"><span class="link1">' + this._addSvgIcon('tl-different-interval') + '</span></span>\
+					<span class="line">|</span><span class="link">' + this._addSvgIcon('tl-single-interval') + '</span>\
 				</span>\
-				<span class="el-act-right-2"><span class="ques"></span></span>\
+				<span class="el-act-right-2"><span class="ques">' + this._addSvgIcon('tl-help') + '</span></span>\
 				<span class="el-act-right-3"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
 			</div>\
 			<div class="g-scroll"></div>\
