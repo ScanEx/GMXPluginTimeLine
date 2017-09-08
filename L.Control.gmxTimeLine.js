@@ -387,7 +387,8 @@
 				endDate = dInterval.endDate.valueOf() / 1000,
 				clickedUTM = String(data.clickedUTM || ''),
 				dSelected = data.selected || {},
-				clickIdCount = 0,
+				// clickIdCount = 0,
+				// maxUTMitem,
 				maxUTM = 0;
 
 			for (var utm in data.items) {
@@ -414,10 +415,12 @@
 				var className = '';
 				if (utm > maxUTM) {
 					maxUTM = utm;
+					// maxUTMitem = item;
 				}
 				if (clickedUTM === utm) {
 					className = 'item-clicked';
-					clickIdCount = item.items;
+					// clickIdCount = item;
+					// clickIdCount = res.length;
 				}
 				
 				if (dSelected[utm]) {
@@ -432,6 +435,7 @@
 			if (!clickedUTM && maxUTM) {
 				data.clickedUTM = Number(maxUTM);
 				data.skipUnClicked = true;
+				//maxUTMitem.className = 'item-clicked';
 			}
 			if (count && needGroup) {
 				res.push({id: 'background_' + currentDmID, start: groupInterval[0], end: groupInterval[1], type: 'background', className: 'negative',group:currentDmID});
@@ -456,7 +460,7 @@
 			
 			var cont = this._containers,
 				clickCalendar = cont.clickCalendar;
-			if (clickIdCount) {
+			if (data.clickedUTM) {
 				var tm = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)),
 					arr = tm.split(' '),
 					arr1 = arr[1].split(':');
@@ -988,8 +992,6 @@ var str = '\
 				<div class="el-act-cent-1">\
 					<span class="favorite">' + this._addSvgIcon('tl-favorites') + '</span>\
 					<span class="line">|</span>\
-					<span class="remove">' + this._addSvgIcon('tl-remove') + '</span>\
-					<span class="line">|</span>\
 					<span class="trash">' + this._addSvgIcon('tl-trash') + '</span>\
 				</div>\
 				&nbsp;&nbsp;\
@@ -1055,7 +1057,7 @@ var str = '\
 				modeSelectedOff = container.getElementsByClassName('el-act')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
 				favorite = container.getElementsByClassName('favorite')[0],
-				remove = container.getElementsByClassName('remove')[0],
+				// remove = container.getElementsByClassName('remove')[0],
 				trash = container.getElementsByClassName('trash')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
 				visContainer = container.getElementsByClassName('vis-container')[0],
@@ -1102,14 +1104,12 @@ var str = '\
 					var state = this.getCurrentState();
 					this.setCommand(state.selected && state.selected[state.clickedUTM] ? 'Down' : 'Up', true);
 				}, this)
-				.on(remove, 'click', function (ev) {
-					this.setCommand('Down', true);
-				}, this)
 				.on(trash, 'click', function (ev) {
-					var state = this.getCurrentState();
-					state.selected = null;
-					L.DomUtil.addClass(modeSelectedOff, 'on');
-					L.DomUtil.removeClass(modeSelectedOn, 'on');
+					this._removeSelected();
+					// var state = this.getCurrentState();
+					// state.selected = null;
+					// L.DomUtil.addClass(modeSelectedOff, 'on');
+					// L.DomUtil.removeClass(modeSelectedOn, 'on');
 					this._redrawTimeline();
 				}, this)
 				.on(clickLeft, 'mousemove', stop)
