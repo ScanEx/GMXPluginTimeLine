@@ -787,6 +787,7 @@
 						setClickedUTMFlag = false;
 					} else if (key === 's') {
 						state.rollClickedFlag = !state.rollClickedFlag;
+						this._chkRollClickedFlag(state);
 					}
 					if (setClickedUTMFlag) {
 						var clickedUTM = String(state.clickedUTM),
@@ -812,6 +813,7 @@
 						}
 						if (arr[i]) {
 							state.clickedUTM = Number(arr[i].utm);
+			this._setClassName(state.selected && state.selected[state.clickedUTM], this._containers.favorite, 'on');
 						}
 					}
 					state.needResort = [];
@@ -827,25 +829,43 @@
 			state.gmxLayer.getDataManager().checkObserver(observer);
 		},
 
-		_chkRollClickedFlag: function (state) {
-			if (state.rollClickedFlag) {
-				L.DomUtil.removeClass(this._containers.modeSelectedOff, 'on');
-				L.DomUtil.addClass(this._containers.modeSelectedOn, 'on');
-			} else {
-				L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
-				L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
+		_setClassName: function (flag, el, name) {
+			var hasClass = L.DomUtil.hasClass(el, name);
+			if (flag && !hasClass) {
+				L.DomUtil.addClass(el, name);
+			} else if (!flag && hasClass) {
+				L.DomUtil.removeClass(el, name);
 			}
+		},
+
+		_chkRollClickedFlag: function (state) {
+			state = state || this.getCurrentState();
+			var len = state.selected ? Object.keys(state.selected).length : 0;
+			if (len < 2) {
+				state.rollClickedFlag = false;
+				this._setClassName(true, this._containers.switchDiv, 'gmx-hidden');
+			} else {
+				this._setClassName(false, this._containers.switchDiv, 'gmx-hidden');
+			}
+			this._setClassName(len > 0 && state.selected[state.clickedUTM], this._containers.favorite, 'on');
+			this._setClassName(!state.rollClickedFlag, this._containers.modeSelectedOff, 'on');
+			this._setClassName(state.rollClickedFlag, this._containers.modeSelectedOn, 'on');
 		},
 
 		_removeSelected: function (utm, state) {
 			state = state || this.getCurrentState();
-			delete state.selected[utm];
-			if (!state.selected || Object.keys(state.selected).length === 0) {
-				state.clickedUTM = null;
+			if (utm) {
+				delete state.selected[utm];
+			} else {
 				state.selected = null;
-				state.rollClickedFlag = false;
-				L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
 			}
+			this._chkRollClickedFlag(state);
+			// if (!state.selected || Object.keys(state.selected).length === 0) {
+				// state.clickedUTM = null;
+				// state.selected = null;
+				// state.rollClickedFlag = false;
+				// L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
+			// }
 		},
 
 		_addSelected: function (utm, state) {
@@ -854,10 +874,11 @@
 			state.selected[utm] = true;
 			delete state.dInterval;
 			state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
-			if (!state.rollClickedFlag && Object.keys(state.selected).length > 1) {
-				L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
-				this._chkRollClickedFlag(state);
-			}
+			this._chkRollClickedFlag(state);
+			// if (!state.rollClickedFlag && Object.keys(state.selected).length > 1) {
+				// L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
+				// this._chkRollClickedFlag(state);
+			// }
 		},
 
 		_clickOnTimeline: function (ev) {
@@ -874,27 +895,15 @@
 				if (ctrlKey) {
 					if (state.selected && state.selected[utm]) {
 						this._removeSelected(utm, state);
-/*						delete selected[utm];
-						if (Object.keys(selected).length === 0) {
-							state.clickedUTM = null;
-							selected = null;
-							state.rollClickedFlag = false;
-							L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
-						}*/
 					} else {
 						state.clickedUTM = utm;
 						this._addSelected(utm, state);
-/*						selected[utm] = true;
-						delete state.dInterval;
-						state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
-						if (!state.rollClickedFlag && Object.keys(selected).length > 1) {
-							L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
-							this._chkRollClickedFlag(state);
-							// L.DomUtil.addClass(this._containers.modeSelectedOff, 'on');
-							// L.DomUtil.removeClass(this._containers.modeSelectedOn, 'on');
-						}*/
 					}
 				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
+/*					delete state.dInterval;
+					state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
+					state.rollClickedFlag = false;
+					this._removeSelected(null, state);*/
 					state.selected = null;
 					state.rollClickedFlag = false;
 					L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
@@ -981,7 +990,7 @@ var str = '\
 					<span class="line">|</span>\
 					<span class="remove">' + this._addSvgIcon('tl-remove') + '</span>\
 					<span class="line">|</span>\
-					<span class="trash">' + this._addSvgIcon('tl-remove') + '</span>\
+					<span class="trash">' + this._addSvgIcon('tl-trash') + '</span>\
 				</div>\
 				&nbsp;&nbsp;\
 				<div class="el-act-cent-2">\
@@ -994,7 +1003,15 @@ var str = '\
 				&nbsp;&nbsp;\
 				<div class="el-act-cent-3">\
 					<span class="cloud">' + this._addSvgIcon('tl-cloud-cover') + '</span>\
-					<span class="cloud-text">ДО 50%</span>\
+					<span class="cloud-text">\
+						<select class="cloud-select">\
+							<option value="5">до 5%</option>\
+							<option value="10">до 10%</option>\
+							<option value="20">до 20%</option>\
+							<option value="50" selected>до 50%</option>\
+							<option value="100">до 100%</option>\
+						</select>\
+					</span>\
 					&nbsp;&nbsp;\
 					<span class="arrow-small"></span>\
 				</div>\
@@ -1052,6 +1069,7 @@ var str = '\
 				clickCalendar: clickCalendar,
 				clickId: clickId,
 				clickIdTime: clickIdTime,
+				favorite: favorite,
 				switchDiv: switchDiv,
 				modeSelectedOff: modeSelectedOff,
 				modeSelectedOn: modeSelectedOn,
@@ -1080,17 +1098,18 @@ var str = '\
 				.on(container, 'click', this._setFocuse, this);
 
 			L.DomEvent
-				.on(favorite, 'click', function (ev) {
-					this.setCommand('Up', true);
+				.on(favorite, 'click', function () {
+					var state = this.getCurrentState();
+					this.setCommand(state.selected && state.selected[state.clickedUTM] ? 'Down' : 'Up', true);
 				}, this)
 				.on(remove, 'click', function (ev) {
 					this.setCommand('Down', true);
 				}, this)
 				.on(trash, 'click', function (ev) {
-					// this.setCommand('Down', true);
 					var state = this.getCurrentState();
 					state.selected = null;
-					//state.rollClickedFlag = false;
+					L.DomUtil.addClass(modeSelectedOff, 'on');
+					L.DomUtil.removeClass(modeSelectedOn, 'on');
 					this._redrawTimeline();
 				}, this)
 				.on(clickLeft, 'mousemove', stop)

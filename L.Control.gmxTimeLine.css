@@ -198,6 +198,7 @@
 	padding-left: 10px;
 	padding-right: 10px;
 }
+/*
 .gmxTimeline .w-scroll .l-scroll, .gmxTimeline .w-scroll .r-scroll{
 	cursor: col-resize;
     position: absolute;
@@ -208,6 +209,10 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     border-radius: 50%;
     display: none;
+}
+*/
+.gmxTimeline .w-scroll .on {
+    fill: #da5d40;
 }
 .gmxTimeline .w-scroll .l-scroll {
     margin-left: -6px;
@@ -400,11 +405,13 @@
     color:red;
     opacity: 0.3;
 }
+.gmxTimeline .w-scroll {
+    fill: #666;
+}
 .gmxTimeline svg {
     height: 22px;
     width: 22px;
     pointer-events: none;
-    fill: #666;
 }
 
 #transparency-eye-off {
