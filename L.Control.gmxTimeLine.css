@@ -4,7 +4,6 @@
     font-family: Open Sans;
     src: url(open.ttf);
 }
-
 .gmxTimeline.leaflet-control {
     position: absolute;
     left: 0px;
@@ -148,7 +147,7 @@
 	padding-right: 10px;
 }
 
-.gmxTimeline .favorite .on {
+.gmxTimeline .favorite.on {
     fill: #da5d40;
 }
 
@@ -219,11 +218,6 @@
 
 .gmxTimeline .tabs .clicked:hover {
     background-color: lightgray;
-}
-
-.gmx-disabled {
-	pointer-events: none;
-    opacity: 0.9;
 }
 
 .gmxTimeline .clicked {
@@ -878,3 +872,12 @@ span.link {
     position: relative;
 }
 */
+
+.gmxTimeline .gmx-hidden {
+    display: none;
+}
+
+.gmxTimeline .disabled {
+	pointer-events: none;
+    opacity: 0.5;
+}

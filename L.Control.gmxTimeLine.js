@@ -463,16 +463,18 @@
 			
 			var cont = this._containers,
 				clickCalendar = cont.clickCalendar;
-			if (data.clickedUTM) {
+			if (data.clickedUTM && maxUTM) {
 				var tm = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)),
 					arr = tm.split(' '),
 					arr1 = arr[1].split(':');
 				// clickId.innerHTML = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)) + ' (' + clickIdCount + ')';
 				cont.clickId.innerHTML = arr[0];
 				cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
-				L.DomUtil.removeClass(clickCalendar, 'gmx-hidden');
+				L.DomUtil.removeClass(clickCalendar, 'disabled');
 			} else {
-				L.DomUtil.addClass(clickCalendar, 'gmx-hidden');
+				cont.clickId.innerHTML = '--.--.----';
+				cont.clickIdTime.innerHTML = '--:--';
+				L.DomUtil.addClass(clickCalendar, 'disabled');
 			}
 		},
 
@@ -574,7 +576,7 @@
 			this._setDateScroll();
 
 			if (Object.keys(state.selected || {}).length > 1) {
-				L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
+				L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
 			}
 			if (state.clouds) {
 				L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
@@ -868,9 +870,9 @@
 			var len = state.selected ? Object.keys(state.selected).length : 0;
 			if (len < 2) {
 				state.rollClickedFlag = false;
-				this._setClassName(true, this._containers.switchDiv, 'gmx-hidden');
+				this._setClassName(true, this._containers.switchDiv, 'disabled');
 			} else {
-				this._setClassName(false, this._containers.switchDiv, 'gmx-hidden');
+				this._setClassName(false, this._containers.switchDiv, 'disabled');
 			}
 			this._setClassName(len > 0 && state.selected[state.clickedUTM], this._containers.favorite, 'on');
 			this._setClassName(!state.rollClickedFlag, this._containers.modeSelectedOff, 'on');
@@ -931,7 +933,7 @@
 					this._removeSelected(null, state);*/
 					state.selected = null;
 					state.rollClickedFlag = false;
-					L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
+					L.DomUtil.addClass(this._containers.switchDiv, 'disabled');
 					delete state.dInterval;
 					state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
 					// selected[utm] = true;
@@ -1005,7 +1007,7 @@ var str = '\
 	<div class="tabs"><ul class="layers-tab"></ul></div>\
 	<div class="internal-container">\
 		<div class="w-scroll">\
-			<div class="clicked el-left gmx-hidden"><div class="el-act on">по1 всем</div><div class="el-pass">по избранным</div></div>\
+			<div class="clicked el-left disabled"><div class="el-act on">по1 всем</div><div class="el-pass">по избранным</div></div>\
 			<div class="el-center">\
 				<span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span>\
 				<span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span>\
