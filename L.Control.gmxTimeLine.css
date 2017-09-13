@@ -1,24 +1,29 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
-
+/*
+*/
+@font-face {
+    font-family: Open Sans;
+    src: url(open.ttf);
+}
 
 .gmxTimeline.leaflet-control {
     position: absolute;
     left: 0px;
     right: 0px;
-    bottom: 24px;
+    bottom: 19px;
     margin: 0px;
-    padding: 5px;
+    padding: 0px;
 }
 .gmxTimeline .hideButton {
-/*    margin-right: 0px;
-	margin-bottom: 0px;
-*/
-    top:13px;
+    top: 7px;
+    position: relative;
+	margin-left: 10px;
+    padding-right: 6px;
+	cursor: pointer;
 }
 .gmxTimeline .tabs {
     z-index: 1;
     position: relative;
-    top: 5px;
+    top: 11px;
 }
 
 .gmxTimeline .layer {
@@ -61,8 +66,6 @@
 
 .gmxTimeline .timeline-event-dot-container {
 	padding-top: 6px;
-/*	margin-left: -5px;
-*/
 	top: 74px;
 	width: 10px;
     height: 10px;
@@ -72,26 +75,13 @@
 .gmxTimeline .item-range .timeline-event-dot {
 	border-color: rgb(69, 175, 215);
     border-width: 5px;
-    /*-webkit-box-shadow: 0px 0px 0px 59px rgba(0,0,0,1);
-    -moz-box-shadow: 0px 0px 0px 59px rgba(0,0,0,1);*/
     box-shadow: 0px 0px 0px 1px #FFF, 0px 0px 0px 2px rgb(69, 175, 215);
-
-
-
 }
 .gmxTimeline .item-selected{
     margin-top: -5px;
-	/*
-	padding-top: 2px;
-    padding-left: 3px;
-    margin-left: -4px;
-    border-radius: 10px;
-    border: 2px solid rgb(69, 175, 215);	
-	*/
 }
 
 .gmxTimeline .timeline-event-content {
-
     z-index: 999;
     display: none;
     position: absolute;
@@ -102,44 +92,19 @@
     height: 10px;
     background-color: #da5d40;
     border-radius: 15px;
-
-
-/*
-	z-index: 999;
-	display: none;
-    position: absolute;
-    left: -3px;
-    top: 3px;
-    z-index: 34;
-    width: 6px;
-    height: 6px;
-    background-color: red;
-    border-radius: 4px;*/
-/*
-    position: absolute;
-    left: -4px;
-    top: -10px;
-	width: 8px;
-    height: 8px;
-    background-color: rgb(39, 199, 125);
-    border-radius: 4px;*/
 }
+
 .gmxTimeline .timeline-event {
 }
+
 .gmxTimeline .timeline-event-dot {
 	cursor: pointer;
 	position: absolute;
 	border-color: #666;
 	background: #666;
 	z-index: 34;
-	/*
-	top: 3px;
-    left: 3px;
-    border-radius: 5px;
-    border-style: solid;
-    border-width: 4px;	
-	*/
 }
+
 .gmxTimeline .item-selected .timeline-event-dot {
     border-color: rgb(69, 175, 215);
     top: 2px;
@@ -155,13 +120,8 @@
     cursor: pointer;
 }
 .gmxTimeline .item-clicked .timeline-event-dot {
-	/*
-    border-color: rgb(39, 199, 125);
-    border-radius: 6px;
-    border-width: 6px;
-    left: 4px;
-	*/
 }
+
 .gmxTimeline .item-clicked{
     border-color: rgb(39, 199, 125);
     border-width: 1px;
@@ -170,17 +130,6 @@
     z-index: 1;
     padding-right: 0.6%;
     padding-bottom: 0.2%;
-/*	
-    margin-left: -5px;
-    margin-top: -10px;
-	border-color: rgb(39, 199, 125);
-    border-width: 1px;
-    width: 15px;
-    height: 15px;
-    margin-left: -5px;
-    margin-top: -3px;
-	z-index: 1;
-	*/
 }
 
 .gmxTimeline .gmx-focuse {
@@ -198,29 +147,20 @@
 	padding-left: 10px;
 	padding-right: 10px;
 }
-/*
-.gmxTimeline .w-scroll .l-scroll, .gmxTimeline .w-scroll .r-scroll{
-	cursor: col-resize;
-    position: absolute;
-    top: 4px;
-    width: 15px;
-    height: 15px;
-    background-color: rgb(69, 175, 215);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    border-radius: 50%;
-    display: none;
-}
-*/
-.gmxTimeline .w-scroll .on {
+
+.gmxTimeline .favorite .on {
     fill: #da5d40;
 }
+
 .gmxTimeline .w-scroll .l-scroll {
     margin-left: -6px;
 }
+
 .gmxTimeline .w-scroll .r-scroll {
 	margin-right: 10px;
     right: -6px;
 }
+
 .gmxTimeline .w-scroll .l-scroll-title {
     width: 20px;
     height: 20px;
@@ -231,12 +171,12 @@
 .gmxTimeline .w-scroll .g-scroll {
     height: 2px;
     width: 100%;
-    /*border-top: 1px solid #bfbfbf;*/
     top: 12px;
 	left: 0px;
     position: absolute;
     display: none;
 }
+
 .gmxTimeline .w-scroll .c-scroll {
     width: 100%;
     height: 81px;
@@ -250,6 +190,7 @@
     border-right: 1px solid #9ad4df;
     display: none;
 }
+
 .gmxTimeline .w-scroll .c-scroll .c-borders {
     width: 100%;
     position: relative;
@@ -272,42 +213,30 @@
 
 .gmxTimeline .tabs ul {
 	display: inline-flex;
-	margin-left: 6px;
 	height: 26px;
-/*
-    margin-bottom: 0px;
-	left: -45px;
-    position: relative;
-*/
+    padding-bottom: 10px;
 }
+
 .gmxTimeline .tabs .clicked:hover {
     background-color: lightgray;
 }
+
 .gmx-disabled {
 	pointer-events: none;
     opacity: 0.9;
 }
+
 .gmxTimeline .clicked {
     display: inline-block;
     background-color: #dee7ec;
     cursor: pointer;
-    padding: 2px 2px 0px 2px;
-    /*border-radius: 4px;*/
-}
-.gmx-hidden {
-	display: none ! important;
-}
-
-.tabs .click-id {
-    background-color: rgb(39, 199, 125);
-    width: auto;
-    padding-top: 3px;
- /*   padding-bottom: 6px;*/
+    bottom: 6px;
     position: relative;
-    top: -5px;
+    border-radius: 4px;
+    border: 1px solid #999;
 }
 
-.tabs ul li {
+.gmxTimeline .tabs ul li {
 	padding-left: 5px;
     padding-right: 5px;
     display: inline-block;
@@ -324,26 +253,27 @@
 	position: relative;
 	background: #dee7ec;
 	box-shadow: rgba(0,0,0,0.09804) 0px 1px 1px 0px;
+    border: 1px solid rgba(70,70,70,.3);
 
 
 }
 
-.tabs ul li.last {
+.gmxTimeline .tabs ul li.last {
 	margin-right: 0;
 }
 
-.tabs ul li .close-button {
+.gmxTimeline .tabs ul li .close-button {
     position: absolute;
     left: auto;
-    right: 8px;
-    top: 8px;
+    right: 4px;
+    top: 4px;
     width: 10px;
     height: 10px;
     padding-right: 0px;
-    background: url(../../../img/redesign/icons2.png) -74px -2px;
+    background: url(//maps.kosmosnimki.ru/api/img/redesign/icons2.png) -78px -5px;
 }
 
-.tabs ul li span {
+.gmxTimeline .tabs ul li span {
     padding-right: 8px;
     position: absolute;
     left: 28px;
@@ -355,12 +285,12 @@
     font-weight: 600;   
 }
 
-.tabs ul li .close-button:hover span {
+.gmxTimeline .tabs ul li .close-button:hover span {
 	color: #69C;
 	text-decoration: underline;
 }
 
-.tabs .selected {
+.gmxTimeline .tabs .selected {
 	border-bottom: white;
     padding-bottom: 0px;
     background: #FFF;
@@ -368,7 +298,7 @@
 }
 
 .leaflet-iconLayers.iconLayersShift {
-	margin-bottom: 160px;
+	margin-bottom: 178px;
 }
 
 .gmxTimeline .leaflet-gmx-iconSvg {
@@ -570,58 +500,28 @@ span.clicked.click-left.gmx-disabled {
 
 .el-left  .el-act, .el-left  .el-pass{
 	font-family: 'Open Sans';
-	color:  #666;
-	font-size: 12px;
-	font-weight: 400;
-	line-height: 23px;
-	text-align: left;
-	border-bottom-right-radius: 4px;
-	border-top-right-radius: 4px;
-	background-color: #dee7ec;
-	width: auto;
-	height: 26px;
-	margin-left: 3px;
-	padding: 2px 10px 0px 10px;
-	text-transform: uppercase;
-	font-weight: 600;
-	display: inline-block;
-	margin-top: 6px;
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    background-color: #dee7ec;
+    width: auto;
+    line-height: 20px;
+    padding: 2px 10px 2px 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+    margin: 1px;
 }
 
-.el-act {
-/*
-font-family: 'Open Sans';
-color:  #f7f7f7;
-font-size: 12px;
-font-weight: 400;
-line-height: 23px;
-text-align: left;
-border-bottom-left-radius: 4px;
-border-top-left-radius: 4px;
-background-color:  #45b0d8;
-width: auto;
-height: 26px;
-margin-right: 3px;
-padding: 2px 10px 0px 10px;
-text-transform: uppercase;
-font-weight: 600;
-display: inline-block;
-margin-top: 6px;
-*/
-
-}
-
-
-
-.el-pass {
-}
-
+.el-act {border-right: 1px solid #999}
 
 .el-center {
 
     display: inline-block;
     text-align: center;
     position: relative;
+    margin-left: 6%;
 /*
     width: 100%;
     bottom: 33px
@@ -681,12 +581,14 @@ margin-top: 6px;
     color: #666;
     font-size: 12px;
     font-weight: 400;
-    line-height: 23px;
+    position: relative;
+    top: -1px;
+    line-height: 14px;
     text-align: left;
     border-radius: 4px;
     border: 1px solid #999;
     width: auto;
-    height: 23px;
+    /* height: 22px; */
     margin-left: 3px;
     padding: 3px 10px 1px 10px;
     text-transform: uppercase;
@@ -703,27 +605,29 @@ margin-top: 6px;
     color: #666;
     font-size: 12px;
     font-weight: 400;
-    line-height: 23px;
+    line-height: 15px;
     text-align: left;
     border: 1px solid #999;
     border-radius: 4px;
     width: auto;
-    height: 24px;
+    /* height: 24px; */
     margin-left: 3px;
-    padding: 2px 10px 0px 10px;
+    padding: 2px 15px 0px 15px;
     text-transform: uppercase;
     font-weight: 600;
     display: inline-block;
-    margin-top: 6px;
+    /* margin-top: 6px; */
     background: #dee7ec;
-
-
-
+    top: -1px;
+    position: relative;
 }
 
+.gmxTimeline .disabled {
+	pointer-events: none;
+	cursor: auto;
+}
 
-.el-act-cent-3 {
-
+.gmxTimeline .clouds-content {
     font-family: 'Open Sans';
     color: #666;
     font-size: 12px;
@@ -739,9 +643,6 @@ margin-top: 6px;
     font-weight: 600;
     display: inline-block;
     margin-top: 6px;
-
-
-
 }
 
 
@@ -751,19 +652,20 @@ margin-top: 6px;
     color: #666;
     font-size: 12px;
     font-weight: 400;
-    line-height: 23px;
+    line-height: 15px;
     text-align: left;
     border-radius: 4px;
     border: 1px solid #999;
     width: auto;
-    height: 23px;
+    /* height: 23px; */
     margin-left: 3px;
-    padding: 3px 6px 1px 4px;
+    /* padding: 3px 6px 1px 4px; */
     text-transform: uppercase;
     font-weight: 600;
     display: inline-block;
     background: #dee7ec;
-
+    position: relative;
+    top: 2px;
 
 }
 
@@ -784,13 +686,14 @@ margin-top: 6px;
     text-transform: uppercase;
     font-weight: 600;
     display: inline-block;
+    position: relative;
+    top: 4px;
 
 
 
 }
 
-
-.el-act-right-3 {
+.gmxTimeline .hideButton-content {
     border-left: 1px solid #bebebe;
     border-right: 1px solid #bebebe;
     height: 40px;
@@ -815,29 +718,6 @@ margin-top: 6px;
 
 }
 
-
-.arrow {
-    margin-left: 10px;
-    padding-right: 6px;
-/*
-    
-	margin: 0px 8px 0px 10px;
-    position: relative;
-    display: inline-block;
-    top: 9px;
-    width: 15px;
-    height: 7px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/arrow.png);
-    mask-image: url(img/arrow.png);
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-
-
 .leaflet-gmx-iconSvg.hideButton.leaflet-control {
     display:none;
     position: absolute;
@@ -849,324 +729,152 @@ margin-top: 6px;
     z-index: 1000;
 }
 
-
-.ques {
-/*
+.gmxTimeline .different-interval, .gmxTimeline .single-interval {
+	cursor: pointer;
+    width: 30px;
+    padding: 3px 10px 2px 10px;
     position: relative;
     display: inline-block;
-    margin-right: 10px;
-    top: 3px;
-    width: 16px;
-    height: 16px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/question.svg);
-    mask-image: url(img/question.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
+    bottom: 0px;
+    left: 0px;
+    /* height: 26px;
+    border-right: 1px solid #999;
+	*/
 }
 
-
-.link {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 4px;
-    top: 3px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/link.svg);
-    mask-image: url(img/link.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-
-
-.blue {
-
-    border-radius: 3px;
+.gmxTimeline .different-interval.on, .gmxTimeline .single-interval.on {
     background-color: #45b0d8;
-    width: 26px;
-    height: 26px;
-    padding: 3px 5px 2px 10px;
-
+	cursor: auto;
 }
-
-.link1 {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 4px;
-    top: 3px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #FFF;
-    -webkit-mask-image: url(img/link1.svg);
-    mask-image: url(img/link1.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-/*
-
-.left-arrow {
-    position: relative;
-    display: inline-block;
-    margin-right: 4px;
-    top: 2px;
-    width: 10px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/left-arrow.svg);
-    mask-image: url(img/left-arrow.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-}
-
-
-.right-arrow {
-    position: relative;
-    display: inline-block;
-    margin-right: 4px;
-    top: 2px;
-    width: 10px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/right-arrow.svg);
-    mask-image: url(img/right-arrow.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-}
-*/
 
 .gmxTimeline .favorite, .gmxTimeline .remove, .gmxTimeline .trash {
 	cursor: pointer;
 }
-.favorite {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 4px;
-    top: 3px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
 
-    background-color: #da5d40;
-    
-	-webkit-mask-image: url(img/favorite.svg);
-    mask-image: url(img/favorite.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-
-.remove {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 4px;
-    top: 3px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/remove.svg);
-    mask-image: url(img/remove.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-
-.trash {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 1px;
-    top: 3px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/trash.svg);
-    mask-image: url(img/trash.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-
-
-.calendar {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 8px;
-    top: 2px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/calendar.svg);
-    mask-image: url(img/calendar.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
-}
-
-.calendar-text {
-
+.gmxTimeline .calendar-text {
     color: #666;
     text-decoration: none;
     font-size: 15px;
-
+    position: relative;
+    bottom: 4px;
+    margin-left:3px; 
 }
-
+/*
 .leaflet-container a {
 
  text-decoration: none;
 
 }
-
-
-.clock {
-/*
-    position: relative;
-    display: inline-block;
-    margin-right: 8px;
-    top: 2px;
-    width: 15px;
-    height: 15px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/clock.svg);
-    mask-image: url(img/clock.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
 */
-}
 
-.clock-text {
-
+.gmxTimeline .clock-text {
     color: #666;
     text-decoration: none;
     font-size: 15px;
-
+    position: relative;
+    bottom: 4px;
+    margin-left:3px;
 }
 
-.line {
-   
-
+.gmxTimeline .line {
     position: relative;
     display: inline-block;
     margin-right: 4px;
     margin-left: 4px;
-    top: -1px;
+    top: -3px;
     width: 11px;
     height: 11px;
     padding-right: 0px;
     line-height: 20px;
     color: #999;
-    font-weight: 300;
-    font-size: initial;
-  
-
+    font-weight: 100;
+    font-size: 22px;
 }
 
-.line1 {
-   
-
+.gmxTimeline .line1 {
     position: relative;
     display: inline-block;
     margin-right: 10px;
     margin-left: 10px;
-    top: -1px;
+    top: -3px;
     width: 11px;
     height: 11px;
     padding-right: 0px;
     line-height: 20px;
     color: #999;
-    font-weight: 300;
-    font-size: initial;
-  
-
+    font-weight: 100;
+    font-size: 22px;
 }
 
-
-
-.cloud {
-/*
+.gmxTimeline .line4 {
     position: relative;
     display: inline-block;
-    margin-right: 8px;
-    top: 0px;
-    width: 15px;
-    height: 12px;
+    margin-right: 4px;
+    margin-left: 4px;
+    top: -4px;
+    width: 11px;
+    height: 11px;
     padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/cloud.svg);
-    mask-image: url(img/clock.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
+    line-height: 20px;
+    color: #999;
+    font-weight: 100;
+    font-size: 22px;
+    display:none;
 }
 
-.cloud-text {
-
+.gmxTimeline .cloud-text {
     color: #666;
     text-decoration: none;
     font-size: 15px;
-
 }
-
-
-.arrow-small {
 /*
-    position: relative;
-    display: inline-block;
-    margin-right: 8px;
-    top: -4px;
-    width: 8px;
-    height: 4px;
-    padding-right: 0px;
-    background-color: #666;
-    -webkit-mask-image: url(img/arrow-small.svg);
-    mask-image: url(img/arrow-small.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-*/
+span.clicked.click-left {
+    height: 24px;
+    width: 24px;
+    top: 0px;
 }
 
+span.clicked.click-right {
+    height: 24px;
+    width: 24px;
+        top: 0px;
+}
+*/
+.gmxTimeline .el-act-cent-1 svg {
+    height: 19px;
+    width: 19px;
+    pointer-events: none;
+}
 
+.gmxTimeline .el-act-cent-2 svg {
+    height: 20px;
+    width: 20px;
+    pointer-events: none;
+}
 
+.gmxTimeline select.cloud-select {
+    height: 26px;
+    bottom: 6px;
+    position: relative;
+    border: 1px solid transparent;
+    background: transparent;
+    /* border-radius: 4px; */
+    font-family: 'Open Sans';
+    color: #666;
+    font-size: 15px;
+    font-weight: 600;
+}
 
+.gmxTimeline .el-act-right-1 svg {
+    height: 19px;
+    width: 19px;
+    pointer-events: none;
+    position: relative;
+    left: 5px;
+}
+/*
+span.link {
+    padding: 3px 16px 2px 10px;
+    position: relative;
+}
+*/

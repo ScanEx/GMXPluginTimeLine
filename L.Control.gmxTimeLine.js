@@ -25,6 +25,7 @@
 		currentLayerID,
 		currentDmID,
 		currentDmIDPermalink,
+		singleIntervalFlag,
 
 		getDataSource = function (gmxLayer) {
 			// var gmxLayer = nsGmx.gmxMap.layersByID[id];
@@ -36,6 +37,7 @@
 					var tmpKeyNum = dm.tileAttributeIndexes[dmOpt.TemporalColumnName],
 						timeColumnName = dmOpt.MetaProperties.timeColumnName ? dmOpt.MetaProperties.timeColumnName.Value : null,
 						timeKeyNum = timeColumnName ? dm.tileAttributeIndexes[timeColumnName] : null,
+						clouds = dm.tileAttributeIndexes.clouds || null,
 						dInterval = gmxLayer.getDateInterval(),
 						opt = gmxLayer.getGmxProperties(),
 						type = (opt.GeometryType || 'point').toLowerCase(),
@@ -67,6 +69,7 @@
 						layerID: opt.name, title: opt.title, //dmID: dmOpt.name,
 						tmpKeyNum: tmpKeyNum,
 						timeKeyNum: timeKeyNum,
+						clouds: clouds,
 						modeBbox: type === 'polygon' ? 'center' : 'thirdpart',
 						TemporalColumnName: dmOpt.TemporalColumnName,
 						temporalColumnType: dm.temporalColumnType,
@@ -533,6 +536,13 @@
 			this._bboxUpdate();
 		},
 
+		_copyState: function (stateTo, stateFrom) {
+			stateTo.oInterval.beginDate = stateFrom.oInterval.beginDate;
+			stateTo.oInterval.endDate = stateFrom.oInterval.endDate;
+			stateTo.uTimeStamp[0] = stateFrom.uTimeStamp[0];
+			stateTo.uTimeStamp[1] = stateFrom.uTimeStamp[1];
+		},
+
 		_setCurrentTab: function (layerID) {
 			var layersTab = this._containers.layersTab;
 			for (var i = 0, len = layersTab.children.length; i < len; i++) {
@@ -543,12 +553,17 @@
 					L.DomUtil.removeClass(li, 'selected');
 				}
 			}
+			var stateBefore = this.getCurrentState();
+			
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			state.oInterval = state.gmxLayer.getDateInterval();
 			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
+			}
+			if (singleIntervalFlag && stateBefore) {
+				this._copyState(state, stateBefore);
 			}
 
 			this._map.fire('gmxTimeLine.currentTabChanged', {currentTab: layerID});
@@ -561,6 +576,12 @@
 			if (Object.keys(state.selected || {}).length > 1) {
 				L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
 			}
+			if (state.clouds) {
+				L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
+			} else {
+				L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
+			}
+			
 			if (state.rollClickedFlag) {
 				// this.setCommand('s');
 				this._chkRollClickedFlag(state);
@@ -984,7 +1005,7 @@ var str = '\
 	<div class="tabs"><ul class="layers-tab"></ul></div>\
 	<div class="internal-container">\
 		<div class="w-scroll">\
-			<div class="clicked el-left gmx-hidden"><div class="el-act">по1 всем</div><div class="el-pass">по избранным</div></div>\
+			<div class="clicked el-left gmx-hidden"><div class="el-act on">по1 всем</div><div class="el-pass">по избранным</div></div>\
 			<div class="el-center">\
 				<span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span>\
 				<span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span>\
@@ -997,13 +1018,13 @@ var str = '\
 				&nbsp;&nbsp;\
 				<div class="el-act-cent-2">\
 					<span class="calendar">' + this._addSvgIcon('tl-date') + '</span>\
-					<span class="calendar-text">26.11.2017</span>\
+					<span class="calendar-text">01.01.2017</span>\
 					<span class="line1">|</span>\
 					<span class="clock">' + this._addSvgIcon('tl-time') + '</span>\
 					<span class="clock-text">00:00</span>\
 				</div>\
 				&nbsp;&nbsp;\
-				<div class="el-act-cent-3">\
+				<div class="clouds-content disabled">\
 					<span class="cloud">' + this._addSvgIcon('tl-cloud-cover') + '</span>\
 					<span class="cloud-text">\
 						<select class="cloud-select">\
@@ -1020,11 +1041,12 @@ var str = '\
 			</div>\
 			<div class="el-right">\
 				<span class="el-act-right-1">\
-					<span class="blue"><span class="link1">' + this._addSvgIcon('tl-different-interval') + '</span></span>\
-					<span class="line">|</span><span class="link">' + this._addSvgIcon('tl-single-interval') + '</span>\
+					<span class="different-interval on">' + this._addSvgIcon('tl-different-interval') + '</span>\
+					<span class="line4">|</span>\
+					<span class="single-interval">' + this._addSvgIcon('tl-single-interval') + '</span>\
 				</span>\
 				<span class="el-act-right-2"><span class="ques">' + this._addSvgIcon('tl-help') + '</span></span>\
-				<span class="el-act-right-3"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
+				<span class="hideButton-content"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
 			</div>\
 			<div class="g-scroll"></div>\
 			<div class="c-scroll">\
@@ -1036,16 +1058,9 @@ var str = '\
 		<div class="vis"></div>\
 	</div>\
 </div>';
-//			<div class="internal-container"><div class="vis"></div></div></div>';
 			container.innerHTML = str;
 			container._id = this.options.id;
 			this._map = map;
-			// var lScroll = container.getElementsByClassName('l-scroll')[0],
-				// lScrollTitle = container.getElementsByClassName('l-scroll-title')[0],
-				// rScroll = container.getElementsByClassName('r-scroll')[0],
-				// rScrollTitle = container.getElementsByClassName('r-scroll-title')[0],
-				// cScroll = container.getElementsByClassName('c-scroll')[0],
-				// wScroll = container.getElementsByClassName('w-scroll')[0],
 			var	clickLeft = container.getElementsByClassName('click-left')[0],
 				clickRight = container.getElementsByClassName('click-right')[0],
 				// clickCenter = container.getElementsByClassName('click-center')[0],
@@ -1057,15 +1072,18 @@ var str = '\
 				modeSelectedOff = container.getElementsByClassName('el-act')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
 				favorite = container.getElementsByClassName('favorite')[0],
-				// remove = container.getElementsByClassName('remove')[0],
 				trash = container.getElementsByClassName('trash')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
 				visContainer = container.getElementsByClassName('vis-container')[0],
 				internalContainer = container.getElementsByClassName('internal-container')[0],
+				differentInterval = container.getElementsByClassName('different-interval')[0],
+				singleInterval = container.getElementsByClassName('single-interval')[0],
+				cloudsContent = container.getElementsByClassName('clouds-content')[0],
 				layersTab = container.getElementsByClassName('layers-tab')[0];
 
 			this._containers = {
 				vis: container.getElementsByClassName('vis')[0],
+				cloudsContent: cloudsContent,
 				internalContainer: internalContainer,
 				layersTab: layersTab,
 				clickCalendar: clickCalendar,
@@ -1076,10 +1094,6 @@ var str = '\
 				modeSelectedOff: modeSelectedOff,
 				modeSelectedOn: modeSelectedOn,
 				hideButton: hideButton
-				// ,
-				// lScroll: lScroll,
-				// rScroll: rScroll,
-				// cScroll: cScroll
 			};
 			modeSelectedOff.innerHTML = translate.modeSelectedOff;
 			modeSelectedOn.innerHTML = translate.modeSelectedOn;
@@ -1100,16 +1114,30 @@ var str = '\
 				.on(container, 'click', this._setFocuse, this);
 
 			L.DomEvent
+				.on(differentInterval, 'click', function () {
+					if (singleIntervalFlag) {
+						singleIntervalFlag = false;
+						L.DomUtil.addClass(differentInterval, 'on');
+						L.DomUtil.removeClass(singleInterval, 'on');
+					}
+				}, this)
+				.on(singleInterval, 'click', function () {
+					if (!singleIntervalFlag) {
+						singleIntervalFlag = true;
+						L.DomUtil.addClass(singleInterval, 'on');
+						L.DomUtil.removeClass(differentInterval, 'on');
+						var state = this.getCurrentState();
+						for (var layerID in this._state.data) {
+							this._copyState(this._state.data[layerID], state);
+						}
+					}
+				}, this)
 				.on(favorite, 'click', function () {
 					var state = this.getCurrentState();
 					this.setCommand(state.selected && state.selected[state.clickedUTM] ? 'Down' : 'Up', true);
 				}, this)
 				.on(trash, 'click', function (ev) {
 					this._removeSelected();
-					// var state = this.getCurrentState();
-					// state.selected = null;
-					// L.DomUtil.addClass(modeSelectedOff, 'on');
-					// L.DomUtil.removeClass(modeSelectedOn, 'on');
 					this._redrawTimeline();
 				}, this)
 				.on(clickLeft, 'mousemove', stop)
@@ -1173,15 +1201,15 @@ var str = '\
 					// rScroll.title = str;
 				// }, this);
 
-			// L.DomEvent
-				// .on(layersTab, 'click', function (ev) {
-					// var target = ev.target,
-						// _layerID = target._layerID || target.parentNode._layerID;
-					// this._setCurrentTab(_layerID);
-				// }, this);
-
 			// L.DomUtil.setPosition(lScroll, new L.Point(0, 0));
 			// L.DomUtil.setPosition(rScroll, new L.Point(0, 0));
+			L.DomEvent
+				.on(layersTab, 'click', function (ev) {
+					var target = ev.target,
+						_layerID = target._layerID || target.parentNode._layerID;
+					this._setCurrentTab(_layerID);
+				}, this);
+
 			var _this = this;
 /*			
 			var _this = this,
@@ -1333,6 +1361,10 @@ var str = '\
 				iconLayers = map.gmxControlsManager.get('iconLayers');
 
 				timeLineControl = L.control.gmxTimeline(options)
+					.on('click', function (ev) {
+						layersByID[ev.layerID].repaint();
+					});
+					/*
 					.on('dateInterval', function (ev) {
 						var d1 = ev.beginDate,
 							d2 = ev.endDate,
@@ -1343,10 +1375,7 @@ var str = '\
 						// } else {
 							gmxLayer.setDateInterval(d1, d2);
 						// }
-					})
-					.on('click', function (ev) {
-						layersByID[ev.layerID].repaint();
-					});
+					})*/
 
 				map.addControl(timeLineControl);
 				nsGmx.timeLineControl = timeLineControl;
