@@ -22,6 +22,7 @@ font-family: 'Open Sans'
 .gmxTimeline .hideButton {
     top: 7px;
     position: relative;
+	height: 24px;
 	margin-left: 10px;
     padding-right: 6px;
 	cursor: pointer;
@@ -284,7 +285,6 @@ font-family: 'Open Sans'
     border-radius: 4px;
     border: 1px solid #999;
 	height: 25px;
-	pointer-events: none;
     opacity: 1;
 }
 

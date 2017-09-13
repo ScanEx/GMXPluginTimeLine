@@ -1226,9 +1226,9 @@ var str = '\
 					this._state.isVisible = isVisible;
 					*/
 				}, this);
-				if (iconLayers) {
-					hideButton.style.top = '4px';
-				}
+				// if (iconLayers) {
+					// hideButton.style.top = '4px';
+				// }
 
 			L.DomEvent
 				.on(layersTab, 'click', function (ev) {
@@ -1371,6 +1371,7 @@ var str = '\
 					currentDmIDPermalink = state.currentTab;
 					//timeLineControl.setCurrentTab(state.currentTab);
 				}
+				if (!timeLineControl._map) { nsGmx.leafletMap.addControl(timeLineControl); }
 				var layersByID = nsGmx.gmxMap.layersByID;
 				state.dataSources.forEach(function (it) {
 					var gmxLayer = layersByID[it.layerID];
