@@ -37,7 +37,7 @@
 					var tmpKeyNum = dm.tileAttributeIndexes[dmOpt.TemporalColumnName],
 						timeColumnName = dmOpt.MetaProperties.timeColumnName ? dmOpt.MetaProperties.timeColumnName.Value : null,
 						timeKeyNum = timeColumnName ? dm.tileAttributeIndexes[timeColumnName] : null,
-						clouds = dm.tileAttributeIndexes.clouds || null,
+						clouds = dm.tileAttributeIndexes.clouds || dm.tileAttributeIndexes.CLOUDS || null,
 						dInterval = gmxLayer.getDateInterval(),
 						opt = gmxLayer.getGmxProperties(),
 						type = (opt.GeometryType || 'point').toLowerCase(),
@@ -218,6 +218,8 @@
 				if (iconLayers) {
 					L.DomUtil.removeClass(iconLayers.getContainer(), 'iconLayersShift');
 				}
+				this._map.removeControl(this);
+
 			} else {
 				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
 			}
@@ -317,7 +319,7 @@
 				}
 				this._setCurrentTab(layerID);
 				this._setDateScroll();
-				this._chkScrollChange();
+				// this._chkScrollChange();
 			}
 			return this;
 		},
@@ -333,6 +335,7 @@
 			L.DomEvent
 				.off(document, 'keydown', this._keydown, this);
 
+			map.keyboard.addHooks();
 			map.fire('controlremove', this);
 		},
 
@@ -449,17 +452,11 @@
 			}
 			this._timeline.clearItems();
 			this._setWindow(data.oInterval);
-			this._timeline.setData(res);
-// console.log('_redrawTimeline', data.layerID, res, count, data.oInterval);
-			if (!clickedUTM) {
-				this.setCommand('Right');
+			//this._timeline.reflowAxis();			
+			if (res.length) { 
+				this._timeline.setData(res);
 			}
-			
-			// if (selected.length) {
-				// this._timeline.setSelection(selected);
-			// } else {
-				this._chkSelection(data);
-			// }
+			this._chkSelection(data);
 			
 			var cont = this._containers,
 				clickCalendar = cont.clickCalendar;
@@ -486,29 +483,27 @@
 		},
 
 		_chkSelection: function (state) {
-			// if (!state.selected) {
-				var dInterval = state.dInterval || state.oInterval,
-					beginDate = new Date(dInterval.beginDate.valueOf() + tzm),
-					endDate = new Date(dInterval.endDate.valueOf() + tzm),
-					clickedUTM = state.clickedUTM ? String(state.clickedUTM) : null,
-					selectedLength = state.selected ? Object.keys(state.selected).length : 0,
-					lastDom = null;
+			var dInterval = state.dInterval || state.oInterval,
+				beginDate = new Date(dInterval.beginDate.valueOf() + tzm),
+				endDate = new Date(dInterval.endDate.valueOf() + tzm),
+				clickedUTM = state.clickedUTM ? String(state.clickedUTM) : null,
+				lastDom = null;
 
-				this._timeline.items.forEach(function(it) {
-					if (it.dom.parentNode) {
-						lastDom = it.dom;
-						if (!clickedUTM) {
-							if (it.start >= beginDate && it.start < endDate) {
-								L.DomUtil.addClass(lastDom, 'item-range');
-							} else {
-								L.DomUtil.removeClass(lastDom, 'item-range');
-							}
+			this._timeline.items.forEach(function(it) {
+				if (it.dom.parentNode) {
+					lastDom = it.dom;
+					if (!clickedUTM) {
+						if (it.start >= beginDate && it.start < endDate) {
+							L.DomUtil.addClass(lastDom, 'item-range');
+						} else {
+							L.DomUtil.removeClass(lastDom, 'item-range');
 						}
-					} else if (clickedUTM === it.utm && lastDom) {
-						L.DomUtil.addClass(lastDom, 'item-clicked');
 					}
-				});
-			// }
+				}
+				if (clickedUTM === it.utm && lastDom) {
+					L.DomUtil.addClass(lastDom, 'item-clicked');
+				}
+			});
 		},
 
 		_setEvents: function (tl) {
@@ -588,7 +583,7 @@
 				// this.setCommand('s');
 				this._chkRollClickedFlag(state);
 			}
-			this._chkScrollChange();
+			// this._chkScrollChange();
 			L.gmx.layersVersion.now();
 		},
 
@@ -771,11 +766,66 @@
 		},
 */
 		_keydown: function (ev) {
-			if (!this._map || this._map.keyboard._focused) { return; }
+			//if (!this._map || this._map.keyboard._focused) { return; }
 			this.setCommand(ev.key, ev.ctrlKey);
 		},
 
 		setCommand: function (key, ctrlKey) {
+			if (this._commandKeys.indexOf(key) !== -1) {
+
+				var state = this.getCurrentState(),
+					setClickedUTMFlag = true;
+
+				if (state) {
+					if (state.clickedUTM) {
+						if (key === ' ') {
+							state.skipUnClicked = !state.skipUnClicked;
+							setClickedUTMFlag = false;
+						} else if (key === 'ArrowUp' || key === 'Up') {
+							this._addSelected(state.clickedUTM, state);
+							setClickedUTMFlag = false;
+						} else if (key === 'ArrowDown' || key === 'Down') {
+							this._removeSelected(state.clickedUTM, state);
+							setClickedUTMFlag = false;
+						} else if (key === 's') {
+							state.rollClickedFlag = !state.rollClickedFlag;
+							this._chkRollClickedFlag(state);
+						}
+						if (setClickedUTMFlag) {
+							var clickedUTM = String(state.clickedUTM),
+								rollClicked = this.options.rollClicked,
+								arr = [];
+							if (state.selected && state.rollClickedFlag) {
+								arr = Object.keys(state.selected).sort().map(function (it) { return {utm: it}});
+							} else {
+								arr = this._timeline.getData();
+							}
+							for (var i = 0, len = arr.length - 1; i <= len; i++) {
+								if (Number(arr[i].utm) > state.clickedUTM) {
+									break;
+								}
+							}
+
+							if (key === 'ArrowLeft' || key === 'Left') {
+								i = ctrlKey ? 0 : (i > 1 ? i - 2 : (rollClicked ? len : 0));
+							} else if (key === 'ArrowRight' || key === 'Right') {
+								i = ctrlKey ? len : (i < len ? i: (rollClicked ? 0 : len));
+							} else if (key === 's') {
+								i = i === 0 ? 0 : i - 1;
+							}
+							if (arr[i]) {
+								state.clickedUTM = Number(arr[i].utm);
+								this._setClassName(state.selected && state.selected[state.clickedUTM], this._containers.favorite, 'on');
+							}
+						}
+					}
+					this._chkObserver(state);
+				}
+			}
+			this._setFocuse();
+		},
+
+		setCommand1: function (key, ctrlKey) {
 			if (this._commandKeys.indexOf(key) !== -1) {
 				this._setFocuse();
 
@@ -786,11 +836,12 @@
 						state.skipUnClicked = !state.skipUnClicked;
 						setClickedUTMFlag = false;
 					} else if (key === 'ArrowUp' || key === 'Up') {
-						if (ctrlKey) {
+						//if (ctrlKey) {
 							this._addSelected(state.clickedUTM, state);
 							// if (!state.selected) { state.selected = {}; }
 							// state.selected[state.clickedUTM] = true;
 							setClickedUTMFlag = false;
+/*
 						} else {
 							if (!state.selected || Object.keys(state.selected).length < 2) {
 								return;
@@ -800,9 +851,10 @@
 							if (state.selected && state.selected[state.clickedUTM]) {
 								setClickedUTMFlag = false;
 							} else {
-								key = 'Left';
+								// key = 'Left';
 							}
 						}
+*/
 					} else if (key === 'ArrowDown' || key === 'Down') {
 						if (ctrlKey) {
 							this._removeSelected(state.clickedUTM, state);
@@ -919,39 +971,15 @@
 					clickId = this._containers.clickId,
 					utm = Number(it.utm);
 
-				if (ctrlKey) {
-					if (state.selected && state.selected[utm]) {
-						this._removeSelected(utm, state);
-					} else {
-						state.clickedUTM = utm;
-						this._addSelected(utm, state);
-					}
-				} else {	// click - сбрасывает все выделение (обнуляем selected[] массив) + добавляет текущую метку к selected[]
-/*					delete state.dInterval;
-					state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
-					state.rollClickedFlag = false;
-					this._removeSelected(null, state);*/
-					state.selected = null;
-					state.rollClickedFlag = false;
-					L.DomUtil.addClass(this._containers.switchDiv, 'disabled');
-					delete state.dInterval;
-					state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
-					// selected[utm] = true;
-					if (state.clickedUTM !== utm) {
-						state.clickedUTM = utm;
-					} else {
-						state.clickedUTM = null;
-					}
-				}
-				// state.selected = selected;
+				state.clickedUTM = utm;
 				state.skipUnClicked = state.clickedUTM ? true : false;
 				state.gmxLayer.repaint();
-				this._chkScrollChange();
+				// this._chkScrollChange();
 				this._setDateScroll();
 				
 				this._bboxUpdate();
-
-				// this._redrawTimeline();
+				this._redrawTimeline();
+				this._setFocuse();
 			} else {
 				var selectedPrev = state.selected || {},
 					selected = {};
@@ -998,11 +1026,11 @@
 				stop = L.DomEvent.stopPropagation,
 				preventDefault = L.DomEvent.preventDefault;
 
+			map.keyboard.removeHooks();
 			container.tabindex = '0';
 
-// str += '<div class="vis-container"><div class="tabs"><span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span><span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span><span class="clicked click-center gmx-hidden">' + this._addSvgIcon('center') + '</span><span class="clicked click-id gmx-hidden"></span><ul class="layers-tab"></ul></div>
-//<div class="leaflet-gmx-iconSvg hideButton leaflet-control" title="">' + this._addSvgIcon('arrow-down-01') + '</div>
 var str = '\
+<div class="leaflet-gmx-iconSvg showButton gmx-hidden leaflet-control" title="">' + this._addSvgIcon('arrow-up-01') + '</div>\
 <div class="vis-container">\
 	<div class="tabs"><ul class="layers-tab"></ul></div>\
 	<div class="internal-container">\
@@ -1073,6 +1101,7 @@ var str = '\
 				modeSelectedOn = container.getElementsByClassName('el-pass')[0],
 				modeSelectedOff = container.getElementsByClassName('el-act')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
+				showButton = container.getElementsByClassName('showButton')[0],
 				favorite = container.getElementsByClassName('favorite')[0],
 				trash = container.getElementsByClassName('trash')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
@@ -1160,7 +1189,21 @@ var str = '\
 					L.DomUtil.addClass(modeSelectedOn, 'on');
 					L.DomUtil.removeClass(modeSelectedOff, 'on');
 				}, this)
+				.on(showButton, 'click', function (ev) {
+					if (L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
+						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
+						L.DomUtil.addClass(showButton, 'gmx-hidden');
+						this._state.isVisible = true;
+						this._redrawTimeline();
+					}
+				}, this)
 				.on(hideButton, 'click', function (ev) {
+					if (!L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
+						L.DomUtil.addClass(visContainer, 'gmx-hidden');
+						L.DomUtil.removeClass(showButton, 'gmx-hidden');
+						this._state.isVisible = false;
+					}
+					/*
 					var isVisible = !L.DomUtil.hasClass(visContainer, 'gmx-hidden'),
 						iconLayersCont = iconLayers ? iconLayers.getContainer() : null,
 						xTop = '0px';
@@ -1181,30 +1224,12 @@ var str = '\
 					}
 					hideButton.style.top = xTop;
 					this._state.isVisible = isVisible;
+					*/
 				}, this);
 				if (iconLayers) {
 					hideButton.style.top = '4px';
 				}
 
-			// L.DomEvent
-				// .on(lScroll, 'mousemove', stop)
-				// .on(lScroll, 'mouseover', function (ev) {
-					// var state = this.getCurrentState(),
-						// dt = (state.dInterval || state.oInterval).beginDate,
-						// str = this._timeline.getUTCTimeString(dt);
-					// lScroll.title = str;
-				// }, this);
-
-			// L.DomEvent
-				// .on(rScroll, 'mouseover', function (ev) {
-					// var state = this.getCurrentState(),
-						// dt = (state.dInterval || state.oInterval).endDate,
-						// str = this._timeline.getUTCTimeString(new Date(dt - 1));
-					// rScroll.title = str;
-				// }, this);
-
-			// L.DomUtil.setPosition(lScroll, new L.Point(0, 0));
-			// L.DomUtil.setPosition(rScroll, new L.Point(0, 0));
 			L.DomEvent
 				.on(layersTab, 'click', function (ev) {
 					var target = ev.target,
@@ -1213,104 +1238,17 @@ var str = '\
 				}, this);
 
 			var _this = this;
-/*			
-			var _this = this,
-				dragend = function () {
-					var state = _this.getCurrentState(),
-						lPos = L.DomUtil.getPosition(lScroll),
-						rPos = L.DomUtil.getPosition(rScroll),
-						ww = wScroll.clientWidth - 24,
-						w = ww - lPos.x + rPos.x,
-						tl = _this._timeline,
-						range = tl.getWindow ? tl.getWindow() : tl.getVisibleChartRange(),
-						start = range.start.getTime(),
-						px = (range.end.getTime() - start) / ww,
-						msec1 = start + px * lPos.x,
-						msec2 = msec1 + px * w;
-					if (state) {
-						state.dInterval = { beginDate: new Date(msec1), endDate: new Date(msec2) };
-						state.uTimeStamp = [state.dInterval.beginDate.getTime()/1000, state.dInterval.endDate.getTime()/1000];
-						_this.fire('click', {
-							layerID: state.layerID,
-							beginDate: state.dInterval.beginDate,
-							endDate: state.dInterval.endDate
-						}, _this);
-						_this._chkSelection(state);
-					}
-				};
-			// this._dIntervalUpdate = dragend;
-*/
-			this._chkScrollChange = function (state) {
-				state = state || _this.getCurrentState();
-/*				
-				var disabled = 'gmx-disabled';
-				if (state && state.clickedUTM) {
-					L.DomUtil.addClass(lScroll, disabled);
-					L.DomUtil.addClass(rScroll, disabled);
-					L.DomUtil.removeClass(clickLeft, disabled);
-					L.DomUtil.removeClass(clickRight, disabled);
-				} else {
-					L.DomUtil.removeClass(lScroll, disabled);
-					L.DomUtil.removeClass(rScroll, disabled);
-					L.DomUtil.addClass(clickLeft, disabled);
-					L.DomUtil.addClass(clickRight, disabled);
-				}
-*/
-			};
+
+			// this._chkScrollChange = function (state) {
+				// state = state || _this.getCurrentState();
+
+			// };
 			this._setDateScroll = function () {
 				var state = _this.getCurrentState();
 				if (state) {
-/*					
-					var oInterval = state.oInterval,
-						// dInterval = oInterval,
-						dInterval = state.dInterval || oInterval,
-						oe = oInterval.endDate.getTime(),
-						ob = oInterval.beginDate.getTime(),
-						msecW = oe - ob,
-						ww = wScroll.clientWidth,
-						px = ww / msecW,
-						x1 = px * (dInterval.beginDate.getTime() - ob),
-						x2 = px * (dInterval.endDate.getTime() - oe),
-						point = new L.Point(x1, 0);
-
-					L.DomUtil.setPosition(lScroll, point);
-					L.DomUtil.setPosition(cScroll, point);
-					L.DomUtil.setPosition(rScroll, new L.Point(x2, 0));
-					cScroll.style.width = (ww + x2 - x1 - 24) + 'px';
-*/
 					this._chkSelection(state);
 				}
 			};
-/*
-			(new L.Draggable(lScroll))
-				.on('dragend ', dragend, this)
-				.on('drag', function (ev) {
-					var target = ev.target,
-						x = target._newPos.x,
-						x2 = wScroll.clientWidth + L.DomUtil.getPosition(rScroll).x;
-					
-					if (x < 0) { x = 0; }
-					else if (x2 - x < 10) { x = x2 - 10; }
-					var	point = new L.Point(x, 0);
-					L.DomUtil.setPosition(lScroll, point);
-					cScroll.style.width = (x2 - x - 24) + 'px';
-					L.DomUtil.setPosition(cScroll, point);
-				})
-				.enable(),
-			(new L.Draggable(rScroll))
-				.on('dragend ', dragend, this)
-				.on('drag', function (ev) {
-					var target = ev.target,
-						x = target._newPos.x,
-						x1 = wScroll.clientWidth - L.DomUtil.getPosition(lScroll).x;
-					
-					if (x > 0) { x = 0; }
-					else if (x1 + x < 10) { x = 10 - x1; }
-					L.DomUtil.setPosition(rScroll, new L.Point(x, 0));
-					cScroll.style.width = (x1 + x - 24) + 'px';
-				})
-				.enable();
-*/
 			if (map.gmxControlsManager) {
 				map.gmxControlsManager.add(this);
 			}
@@ -1318,9 +1256,6 @@ var str = '\
 			map
 				.on('moveend', this._moveend, this);
 
-			if (!map.keyboard._focused) { this._setFocuse(); }
-
-			this._chkScrollChange();
 			return container;
 		}
 	});
@@ -1366,26 +1301,8 @@ var str = '\
 					.on('click', function (ev) {
 						layersByID[ev.layerID].repaint();
 					});
-					/*
-					.on('dateInterval', function (ev) {
-						var d1 = ev.beginDate,
-							d2 = ev.endDate,
-							gmxLayer = layersByID[ev.layerID];
-
-						// if (map.hasLayer(gmxLayer) && calendar) {
-							// calendar.setDateInterval(d1, d2, gmxLayer);
-						// } else {
-							gmxLayer.setDateInterval(d1, d2);
-						// }
-					})*/
-
-				map.addControl(timeLineControl);
+				// map.addControl(timeLineControl);
 				nsGmx.timeLineControl = timeLineControl;
-				// nsGmx.gmxMap.layers.forEach(function (gmxLayer) {
-					// if (map.hasLayer(gmxLayer)) {
-						// timeLineControl.addLayer(gmxLayer);
-					// }
-				// });
 				var title = 'Добавить в таймлайн';
 				if (nsGmx.Translations) {
 					var translations = nsGmx.Translations;
@@ -1430,6 +1347,7 @@ var str = '\
 			return this;
         },
         addLayer: function(gmxLayer) {
+			if (!timeLineControl._map) { nsGmx.leafletMap.addControl(timeLineControl); }
 			nsGmx.timeLineControl.addLayer(gmxLayer);
 			return this;
         },
@@ -1477,25 +1395,7 @@ var str = '\
     };
 
     if (window.gmxCore) {
-		window.gmxCore.addModule(pluginName, publicInterface, {
-			// css: 'L.Control.gmxTimeLine.css'
-			// ,
-			// init: function(module, path) {
-				// var filePrefix = path + timeLinePrefix + 'timeline',
-					// def = $.Deferred();
-				// gmxCore.loadScriptWithCheck([
-					// {
-						// check: function(){ return window.links; },
-						// script: filePrefix + '.js',
-						// css: filePrefix + '.css'
-					// }
-				// ]).done(function() {
-					// def.resolve();
-				// });
-				
-				// return def;
-			// }
-		});
+		window.gmxCore.addModule(pluginName, publicInterface, {});
 		var path = gmxCore.getModulePath('gmxTimeLine'),
 			timeLinePath = path + timeLinePrefix + 'timeline';
 		filesToLoad = [
