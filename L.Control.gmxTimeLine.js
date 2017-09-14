@@ -3,7 +3,6 @@
 
 	window.nsGmx = window.nsGmx || {};
     var timeLineControl,
-		focuse = false,
 		calendar,
 		iconLayers,
 		timeClass,
@@ -37,7 +36,8 @@
 					var tmpKeyNum = dm.tileAttributeIndexes[dmOpt.TemporalColumnName],
 						timeColumnName = dmOpt.MetaProperties.timeColumnName ? dmOpt.MetaProperties.timeColumnName.Value : null,
 						timeKeyNum = timeColumnName ? dm.tileAttributeIndexes[timeColumnName] : null,
-						clouds = dm.tileAttributeIndexes.clouds || dm.tileAttributeIndexes.CLOUDS || null,
+						cloudsKey = dmOpt.MetaProperties.clouds ? dmOpt.MetaProperties.clouds.Value : '',
+						clouds = dm.tileAttributeIndexes[cloudsKey] || dm.tileAttributeIndexes.clouds || dm.tileAttributeIndexes.CLOUDS || null,
 						dInterval = gmxLayer.getDateInterval(),
 						opt = gmxLayer.getGmxProperties(),
 						type = (opt.GeometryType || 'point').toLowerCase(),
@@ -85,6 +85,10 @@
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
 								var arr = it.properties;
+								if (state.clouds && arr[state.clouds] > Number(timeLineControl._containers.cloudSelect.selectedOptions[0].value)) {
+									return false;
+								}
+								
 								if (this.intersectsWithGeometry(arr[arr.length - 1])) {
 									var utm = Number(arr[tmpKeyNum]);
 									if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
@@ -106,40 +110,7 @@
 								return out;
 							}
 						})
-						/**/
 					};
-/*
-					state.observer = dm.addObserver({
-						type: 'resend',
-						filters: ['clipFilter', 'userFilter', 'userFilter_timeline', 'styleFilter'],
-						active: false,
-						layerID: opt.name,
-						itemHook: function(it) {
-							if (!state.cache) { state.cache = {}; }
-							var arr = it.properties;
-							if (this.intersectsWithGeometry(arr[arr.length - 1])) {
-								var utm = Number(arr[tmpKeyNum]);
-								if (timeColumnName) { utm += arr[timeKeyNum] + tzs; }
-								state.cache[utm] = 1 + (state.cache[utm] || 0);
-								if (state.needResort && state.clickedUTM === utm) {
-									state.needResort[state.needResort.length] = it.id;
-								}
-							}
-						},
-						callback: function(data) {
-							var out = state.cache || {};
-// console.log('observer', opt.name, Object.keys(out).length);
-							state.cache = {};
-							if (state.needResort) {
-								gmxLayer.setReorderArrays(state.needResort);
-								state.needResort = null;
-							}
-							gmxLayer.repaint();
-							return out;
-						}
-					});
-*/
-					// gmxLayer.repaintObservers[state.observer.id] = true;
 				}
 			}
 			return state;
@@ -157,7 +128,7 @@
 			// modeBbox: 'thirdpart',		// screen, center, thirdpart
 			centerBuffer: 10,		// буфер центра в пикселях
 			groups: false,
-			moveable: false
+			moveable: true
         },
 
 		saveState: function() {
@@ -241,7 +212,6 @@
 			liItem._eye = true;
 			liItem._layerID = layerID;
 			span.innerHTML = title;
-			// spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye"></use></svg>';
 
 			L.DomEvent
 				.on(closeButton, 'click', stop)
@@ -256,7 +226,6 @@
 					if (state.layerID === layerID) {
 						liItem._eye = !liItem._eye;
 						spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
-						// this.setCommand(' ');
 						if (liItem._eye) {
 							if (!gmxLayer._map) { this._map.addLayer(gmxLayer); }
 						} else {
@@ -324,18 +293,36 @@
 			return this;
 		},
 
+		_addKeyboard: function (map) {
+			map = map || this._map;
+			if (map && map.keyboard) {
+				map.keyboard.disable();
+				// this._map.dragging.disable();
+			}
+		},
+
+		_removeKeyboard: function (map) {
+			map = map || this._map;
+			if (map && map.keyboard) {
+				map.keyboard.enable();
+			}
+			map._container.blur();
+			map._container.focus();
+		},
+
 		onRemove: function (map) {
 			if (map.gmxControlsManager) {
 				map.gmxControlsManager.remove(this);
 			}
 			map
-				.off('moveend', this._moveend, this)
-				.off('focus', this._unsetFocuse, this)
-				.off('blur', this._setFocuse, this);
+				.off('moveend', this._moveend, this);
+				// .off('focus', this._unsetFocuse, this)
+				// .off('blur', this._setFocuse, this);
 			L.DomEvent
-				.off(document, 'keydown', this._keydown, this);
+				.off(document, 'keyup', this._keydown, this);
+				// .off(document, 'keydown', this._keydown, this);
 
-			map.keyboard.addHooks();
+			this._removeKeyboard(map);
 			map.fire('controlremove', this);
 		},
 
@@ -453,9 +440,9 @@
 			this._timeline.clearItems();
 			this._setWindow(data.oInterval);
 			//this._timeline.reflowAxis();			
-			if (res.length) { 
+			// if (res.length) { 
 				this._timeline.setData(res);
-			}
+			// }
 			this._chkSelection(data);
 			
 			var cont = this._containers,
@@ -490,7 +477,7 @@
 				lastDom = null;
 
 			this._timeline.items.forEach(function(it) {
-				if (it.dom.parentNode) {
+				if (it.dom && it.dom.parentNode) {
 					lastDom = it.dom;
 					if (!clickedUTM) {
 						if (it.start >= beginDate && it.start < endDate) {
@@ -701,19 +688,13 @@
 					data.skipUnClicked = true;
 				}
 				gmxLayer
-					// .on('dateIntervalChanged', this._dateIntervalChanged, this)
-					// .on('click', function (ev) {		// МихаП: убери выделение на таймлайне по клику на карте - лишнее пока
-						// var state = this._state.data[opt.name] || {},
-							// it = ev.gmx.target,
-							// dt = it.properties[state.tmpKeyNum];
-
-						// state.clickedUTM = dt;
-						// this._redrawTimeline();
-					// }, this)
 					.addLayerFilter(function (it) {
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
 
+						if (state.clouds && it.properties[state.clouds] > Number(this._containers.cloudSelect.selectedOptions[0].value)) {
+							return false;
+						}
 						if (state.skipUnClicked) {
 							return state.clickedUTM === dt;
 						} else if (state.selected) {
@@ -743,31 +724,11 @@
 				}.bind(this));
 			}
 		},
-/*
-		_dateIntervalChanged: function (ev) {
-			var gmxLayer = ev.target,
-				opt = gmxLayer.getGmxProperties(),
-				state = this._state.data[opt.name],
-				// state = this.getCurrentState(),
-				dInterval = gmxLayer.getDateInterval();
 
-// console.log('_dateIntervalChanged', opt.name, state.layerID, dInterval);
-			if (state && dInterval.beginDate) {
-				state.oInterval = { beginDate: dInterval.beginDate, endDate: dInterval.endDate };
-				state.uTimeStamp = [dInterval.beginDate.getTime()/1000, dInterval.endDate.getTime()/1000];
-
-				if (state.layerID === opt.name) {
-					if (!this.options.moveable) { delete state.dInterval; }
-					// if (this._timeline) { this._setWindow(dInterval); }
-					this._setDateScroll();
-					this._bboxUpdate();
-				}
-			}
-		},
-*/
 		_keydown: function (ev) {
-			//if (!this._map || this._map.keyboard._focused) { return; }
-			this.setCommand(ev.key, ev.ctrlKey);
+			if (this._map && this._map.keyboard && !this._map.keyboard.enabled()) {
+				this.setCommand(ev.key, ev.ctrlKey);
+			}
 		},
 
 		setCommand: function (key, ctrlKey) {
@@ -822,83 +783,7 @@
 					this._chkObserver(state);
 				}
 			}
-			this._setFocuse();
-		},
-
-		setCommand1: function (key, ctrlKey) {
-			if (this._commandKeys.indexOf(key) !== -1) {
-				this._setFocuse();
-
-				var state = this.getCurrentState(),
-					setClickedUTMFlag = true;
-				if (state && state.clickedUTM) {
-					if (key === ' ') {
-						state.skipUnClicked = !state.skipUnClicked;
-						setClickedUTMFlag = false;
-					} else if (key === 'ArrowUp' || key === 'Up') {
-						//if (ctrlKey) {
-							this._addSelected(state.clickedUTM, state);
-							// if (!state.selected) { state.selected = {}; }
-							// state.selected[state.clickedUTM] = true;
-							setClickedUTMFlag = false;
-/*
-						} else {
-							if (!state.selected || Object.keys(state.selected).length < 2) {
-								return;
-							}
-							state.rollClickedFlag = true;
-							this._chkRollClickedFlag(state);
-							if (state.selected && state.selected[state.clickedUTM]) {
-								setClickedUTMFlag = false;
-							} else {
-								// key = 'Left';
-							}
-						}
-*/
-					} else if (key === 'ArrowDown' || key === 'Down') {
-						if (ctrlKey) {
-							this._removeSelected(state.clickedUTM, state);
-							// if (state.selected) { delete state.selected[state.clickedUTM]; }
-						} else {
-							state.rollClickedFlag = false;
-							this._chkRollClickedFlag(state);
-						}
-						setClickedUTMFlag = false;
-					} else if (key === 's') {
-						state.rollClickedFlag = !state.rollClickedFlag;
-						this._chkRollClickedFlag(state);
-					}
-					if (setClickedUTMFlag) {
-						var clickedUTM = String(state.clickedUTM),
-							rollClicked = this.options.rollClicked,
-							arr = [];
-						if (state.selected && state.rollClickedFlag) {
-							arr = Object.keys(state.selected).sort().map(function (it) { return {utm: it}});
-						} else {
-							arr = this._timeline.getData();
-						}
-						for (var i = 0, len = arr.length - 1; i <= len; i++) {
-							if (Number(arr[i].utm) > state.clickedUTM) {
-								break;
-							}
-						}
-
-						if (key === 'ArrowLeft' || key === 'Left') {
-							i = ctrlKey ? 0 : (i > 1 ? i - 2 : (rollClicked ? len : 0));
-						} else if (key === 'ArrowRight' || key === 'Right') {
-							i = ctrlKey ? len : (i < len ? i: (rollClicked ? 0 : len));
-						} else if (key === 's') {
-							i = i === 0 ? 0 : i - 1;
-						}
-						if (arr[i]) {
-							state.clickedUTM = Number(arr[i].utm);
-			this._setClassName(state.selected && state.selected[state.clickedUTM], this._containers.favorite, 'on');
-						}
-					}
-					state.needResort = [];
-					this._chkObserver(state);
-				}
-			}
+			// this._setFocuse();
 		},
 
 		_chkObserver: function (state) {
@@ -939,12 +824,6 @@
 				state.selected = null;
 			}
 			this._chkRollClickedFlag(state);
-			// if (!state.selected || Object.keys(state.selected).length === 0) {
-				// state.clickedUTM = null;
-				// state.selected = null;
-				// state.rollClickedFlag = false;
-				// L.DomUtil.addClass(this._containers.switchDiv, 'gmx-hidden');
-			// }
 		},
 
 		_addSelected: function (utm, state) {
@@ -954,10 +833,6 @@
 			delete state.dInterval;
 			state.uTimeStamp = [state.oInterval.beginDate.getTime()/1000, state.oInterval.endDate.getTime()/1000];
 			this._chkRollClickedFlag(state);
-			// if (!state.rollClickedFlag && Object.keys(state.selected).length > 1) {
-				// L.DomUtil.removeClass(this._containers.switchDiv, 'gmx-hidden');
-				// this._chkRollClickedFlag(state);
-			// }
 		},
 
 		_clickOnTimeline: function (ev) {
@@ -974,12 +849,10 @@
 				state.clickedUTM = utm;
 				state.skipUnClicked = state.clickedUTM ? true : false;
 				state.gmxLayer.repaint();
-				// this._chkScrollChange();
 				this._setDateScroll();
 				
 				this._bboxUpdate();
 				this._redrawTimeline();
-				this._setFocuse();
 			} else {
 				var selectedPrev = state.selected || {},
 					selected = {};
@@ -1006,17 +879,6 @@
 			}
 		},
 
-		_setFocuse: function () {
-			focuse = true;
-			L.DomUtil.addClass(this._containers.internalContainer, 'gmx-focuse');
-			this._map._container.blur();
-		},
-
-		_unsetFocuse: function () {
-			focuse = false;
-			L.DomUtil.removeClass(this._containers.internalContainer, 'gmx-focuse');
-		},
-
 		_addSvgIcon: function (id) {
 			return '<svg role="img" class="svgIcon"><use xlink:href="#' + id + '"></use></svg>';
 		},
@@ -1026,8 +888,8 @@
 				stop = L.DomEvent.stopPropagation,
 				preventDefault = L.DomEvent.preventDefault;
 
-			map.keyboard.removeHooks();
-			container.tabindex = '0';
+			this._addKeyboard(map);
+			container.tabindex = -1;
 
 var str = '\
 <div class="leaflet-gmx-iconSvg showButton gmx-hidden leaflet-control" title="">' + this._addSvgIcon('arrow-up-01') + '</div>\
@@ -1093,7 +955,7 @@ var str = '\
 			this._map = map;
 			var	clickLeft = container.getElementsByClassName('click-left')[0],
 				clickRight = container.getElementsByClassName('click-right')[0],
-				// clickCenter = container.getElementsByClassName('click-center')[0],
+				cloudSelect = container.getElementsByClassName('cloud-select')[0],
 				clickCalendar = container.getElementsByClassName('el-act-cent-2')[0],
 				clickId = container.getElementsByClassName('calendar-text')[0],
 				clickIdTime = container.getElementsByClassName('clock-text')[0],
@@ -1114,6 +976,7 @@ var str = '\
 
 			this._containers = {
 				vis: container.getElementsByClassName('vis')[0],
+				cloudSelect: cloudSelect,
 				cloudsContent: cloudsContent,
 				internalContainer: internalContainer,
 				layersTab: layersTab,
@@ -1129,10 +992,7 @@ var str = '\
 			modeSelectedOff.innerHTML = translate.modeSelectedOff;
 			modeSelectedOn.innerHTML = translate.modeSelectedOn;
 			L.DomEvent
-				.on(document, 'keydown', this._keydown, this);
-			map
-				.on('focus', this._unsetFocuse, this)
-				.on('blur', this._setFocuse, this);
+				.on(document, 'keyup', this._keydown, this);
 
 			L.DomEvent
 				.on(container, 'contextmenu', stop)
@@ -1140,11 +1000,18 @@ var str = '\
 				.on(container, 'mousedown', stop)
 				.on(container, 'mousewheel', stop)
 				.on(container, 'dblclick', stop)
-				// .on(container, 'focus', stop)
-				.on(container, 'click', stop)
-				.on(container, 'click', this._setFocuse, this);
+				.on(container, 'click', stop);
 
+			var iconLayersCont = iconLayers ? iconLayers.getContainer() : null;
 			L.DomEvent
+				.on(cloudSelect, 'change', function (ev) {
+					ev.target.blur();
+					this._bboxUpdate();
+					var state = this.getCurrentState();
+					state.gmxLayer.repaint();
+					this.setCommand('Left');
+					this.setCommand('Right');
+				}, this)
 				.on(differentInterval, 'click', function () {
 					if (singleIntervalFlag) {
 						singleIntervalFlag = false;
@@ -1173,11 +1040,11 @@ var str = '\
 				}, this)
 				.on(clickLeft, 'mousemove', stop)
 				.on(clickLeft, 'click', function (ev) {
-					this.setCommand('ArrowLeft');
+					this.setCommand('Left');
 				}, this)
 				.on(clickRight, 'mousemove', stop)
 				.on(clickRight, 'click', function (ev) {
-					this.setCommand('ArrowRight');
+					this.setCommand('Right');
 				}, this)
 				.on(modeSelectedOff, 'click', function (ev) {
 					this.setCommand('s');
@@ -1193,8 +1060,12 @@ var str = '\
 					if (L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
 						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
 						L.DomUtil.addClass(showButton, 'gmx-hidden');
+						if (iconLayersCont) {
+							L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
+						}
 						this._state.isVisible = true;
 						this._redrawTimeline();
+						this._addKeyboard(map);
 					}
 				}, this)
 				.on(hideButton, 'click', function (ev) {
@@ -1202,33 +1073,12 @@ var str = '\
 						L.DomUtil.addClass(visContainer, 'gmx-hidden');
 						L.DomUtil.removeClass(showButton, 'gmx-hidden');
 						this._state.isVisible = false;
-					}
-					/*
-					var isVisible = !L.DomUtil.hasClass(visContainer, 'gmx-hidden'),
-						iconLayersCont = iconLayers ? iconLayers.getContainer() : null,
-						xTop = '0px';
-					if (isVisible) {
-						L.DomUtil.addClass(visContainer, 'gmx-hidden');
 						if (iconLayersCont) {
 							L.DomUtil.removeClass(iconLayersCont, 'iconLayersShift');
 						}
-						useSvg.setAttribute('href', '#arrow-up-01');
-					} else {
-						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
-						if (iconLayersCont) {
-							L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
-							xTop = '4px';
-						}
-						useSvg.setAttribute('href', '#arrow-down-01');
-						this._redrawTimeline();
+						this._removeKeyboard(map);
 					}
-					hideButton.style.top = xTop;
-					this._state.isVisible = isVisible;
-					*/
 				}, this);
-				// if (iconLayers) {
-					// hideButton.style.top = '4px';
-				// }
 
 			L.DomEvent
 				.on(layersTab, 'click', function (ev) {
@@ -1238,11 +1088,6 @@ var str = '\
 				}, this);
 
 			var _this = this;
-
-			// this._chkScrollChange = function (state) {
-				// state = state || _this.getCurrentState();
-
-			// };
 			this._setDateScroll = function () {
 				var state = _this.getCurrentState();
 				if (state) {
@@ -1276,6 +1121,8 @@ var str = '\
 					nsGmx = window.nsGmx,
 					layersByID = nsGmx.gmxMap.layersByID;
 
+				// options.clouds = params.clouds || '';
+				
 				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : true; }
 				// if (params.modeBbox) { options.modeBbox = params.modeBbox; }
 				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : true; }
