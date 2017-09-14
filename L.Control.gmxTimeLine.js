@@ -661,6 +661,10 @@
 						data.modeBbox = options.modeBbox;
 					}
 				}
+				var stateBefore = this.getCurrentState();
+				if (singleIntervalFlag && stateBefore) {
+					this._copyState(data, stateBefore);
+				}
 
 				if (this.options.moveable) {
 					gmxLayer.setDateInterval(data.oInterval.beginDate, data.oInterval.endDate);
@@ -1062,8 +1066,10 @@ var str = '\
 			L.DomEvent
 				.on(layersTab, 'click', function (ev) {
 					var target = ev.target,
+						_prevState = this.getCurrentState() || {},
 						_layerID = target._layerID || target.parentNode._layerID;
-					this._setCurrentTab(_layerID);
+
+					if (_layerID && _prevState.layerID !== _layerID) { this._setCurrentTab(_layerID); }
 				}, this);
 
 			var _this = this;
