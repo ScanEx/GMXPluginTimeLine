@@ -1,15 +1,11 @@
-/*
-*/
 @font-face {
     font-family: Open Sans;
     src: url(open.ttf);
 }
 
-* {
-font-family: 'Open Sans'		
+.gmxTimeline * {
+	font-family: 'Open Sans'		
 }
-
-
 
 .gmxTimeline.leaflet-control {
     position: absolute;
@@ -76,7 +72,6 @@ font-family: 'Open Sans'
 	top: 74px;
 	width: 10px;
     height: 10px;
-	
 }
 
 .gmxTimeline .item-range .timeline-event-dot {
@@ -99,7 +94,6 @@ font-family: 'Open Sans'
     height: 10px;
     background-color: rgb(69, 175, 215);
     border-radius: 15px;
-	
 	border-color: rgb(69, 175, 215);
     border-width: 5px;
     box-shadow: 0px 0px 0px 1px #FFF, 0px 0px 0px 2px rgb(69, 175, 215);
@@ -135,8 +129,6 @@ font-family: 'Open Sans'
 .gmxTimeline .item-clicked .timeline-event-content {
 	display: block;
     cursor: pointer;
-}
-.gmxTimeline .item-clicked .timeline-event-dot {
 }
 
 .gmxTimeline .item-clicked{
@@ -232,6 +224,7 @@ font-family: 'Open Sans'
 	display: inline-flex;
 	height: 26px;
     padding-bottom: 10px;
+	margin: 0;
 }
 
 .gmxTimeline .tabs .clicked:hover {
@@ -293,9 +286,6 @@ font-family: 'Open Sans'
     padding-right: 5px;
     display: inline-block;
 	width: 185px;
-    /*border-style: solid;
-    border-width: 1px;
-    border-color: rgba(70,70,70,.3);*/
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     border-bottom-right-radius: 0px;
@@ -306,8 +296,6 @@ font-family: 'Open Sans'
 	background: #dee7ec;
 	box-shadow: rgba(0,0,0,0.09804) 0px 1px 1px 0px;
     border: 1px solid rgba(70,70,70,.3);
-
-
 }
 
 .gmxTimeline .tabs ul li.last {
@@ -347,10 +335,6 @@ font-family: 'Open Sans'
     padding-bottom: 0px;
     background: #FFF;
     box-shadow: #FFF 0px 1px 1px 0px;
-}
-
-.leaflet-iconLayers.iconLayersShift {
-	margin-bottom: 178px;
 }
 
 .gmxTimeline .leaflet-gmx-iconSvg {
@@ -396,11 +380,6 @@ font-family: 'Open Sans'
     pointer-events: none;
 }
 
-#transparency-eye-off {
-
-fill:#da5d40;
-
-}
 .gmxTimeline .switch  {
     font-size: 0;
 	float: right;
@@ -444,33 +423,29 @@ fill:#da5d40;
     background-color: rgb(69, 176, 218);
 }
 
-
-div.timeline-event-dot {
+.gmxTimeline div.timeline-event-dot {
     -moz-border-radius: 5px;
     border-radius: 5px;
     border-style: solid;
     border-width: 3px;
 }
 
-.vis-container {
-   /* position: fixed;*/
+.gmxTimeline .vis-container {
     bottom: 0;
     width: 100%;
     left: 0px;
 }
 
 
-.timeline-frame.timeline-selectable {
+.gmxTimeline .timeline-frame.timeline-selectable {
     height: 100px!important;
 }
 
-.timeline-content {
-
-height: 100px!important;
-
+.gmxTimeline .timeline-content {
+	height: 100px!important;
 }
 
-.hr1 {
+.gmxTimeline .hr1 {
     position: relative;
     height: 1px;
     padding-left: 10px;
@@ -482,7 +457,7 @@ height: 100px!important;
     margin-left: 6px;
 }
 
-.hr2 {
+.gmxTimeline .hr2 {
     position: relative;
     height: 1px;
     padding-left: 10px;
@@ -494,55 +469,39 @@ height: 100px!important;
     margin-left: 6px;
 }
 
-.timeline-axis {
-
-
-background: #e6eef2!important;
-
+.gmxTimeline .timeline-axis {
+	background: #e6eef2!important;
 }
 
 
-span.clicked.click-right.gmx-disabled {
+.gmxTimeline span.clicked.click-right.gmx-disabled {
     position: absolute;
     top: 46px;
     left: 32%;
     border-bottom-right-radius: 4px;
     border-top-right-radius: 4px;
     display: none;
-    
 }
 
-
-span.clicked.click-left.gmx-disabled {
-
+.gmxTimeline span.clicked.click-left.gmx-disabled {
 	position: absolute;
     top: 46px;
     left: 30%;
     border-bottom-left-radius: 4px;
     border-top-left-radius: 4px;
     display:none;
-    
 }
 
-
-.el-right {
+.gmxTimeline .el-right {
     display: inline-block;
 	right: 10px;
     position: absolute;
     bottom: -6px;
-/*
-    text-align: right;
-    width: 100%;
-    position: relative;
-    bottom: 63px;
-*/
 }
 
-.el-left {
- 
+.gmxTimeline .el-left {
     display: inline-block;
     text-align: left;
-
 }
 
 .gmxTimeline .el-left  .on {
@@ -550,7 +509,7 @@ span.clicked.click-left.gmx-disabled {
 	background-color:  #45b0d8;
 }
 
-.el-left  .el-act, .el-left  .el-pass{
+.gmxTimeline .el-left  .el-act, .gmxTimeline .el-left  .el-pass{
 	font-family: 'Open Sans';
     color: #666;
     font-size: 12px;
@@ -566,69 +525,16 @@ span.clicked.click-left.gmx-disabled {
     /* margin: 1px; */
 }
 
-.el-act {border-right: 1px solid #999}
+.gmxTimeline .el-act {border-right: 1px solid #999}
 
-.el-center {
-
+.gmxTimeline .el-center {
     display: inline-block;
     text-align: center;
     position: relative;
     margin-left: 6%;
-/*
-    width: 100%;
-    bottom: 33px
-*/
-
 }
 
-/*
-.el-act-cent-0-l {
-
-    font-family: 'Open Sans';
-    color: #666;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 23px;
-    text-align: left;
-    width: auto;
-    height: 23px;
-    margin-left: 3px;
-    padding: 3px 5px 1px 9px;
-    text-transform: uppercase;
-    font-weight: 600;
-    display: inline-block;
-    background: #dee7ec;
-    border-bottom-left-radius: 4px;
-    border-top-left-radius: 4px;
-
-
-}
-
-
-.el-act-cent-0-r {
-
-    font-family: 'Open Sans';
-    color: #666;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 23px;
-    text-align: left;
-    width: auto;
-    height: 23px;
-    margin-left: 3px;
-    padding: 3px 5px 1px 9px;
-    text-transform: uppercase;
-    font-weight: 600;
-    display: inline-block;
-    background: #dee7ec;
-    border-bottom-right-radius: 4px;
-    border-top-right-radius: 4px;
-
-
-}
-*/
-.el-act-cent-1 {
-
+.gmxTimeline .el-act-cent-1 {
     font-family: 'Open Sans';
     color: #666;
     font-size: 12px;
@@ -640,19 +546,14 @@ span.clicked.click-left.gmx-disabled {
     border-radius: 4px;
     border: 1px solid #999;
     width: auto;
-    /* height: 22px; */
     margin-left: 3px;
     padding: 3px 10px 1px 10px;
     text-transform: uppercase;
     font-weight: 600;
     display: inline-block;
-
-
 }
 
-
-.el-act-cent-2 {
-
+.gmxTimeline .el-act-cent-2 {
     font-family: 'Open Sans';
     color: #666;
     font-size: 12px;
@@ -662,13 +563,11 @@ span.clicked.click-left.gmx-disabled {
     border: 1px solid #999;
     border-radius: 4px;
     width: auto;
-    /* height: 24px; */
     margin-left: 3px;
     padding: 2px 15px 0px 15px;
     text-transform: uppercase;
     font-weight: 600;
     display: inline-block;
-    /* margin-top: 6px; */
     background: #dee7ec;
     top: -1px;
     position: relative;
@@ -697,9 +596,7 @@ span.clicked.click-left.gmx-disabled {
     margin-top: 6px;
 }
 
-
-.el-act-right-1 {
-
+.gmxTimeline .el-act-right-1 {
     font-family: 'Open Sans';
     color: #666;
     font-size: 12px;
@@ -718,12 +615,9 @@ span.clicked.click-left.gmx-disabled {
     background: #dee7ec;
     position: relative;
     top: 2px;
-
 }
 
-
-.el-act-right-2 {
-
+.gmxTimeline .el-act-right-2 {
     font-family: 'Open Sans';
     color: #666;
     font-size: 12px;
@@ -740,9 +634,6 @@ span.clicked.click-left.gmx-disabled {
     display: inline-block;
     position: relative;
     top: 4px;
-
-
-
 }
 
 .gmxTimeline .hideButton-content {
@@ -756,21 +647,9 @@ span.clicked.click-left.gmx-disabled {
     right: -5px;
     bottom: 2px;
     position: relative;
-/*
-    width: auto;
-
-    font-family: 'Open Sans';
-    color: #666;
-    font-size: 12px;
-    font-weight: 400;
-    text-align: left;
-    text-transform: uppercase;
-    font-weight: 600;
-*/
-
 }
 
-.leaflet-gmx-iconSvg.hideButton.leaflet-control {
+.gmxTimeline .leaflet-gmx-iconSvg.hideButton.leaflet-control {
     position: absolute;
     right: -3px;
     height: 38px;
@@ -790,9 +669,6 @@ span.clicked.click-left.gmx-disabled {
     display: inline-block;
     bottom: 0px;
     left: 0px;
-    /* height: 26px;
-    border-right: 1px solid #999;
-	*/
 }
 
 .gmxTimeline .different-interval.on, .gmxTimeline .single-interval.on {
@@ -812,13 +688,6 @@ span.clicked.click-left.gmx-disabled {
     bottom: 4px;
     margin-left:3px; 
 }
-/*
-.leaflet-container a {
-
- text-decoration: none;
-
-}
-*/
 
 .gmxTimeline .clock-text {
     color: #666;
@@ -880,19 +749,7 @@ span.clicked.click-left.gmx-disabled {
     text-decoration: none;
     font-size: 15px;
 }
-/*
-span.clicked.click-left {
-    height: 24px;
-    width: 24px;
-    top: 0px;
-}
 
-span.clicked.click-right {
-    height: 24px;
-    width: 24px;
-        top: 0px;
-}
-*/
 .gmxTimeline .el-act-cent-1 svg {
     height: 19px;
     width: 19px;
@@ -911,7 +768,6 @@ span.clicked.click-right {
     position: relative;
     border: 1px solid transparent;
     background: transparent;
-    /* border-radius: 4px; */
     font-family: 'Open Sans';
     color: #666;
     font-size: 15px;
@@ -940,3 +796,12 @@ span.clicked.click-right {
 	pointer-events: none;
     opacity: 0.5;
 }
+
+.gmxTimeline .svgIcon.is-off {
+	fill:#da5d40;
+}
+
+.leaflet-iconLayers.iconLayersShift {
+	margin-bottom: 178px;
+}
+

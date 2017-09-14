@@ -206,7 +206,8 @@
 				gmxLayer = this._state.data[layerID].gmxLayer,
 				chkVisible = function (flag) {
 					liItem._eye = flag;
-					spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
+					var off = liItem._eye ? '' : '-off';
+					spaneye.innerHTML = '<svg role="img" class="svgIcon is' + off + '"><use xlink:href="#transparency-eye' + off + '"></use></svg>';
 				};
 
 			liItem._eye = true;
@@ -224,8 +225,7 @@
 				.on(spaneye, 'click', function (ev) {
 					var state = this.getCurrentState();
 					if (state.layerID === layerID) {
-						liItem._eye = !liItem._eye;
-						spaneye.innerHTML = '<svg role="img" class="svgIcon"><use xlink:href="#transparency-eye' + (liItem._eye ? '' : '-off') + '"></use></svg>';
+						chkVisible(!liItem._eye)
 						if (liItem._eye) {
 							if (!gmxLayer._map) { this._map.addLayer(gmxLayer); }
 						} else {
@@ -275,7 +275,6 @@
 							tLayerID = ev.target.layerID;
 						
 						this._state.data[tLayerID].items = ev.data;
-// console.log('addDataSource', tLayerID, currentDmID, Object.keys(ev.data).length, state.layerID);
 						if (tLayerID === state.layerID) {
 							this._redrawTimeline();
 						}
@@ -288,7 +287,6 @@
 				}
 				this._setCurrentTab(layerID);
 				this._setDateScroll();
-				// this._chkScrollChange();
 			}
 			return this;
 		},
@@ -316,11 +314,9 @@
 			}
 			map
 				.off('moveend', this._moveend, this);
-				// .off('focus', this._unsetFocuse, this)
-				// .off('blur', this._setFocuse, this);
+
 			L.DomEvent
 				.off(document, 'keyup', this._keydown, this);
-				// .off(document, 'keydown', this._keydown, this);
 
 			this._removeKeyboard(map);
 			map.fire('controlremove', this);
@@ -380,8 +376,6 @@
 				endDate = dInterval.endDate.valueOf() / 1000,
 				clickedUTM = String(data.clickedUTM || ''),
 				dSelected = data.selected || {},
-				// clickIdCount = 0,
-				// maxUTMitem,
 				maxUTM = 0;
 
 			for (var utm in data.items) {
@@ -399,36 +393,27 @@
 				if (needGroup) {
 					item.group = currentDmID;
 				}
-				// if (utm >= beginDate && utm < endDate) {
-					// item.className = 'timeline-event-selected';
-				// }
 
 				groupInterval[0] = Math.min(start, groupInterval[0]);
 				groupInterval[1] = Math.max(start, groupInterval[1]);
 				var className = '';
 				if (utm > maxUTM) {
 					maxUTM = utm;
-					// maxUTMitem = item;
 				}
 				if (clickedUTM === utm) {
 					className = 'item-clicked';
-					// clickIdCount = item;
-					// clickIdCount = res.length;
 				}
 				
 				if (dSelected[utm]) {
 					className += ' item-selected';
-					// selected.push({row: count});
 				}
 				item.className = className;
-				// res[count] = item;
 				res.push(item);
 				count++;
 			}
 			if (!clickedUTM && maxUTM) {
 				data.clickedUTM = Number(maxUTM);
 				data.skipUnClicked = true;
-				//maxUTMitem.className = 'item-clicked';
 			}
 			if (count && needGroup) {
 				res.push({id: 'background_' + currentDmID, start: groupInterval[0], end: groupInterval[1], type: 'background', className: 'negative',group:currentDmID});
@@ -439,10 +424,8 @@
 			}
 			this._timeline.clearItems();
 			this._setWindow(data.oInterval);
-			//this._timeline.reflowAxis();			
-			// if (res.length) { 
-				this._timeline.setData(res);
-			// }
+			this._timeline.setData(res);
+
 			this._chkSelection(data);
 			
 			var cont = this._containers,
@@ -567,10 +550,8 @@
 			}
 			
 			if (state.rollClickedFlag) {
-				// this.setCommand('s');
 				this._chkRollClickedFlag(state);
 			}
-			// this._chkScrollChange();
 			L.gmx.layersVersion.now();
 		},
 
@@ -684,7 +665,6 @@
 				if (this.options.moveable) {
 					gmxLayer.setDateInterval(data.oInterval.beginDate, data.oInterval.endDate);
 					data.uTimeStamp = [data.oInterval.beginDate.getTime()/1000, data.oInterval.endDate.getTime()/1000];
-					// data.clickedUTM = data.uTimeStamp[1];
 					data.skipUnClicked = true;
 				}
 				gmxLayer
@@ -715,7 +695,7 @@
 					});
 				}
 				Promise.all(promisesArr || []).then(function() {
-// console.log('Promise', arguments);
+					// console.log('Promise', arguments);
 					this.addDataSource(data);
 					if (currentDmIDPermalink) {
 						this.setCurrentTab(currentDmIDPermalink);
@@ -783,7 +763,6 @@
 					this._chkObserver(state);
 				}
 			}
-			// this._setFocuse();
 		},
 
 		_chkObserver: function (state) {
@@ -936,7 +915,7 @@ var str = '\
 					<span class="line4">|</span>\
 					<span class="single-interval">' + this._addSvgIcon('tl-single-interval') + '</span>\
 				</span>\
-				<span class="el-act-right-2"><span class="ques">' + this._addSvgIcon('tl-help') + '</span></span>\
+				<span class="el-act-right-2"><span class="ques gmx-hidden">' + this._addSvgIcon('tl-help') + '</span></span>\
 				<span class="hideButton-content"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
 			</div>\
 			<div class="g-scroll"></div>\
@@ -1148,7 +1127,7 @@ var str = '\
 					.on('click', function (ev) {
 						layersByID[ev.layerID].repaint();
 					});
-				// map.addControl(timeLineControl);
+
 				nsGmx.timeLineControl = timeLineControl;
 				var title = 'Добавить в таймлайн';
 				if (nsGmx.Translations) {
@@ -1216,7 +1195,6 @@ var str = '\
 			if (state.dataSources) {
 				if (state.currentTab) {
 					currentDmIDPermalink = state.currentTab;
-					//timeLineControl.setCurrentTab(state.currentTab);
 				}
 				if (!timeLineControl._map) { nsGmx.leafletMap.addControl(timeLineControl); }
 				var layersByID = nsGmx.gmxMap.layersByID;
