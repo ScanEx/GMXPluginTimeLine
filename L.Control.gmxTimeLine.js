@@ -884,10 +884,9 @@
 		},
 
 		onAdd: function (map) {
-			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden'),
-				stop = L.DomEvent.stopPropagation,
-				preventDefault = L.DomEvent.preventDefault;
+			var container = this._container = L.DomUtil.create('div', this.options.className + ' gmx-hidden');
 
+			L.DomEvent.on(container, 'selectstart', L.DomEvent.preventDefault);
 			this._addKeyboard(map);
 			container.tabindex = -1;
 
@@ -994,6 +993,7 @@ var str = '\
 			L.DomEvent
 				.on(document, 'keyup', this._keydown, this);
 
+			var stop = L.DomEvent.stopPropagation;
 			L.DomEvent
 				.on(container, 'contextmenu', stop)
 				.on(container, 'touchstart', stop)
