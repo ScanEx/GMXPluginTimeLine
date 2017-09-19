@@ -117,7 +117,7 @@
 		};
 
 	L.Control.GmxTimeline = L.Control.extend({
-		includes: L.Mixin.Events,
+		includes: L.Evented ? L.Evented.prototype : L.Mixin.Events,
 		options: {
 			position: 'bottom',
 			id: 'gmxTimeline',
@@ -194,6 +194,7 @@
 			} else {
 				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
 			}
+			this.fire('layerRemove', { layerID: liItem._layerID }, this);
 		},
 
 		_addLayerTab: function (layerID, title) {
@@ -238,6 +239,8 @@
 				.on('remove', function () { chkVisible(false); }, this);
 
 			chkVisible(gmxLayer._map ? true : false);
+			this.fire('currentTabChanged', {currentTab: layerID});
+			this.fire('layerAdd', { layerID: layerID }, this);
 			return liItem;
 		},
 
@@ -533,7 +536,7 @@
 				this._copyState(state, stateBefore);
 			}
 
-			this._map.fire('gmxTimeLine.currentTabChanged', {currentTab: layerID});
+			this.fire('currentTabChanged', {currentTab: layerID});
 			this._bboxUpdate();
 			if (this._timeline) {
 				this._setWindow(state.oInterval);
