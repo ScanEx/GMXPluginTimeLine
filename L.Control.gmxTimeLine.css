@@ -23,6 +23,33 @@
     padding-right: 6px;
 	cursor: pointer;
 }
+.gmxTimeline .closeWarning {
+	cursor: pointer;
+}
+.gmxTimeline .warningText {
+	margin-right: 27px;
+}
+.gmxTimeline .warning span {
+    position: absolute;
+    bottom: 0px;
+    right: 40px;
+    display: block;
+    padding: 5px 10px 5px 10px;
+    background: #2c95d6;
+    border: 1px solid #999;
+    border-radius: 4px;
+    color: #FFF;
+    font-size: 15px;
+    font-family: 'Tahoma';
+    font-weight: 500;
+
+
+}
+.gmxTimeline .showButton.off {
+	opacity: 0.5;
+	cursor: auto;
+	pointer-events: none;
+}
 .gmxTimeline .tabs {
     z-index: 1;
     position: relative;

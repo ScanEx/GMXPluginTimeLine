@@ -127,6 +127,7 @@
 			modeSelect: 'range',	// selected
 			// modeBbox: 'thirdpart',		// screen, center, thirdpart
 			centerBuffer: 10,		// буфер центра в пикселях
+			minZoom: 8,				// min zoom таймлайна
 			groups: false,
 			moveable: true
         },
@@ -877,7 +878,10 @@
 			container.tabindex = -1;
 
 var str = '\
-<div class="leaflet-gmx-iconSvg showButton gmx-hidden leaflet-control" title="">' + this._addSvgIcon('arrow-up-01') + '</div>\
+<div class="showButtonContainer gmx-hidden">\
+	<div class="warning"><span class="warningText">' + translate.warning + '</span> | <span class="closeWarning">X</span></div>\
+	<div class="leaflet-gmx-iconSvg showButton leaflet-control" title="">' + this._addSvgIcon('tl-main-icon') + '</div>\
+</div>\
 <div class="vis-container">\
 	<div class="tabs"><ul class="layers-tab"></ul></div>\
 	<div class="internal-container">\
@@ -948,7 +952,10 @@ var str = '\
 				modeSelectedOn = container.getElementsByClassName('el-pass')[0],
 				modeSelectedOff = container.getElementsByClassName('el-act')[0],
 				hideButton = container.getElementsByClassName('hideButton')[0],
+				showButtonContainer = container.getElementsByClassName('showButtonContainer')[0],
 				showButton = container.getElementsByClassName('showButton')[0],
+				closeWarning = container.getElementsByClassName('closeWarning')[0],
+				warning = container.getElementsByClassName('warning')[0],
 				favorite = container.getElementsByClassName('favorite')[0],
 				trash = container.getElementsByClassName('trash')[0],
 				useSvg = hideButton.getElementsByTagName('use')[0],
@@ -989,6 +996,35 @@ var str = '\
 				.on(container, 'click', stop);
 
 			var iconLayersCont = iconLayers ? iconLayers.getContainer() : null;
+			var toglleVisContainer = function (flag) {
+				var isVis = !L.DomUtil.hasClass(visContainer, 'gmx-hidden');
+				if (flag) {
+					this._setClassName(!this._zoomOff, warning, 'gmx-hidden');
+					this._setClassName(this._zoomOff, showButton, 'off');
+					if (this._state.isVisible !== false) {
+						this._setClassName(flag, showButtonContainer, 'gmx-hidden');
+							this._setClassName(!flag, visContainer, 'gmx-hidden');
+							if (iconLayersCont && !this._zoomOff) {
+								this._setClassName(flag, iconLayersCont, 'iconLayersShift');
+							}
+						if (!isVis) {
+							this._redrawTimeline();
+						}
+						this._addKeyboard(map);
+					}
+				} else {
+					this._setClassName(flag, showButtonContainer, 'gmx-hidden');
+					this._setClassName(this._zoomOff, showButton, 'off');
+					this._setClassName(!this._zoomOff, warning, 'gmx-hidden');
+					if (isVis) {
+						this._setClassName(!flag, visContainer, 'gmx-hidden');
+						if (iconLayersCont) {
+							this._setClassName(flag, iconLayersCont, 'iconLayersShift');
+						}
+						this._removeKeyboard(map);
+					}
+				}
+			}.bind(this);
 			L.DomEvent
 				.on(cloudSelect, 'change', function (ev) {
 					ev.target.blur();
@@ -1043,27 +1079,34 @@ var str = '\
 					L.DomUtil.removeClass(modeSelectedOff, 'on');
 				}, this)
 				.on(showButton, 'click', function (ev) {
-					if (L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
-						L.DomUtil.removeClass(visContainer, 'gmx-hidden');
-						L.DomUtil.addClass(showButton, 'gmx-hidden');
-						if (iconLayersCont) {
-							L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
-						}
-						this._state.isVisible = true;
-						this._redrawTimeline();
-						this._addKeyboard(map);
-					}
+					this._state.isVisible = true;
+					toglleVisContainer(true);
+					// if (L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
+						// L.DomUtil.removeClass(visContainer, 'gmx-hidden');
+						// L.DomUtil.addClass(showButton, 'gmx-hidden');
+						// if (iconLayersCont) {
+							// L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
+						// }
+						// this._state.isVisible = true;
+						// this._redrawTimeline();
+						// this._addKeyboard(map);
+					// }
+				}, this)
+				.on(closeWarning, 'click', function (ev) {
+					this._setClassName(true, warning, 'gmx-hidden');
 				}, this)
 				.on(hideButton, 'click', function (ev) {
-					if (!L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
-						L.DomUtil.addClass(visContainer, 'gmx-hidden');
-						L.DomUtil.removeClass(showButton, 'gmx-hidden');
-						this._state.isVisible = false;
-						if (iconLayersCont) {
-							L.DomUtil.removeClass(iconLayersCont, 'iconLayersShift');
-						}
-						this._removeKeyboard(map);
-					}
+					this._state.isVisible = false;
+					toglleVisContainer(false);
+					// if (!L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
+						// L.DomUtil.addClass(visContainer, 'gmx-hidden');
+						// L.DomUtil.removeClass(showButton, 'gmx-hidden');
+						// this._state.isVisible = false;
+						// if (iconLayersCont) {
+							// L.DomUtil.removeClass(iconLayersCont, 'iconLayersShift');
+						// }
+						// this._removeKeyboard(map);
+					// }
 				}, this);
 
 			L.DomEvent
@@ -1086,9 +1129,18 @@ var str = '\
 				map.gmxControlsManager.add(this);
 			}
 			this._sidebarOn = true;
+			var chkZoom = function () {
+				this._zoomOff = map.getZoom() < this.options.minZoom;
+				// if (this._state.isVisible !== false) {
+					// this._setClassName(flag, showButton, 'off');
+					toglleVisContainer(!this._zoomOff);
+				// }
+			}.bind(this);
 			map
-				.on('moveend', this._moveend, this);
+				.on('moveend', this._moveend, this)
+				.on('zoomend', chkZoom, this);
 
+			chkZoom();
 			return container;
 		}
 	});
@@ -1114,14 +1166,17 @@ var str = '\
 				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : true; }
 				// if (params.modeBbox) { options.modeBbox = params.modeBbox; }
 				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : true; }
+				options.minZoom = params.minZoom || 8;
 
 				if (options.locale === 'ru') {
 					translate = {
+						warning: 'Приблизьте карту для загрузки на таймлан',
 						modeSelectedOff: 'По всем',
 						modeSelectedOn: 'По избранным'
 					};
 				} else {
 					translate = {
+						warning: 'Zoom map for TimeLine',
 						modeSelectedOff: 'By all',
 						modeSelectedOn: 'By selected'
 					};
@@ -1224,8 +1279,6 @@ var str = '\
                 gmxTimeline = gmxControlsManager.get('gmxTimeline');
 
 			gmxControlsManager.remove(gmxTimeline);
-        },
-        getPluginPath: function() {
 		}
     };
 
