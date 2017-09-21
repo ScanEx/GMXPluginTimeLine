@@ -333,7 +333,7 @@
 		},
 
 		_bboxUpdate: function () {
-			if (currentDmID && this._map) {
+			if (currentDmID && this._map && !this._zoomOff) {
 				this._triggerObserver(this.getCurrentState());
 			}
 		},
@@ -528,7 +528,7 @@
 
 			currentDmID = layerID;
 			var state = this.getCurrentState();
-			state.oInterval = state.gmxLayer.getDateInterval();
+			//state.oInterval = state.gmxLayer.getDateInterval();
 			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
@@ -671,7 +671,8 @@
 				}
 
 				if (this.options.moveable) {
-					gmxLayer.setDateInterval(data.oInterval.beginDate, data.oInterval.endDate);
+				// this._zoomOff = map.getZoom() < this.options.minZoom;
+					// gmxLayer.setDateInterval(data.oInterval.beginDate, data.oInterval.endDate);
 					data.uTimeStamp = [data.oInterval.beginDate.getTime()/1000, data.oInterval.endDate.getTime()/1000];
 					data.skipUnClicked = true;
 				}
@@ -1141,6 +1142,10 @@ var str = '\
 				.on('zoomend', chkZoom, this);
 
 			chkZoom();
+			if (!this._zoomOff) {
+				var state = this.getCurrentState();
+				state.gmxLayer.setDateInterval(state.oInterval.beginDate, state.oInterval.endDate);
+			}
 			return container;
 		}
 	});
