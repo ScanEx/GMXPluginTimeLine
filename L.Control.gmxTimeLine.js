@@ -286,9 +286,9 @@
 				}
 				L.DomUtil.removeClass(this._containers.vis, 'gmx-hidden');
 				L.DomUtil.removeClass(this._container, 'gmx-hidden');
-				if (iconLayers) {
-					L.DomUtil.addClass(iconLayers.getContainer(), 'iconLayersShift');
-				}
+				// if (iconLayers) {
+					// L.DomUtil.addClass(iconLayers.getContainer(), 'iconLayersShift');
+				// }
 				this._setCurrentTab(layerID);
 				this._setDateScroll();
 			}
@@ -367,85 +367,70 @@
 		},
 
 		_redrawTimeline: function () {
-			var count = 0,
-				type = 'dot',
-				selected = [],
-				res = [],
-				needGroup = this.options.groups,
-				state = this._state,
-				groupInterval = [state.maxDate, state.zeroDate],
-				data = this.getCurrentState(),
-				dInterval = data.dInterval || data.oInterval,
-				beginDate = dInterval.beginDate.valueOf() / 1000,
-				endDate = dInterval.endDate.valueOf() / 1000,
-				clickedUTM = String(data.clickedUTM || ''),
-				dSelected = data.selected || {},
-				maxUTM = 0;
+			var state = this.getCurrentState();
+			if (state) {
+				var count = 0,
+					selected = [],
+					res = [],
+					clickedUTM = String(state.clickedUTM || ''),
+					dSelected = state.selected || {},
+					maxUTM = 0;
 
-			for (var utm in data.items) {
-				var start = new Date(utm * 1000 + tzm),
-					item = {
-						id: count,
-						type: type,
-						items: data.items[utm],
-						// group: currentDmID,
-						// title: it[0].toString(),
-						content: '',
-						utm: utm,
-						start: start
-					};
-				if (needGroup) {
-					item.group = currentDmID;
+				for (var utm in state.items) {
+					var start = new Date(utm * 1000 + tzm),
+						className = clickedUTM === utm ? 'item-clicked' : '',
+						item = {
+							id: count,
+							type: 'dot',
+							items: state.items[utm],
+							content: '',
+							utm: utm,
+							start: start
+						};
+					if (utm > maxUTM) {
+						maxUTM = utm;
+					}
+
+					if (dSelected[utm]) {
+						className += ' item-selected';
+					}
+					item.className = className;
+					res.push(item);
+					count++;
 				}
-
-				groupInterval[0] = Math.min(start, groupInterval[0]);
-				groupInterval[1] = Math.max(start, groupInterval[1]);
-				var className = '';
-				if (utm > maxUTM) {
-					maxUTM = utm;
+				if (!clickedUTM && maxUTM) {
+					state.clickedUTM = Number(maxUTM);
+					state.skipUnClicked = true;
 				}
-				if (clickedUTM === utm) {
-					className = 'item-clicked';
+				if (!this._timeline) {
+					this._initTimeline(res);
 				}
+				this._timeline.clearItems();
+				this._setWindow(state.oInterval);
+				this._timeline.setData(res);
 
-				if (dSelected[utm]) {
-					className += ' item-selected';
+				this._chkSelection(state);
+
+				var cont = this._containers,
+					clickCalendar = cont.clickCalendar;
+				if (state.clickedUTM && maxUTM) {
+					var msec = 1000 * state.clickedUTM,
+						clickedDate = new Date(msec),
+						tm = this._timeline.getUTCTimeString(clickedDate),
+						arr = tm.split(' '),
+						arr1 = arr[1].split(':');
+
+					cont.clickId.innerHTML = arr[0];
+					cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
+					L.DomUtil.removeClass(clickCalendar, 'disabled');
+					if (!this._zoomOff) {
+						state.gmxLayer.setDateInterval(clickedDate, new Date(1000 + msec));
+					}
+				} else {
+					cont.clickId.innerHTML = '--.--.----';
+					cont.clickIdTime.innerHTML = '--:--';
+					L.DomUtil.addClass(clickCalendar, 'disabled');
 				}
-				item.className = className;
-				res.push(item);
-				count++;
-			}
-			if (!clickedUTM && maxUTM) {
-				data.clickedUTM = Number(maxUTM);
-				data.skipUnClicked = true;
-			}
-			if (count && needGroup) {
-				res.push({id: 'background_' + currentDmID, start: groupInterval[0], end: groupInterval[1], type: 'background', className: 'negative',group:currentDmID});
-				count++;
-			}
-			if (!this._timeline) {
-				this._initTimeline(res);
-			}
-			this._timeline.clearItems();
-			this._setWindow(data.oInterval);
-			this._timeline.setData(res);
-
-			this._chkSelection(data);
-
-			var cont = this._containers,
-				clickCalendar = cont.clickCalendar;
-			if (data.clickedUTM && maxUTM) {
-				var tm = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)),
-					arr = tm.split(' '),
-					arr1 = arr[1].split(':');
-				// clickId.innerHTML = this._timeline.getUTCTimeString(new Date(1000 * data.clickedUTM)) + ' (' + clickIdCount + ')';
-				cont.clickId.innerHTML = arr[0];
-				cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
-				L.DomUtil.removeClass(clickCalendar, 'disabled');
-			} else {
-				cont.clickId.innerHTML = '--.--.----';
-				cont.clickIdTime.innerHTML = '--:--';
-				L.DomUtil.addClass(clickCalendar, 'disabled');
 			}
 		},
 
@@ -556,6 +541,7 @@
 			if (state.rollClickedFlag) {
 				this._chkRollClickedFlag(state);
 			}
+			state.gmxLayer.repaint();
 			L.gmx.layersVersion.now();
 		},
 
@@ -880,7 +866,7 @@
 
 var str = '\
 <div class="showButtonContainer gmx-hidden">\
-	<div class="warning"><span class="warningText">' + translate.warning + '</span> | <span class="closeWarning">X</span></div>\
+	<div class="warning"><span class="warningText">' + translate.warning + '</span> <span class="closeWarning">X</span></div>\
 	<div class="leaflet-gmx-iconSvg showButton leaflet-control" title="">' + this._addSvgIcon('tl-main-icon') + '</div>\
 </div>\
 <div class="vis-container">\
@@ -1082,16 +1068,6 @@ var str = '\
 				.on(showButton, 'click', function (ev) {
 					this._state.isVisible = true;
 					toglleVisContainer(true);
-					// if (L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
-						// L.DomUtil.removeClass(visContainer, 'gmx-hidden');
-						// L.DomUtil.addClass(showButton, 'gmx-hidden');
-						// if (iconLayersCont) {
-							// L.DomUtil.addClass(iconLayersCont, 'iconLayersShift');
-						// }
-						// this._state.isVisible = true;
-						// this._redrawTimeline();
-						// this._addKeyboard(map);
-					// }
 				}, this)
 				.on(closeWarning, 'click', function (ev) {
 					this._setClassName(true, warning, 'gmx-hidden');
@@ -1099,15 +1075,6 @@ var str = '\
 				.on(hideButton, 'click', function (ev) {
 					this._state.isVisible = false;
 					toglleVisContainer(false);
-					// if (!L.DomUtil.hasClass(visContainer, 'gmx-hidden')) {
-						// L.DomUtil.addClass(visContainer, 'gmx-hidden');
-						// L.DomUtil.removeClass(showButton, 'gmx-hidden');
-						// this._state.isVisible = false;
-						// if (iconLayersCont) {
-							// L.DomUtil.removeClass(iconLayersCont, 'iconLayersShift');
-						// }
-						// this._removeKeyboard(map);
-					// }
 				}, this);
 
 			L.DomEvent
@@ -1142,10 +1109,6 @@ var str = '\
 				.on('zoomend', chkZoom, this);
 
 			chkZoom();
-			if (!this._zoomOff) {
-				var state = this.getCurrentState();
-				state.gmxLayer.setDateInterval(state.oInterval.beginDate, state.oInterval.endDate);
-			}
 			return container;
 		}
 	});
