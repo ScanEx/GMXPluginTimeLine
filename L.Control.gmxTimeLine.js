@@ -181,7 +181,7 @@
 		},
 
 		_removeLayerTab: function (liItem) {
-			var state = this.getCurrentState();
+			// var state = this.getCurrentState();
 			var layersTab = this._containers.layersTab;
 			layersTab.removeChild(liItem);
 			this.clearTab(liItem._layerID);
@@ -197,7 +197,7 @@
 				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
 			}
 			this.fire('layerRemove', { layerID: liItem._layerID }, this);
-			if (state) { this.removeLayer(state.gmxLayer); }
+			// if (state) { this.removeLayer(state.gmxLayer); }
 		},
 
 		_addLayerTab: function (layerID, title) {
@@ -207,6 +207,7 @@
 				span = L.DomUtil.create('span', '', liItem),
 				closeButton = L.DomUtil.create('span', 'close-button', liItem),
 				stop = L.DomEvent.stopPropagation,
+				prevent = L.DomEvent.preventDefault,
 				gmxLayer = this._state.data[layerID].gmxLayer,
 				chkVisible = function (flag) {
 					liItem._eye = flag;
@@ -219,9 +220,10 @@
 			span.innerHTML = title;
 
 			L.DomEvent
+				// .on(closeButton, 'click', L.DomEvent.preventDefault)
 				.on(closeButton, 'click', stop)
 				.on(closeButton, 'click', function (ev) {
-					this._removeLayerTab(liItem);
+					this.removeLayer(gmxLayer);
 			}, this);
 
 			L.DomEvent
@@ -1201,6 +1203,9 @@ var str = '\
 				} else if (params.state) {
 					publicInterface.loadState(params.state, map);
 				}
+// nsGmx.timeLineControl.on('layerAdd', console.log);
+// nsGmx.timeLineControl.on('layerRemove', console.log);
+// nsGmx.timeLineControl.on('currentTabChanged', console.log);
 				return timeLineControl;
 			}
         },
@@ -1229,9 +1234,9 @@ var str = '\
         },
         loadState: function(state, map) {
 			if (state.dataSources) {
-				if (state.currentTab) {
-					currentDmIDPermalink = state.currentTab;
-				}
+				// if (state.currentTab) {
+					// currentDmIDPermalink = state.currentTab;
+				// }
 				if (!timeLineControl._map) { nsGmx.leafletMap.addControl(timeLineControl); }
 				var layersByID = nsGmx.gmxMap.layersByID;
 				state.dataSources.forEach(function (it) {
