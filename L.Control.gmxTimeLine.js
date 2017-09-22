@@ -646,6 +646,8 @@
 					data.selected = options.selected;
 					if (options.clickedUTM) {
 						data.clickedUTM = options.clickedUTM;
+						var msec = 1000 * data.clickedUTM;
+						gmxLayer.setDateInterval(new Date(msec), new Date(1000 + msec));
 					}
 					if (options.skipUnClicked) {
 						data.skipUnClicked = options.skipUnClicked;
