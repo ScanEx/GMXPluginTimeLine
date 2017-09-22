@@ -181,6 +181,7 @@
 		},
 
 		_removeLayerTab: function (liItem) {
+			var state = this.getCurrentState();
 			var layersTab = this._containers.layersTab;
 			layersTab.removeChild(liItem);
 			this.clearTab(liItem._layerID);
@@ -196,6 +197,7 @@
 				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
 			}
 			this.fire('layerRemove', { layerID: liItem._layerID }, this);
+			if (state) { this.removeLayer(state.gmxLayer); }
 		},
 
 		_addLayerTab: function (layerID, title) {
@@ -317,7 +319,8 @@
 				map.gmxControlsManager.remove(this);
 			}
 			map
-				.off('moveend', this._moveend, this);
+				.off('moveend', this._moveend, this)
+				.off('zoomend', this._chkZoom, this);
 
 			L.DomEvent
 				.off(document, 'keyup', this._keydown, this);
@@ -613,7 +616,8 @@
 					}
 				}
 			}
-			if (this.options.moveable && calendar) { calendar.bindLayer(opt.name); }
+			if (this.options.moveable && calendar) {
+				calendar.bindLayer(opt.name); }
 			return this;
 		},
 
@@ -1097,7 +1101,7 @@ var str = '\
 				map.gmxControlsManager.add(this);
 			}
 			this._sidebarOn = true;
-			var chkZoom = function () {
+			this._chkZoom = function () {
 				this._zoomOff = map.getZoom() < this.options.minZoom;
 				// if (this._state.isVisible !== false) {
 					// this._setClassName(flag, showButton, 'off');
@@ -1106,9 +1110,9 @@ var str = '\
 			}.bind(this);
 			map
 				.on('moveend', this._moveend, this)
-				.on('zoomend', chkZoom, this);
+				.on('zoomend', this._chkZoom, this);
 
-			chkZoom();
+			this._chkZoom();
 			return container;
 		}
 	});
