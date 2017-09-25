@@ -1,12 +1,6 @@
-@font-face {
-    font-family: Tahoma;
-    src: url(Tahoma.ttf);
-}
-
 .gmxTimeline * {
-    font-family: 'Tahoma';
+    font-family: tahoma;
 }
-
 .gmxTimeline.leaflet-control {
     position: absolute;
     left: 0px;
@@ -19,9 +13,7 @@
     top: 5px;
     position: relative;
     height: 24px;
-    /*margin-left: 10px;*/
     padding-right: 6px;
-    /* cursor: pointer; */
     padding-left: 10px;
     padding-right: 6px;
 }
@@ -42,7 +34,6 @@
     border-radius: 4px;
     color: #FFF;
     font-size: 15px;
-    font-family: 'Tahoma';
     font-weight: 500;
     line-height: normal;
 
@@ -69,7 +60,6 @@
 }
 .gmxTimeline .timeline-content {
     background-color: #f0f4f6;
-    font-family: 'Tahoma';
     font-size: 12px;    
 }
 
@@ -85,7 +75,6 @@
     font-weight: 600;
 }
 .gmxTimeline .timeline-axis-text-major {
-    font-family: 'Tahoma';
     font-size: 13px; 
     font-weight: 600;   
 }
@@ -357,7 +346,6 @@
     left: 5px;
     bottom: 4px;
     overflow: hidden;
-    font-family: 'Tahoma';
     font-size: 12px;
     color: #666;
     font-weight: 600;
@@ -547,7 +535,6 @@
 
 
 .gmxTimeline .el-left  .el-act, .gmxTimeline .el-left  .el-pass{
-    font-family: 'Tahoma';
     color: #666;
     font-size: 12px;
     font-weight: 400;
@@ -577,7 +564,6 @@
 }
 
 .gmxTimeline .el-act-cent-1 {
-    font-family: 'Tahoma';
     color: #666;
     font-size: 12px;
     font-weight: 400;
@@ -596,7 +582,6 @@
 }
 
 .gmxTimeline .el-act-cent-2 {
-    font-family: 'Tahoma';
     color: #666;
     font-size: 12px;
     font-weight: 400;
@@ -621,7 +606,6 @@
 }
 
 .gmxTimeline .clouds-content {
-    font-family: 'Tahoma';
     color: #666;
     font-size: 12px;
     font-weight: 400;
@@ -641,7 +625,6 @@
 }
 
 .gmxTimeline .el-act-right-1 {
-    font-family: 'Tahoma';
     color: #666;
     font-size: 12px;
     font-weight: 400;
@@ -660,7 +643,6 @@
 }
 
 .gmxTimeline .el-act-right-2 {
-    font-family: 'Tahoma';
     color: #666;
     font-size: 12px;
     font-weight: 400;
@@ -832,7 +814,6 @@
     position: relative;
     border: 1px solid transparent;
     background: transparent;
-    font-family: 'Tahoma';
     color: #666;
     font-size: 14px;
     font-weight: 500;
