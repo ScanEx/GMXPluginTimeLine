@@ -543,9 +543,9 @@
 				L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
 			}
 
-			if (state.rollClickedFlag) {
+			// if (state.rollClickedFlag) {
 				this._chkRollClickedFlag(state);
-			}
+			// }
 			state.gmxLayer.repaint();
 			L.gmx.layersVersion.now();
 		},
@@ -946,7 +946,7 @@ var str = '\
 				switchDiv = container.getElementsByClassName('el-left')[0],
 				modeSelectedOn = container.getElementsByClassName('el-pass')[0],
 				modeSelectedOff = container.getElementsByClassName('el-act')[0],
-				hideButton = container.getElementsByClassName('hideButton')[0],
+				hideButton = container.getElementsByClassName('hideButton-content')[0],
 				showButtonContainer = container.getElementsByClassName('showButtonContainer')[0],
 				showButton = container.getElementsByClassName('showButton')[0],
 				closeWarning = container.getElementsByClassName('closeWarning')[0],
