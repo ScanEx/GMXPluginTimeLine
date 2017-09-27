@@ -218,6 +218,7 @@
 			liItem._eye = true;
 			liItem._layerID = layerID;
 			span.innerHTML = title;
+			span.title = title;
 
 			L.DomEvent
 				// .on(closeButton, 'click', L.DomEvent.preventDefault)
