@@ -535,9 +535,9 @@
 			}
 			this._setDateScroll();
 
-			if (Object.keys(state.selected || {}).length > 1) {
-				L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
-			}
+			// if (Object.keys(state.selected || {}).length > 1) {
+				// L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
+			// }
 			if (state.clouds) {
 				L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
 			} else {
@@ -553,7 +553,7 @@
 
 		initialize: function (options) {
 			L.Control.prototype.initialize.call(this, options);
-			this._commandKeys = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Down', 'Up', 'Left', 'Right', ' ', 's'];
+			this._commandKeys = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'favorite', 'clickTimeLine', 'ArrowUp', 'Down', 'Up', 'Left', 'Right', ' ', 's'];
 
 			this._state = {
 				data: {},
@@ -722,15 +722,53 @@
 					setClickedUTMFlag = true;
 
 				if (state) {
+					if (key === 'clickTimeLine') {
+						state.rollClickedFlag = state.selected && state.selected[state.clickedUTM] ? true : false;
+						state.gmxLayer.repaint();
+						this._setDateScroll();
+
+						this._bboxUpdate();
+						this._redrawTimeline();
+						this._chkRollClickedFlag(state);
+						return;
+					}
 					if (state.clickedUTM) {
 						if (key === ' ') {
 							state.skipUnClicked = !state.skipUnClicked;
 							setClickedUTMFlag = false;
 						} else if (key === 'ArrowUp' || key === 'Up') {
-							this._addSelected(state.clickedUTM, state);
-							setClickedUTMFlag = false;
+							if (!state.rollClickedFlag) {
+								state.rollClickedFlag = true;
+								this._chkRollClickedFlag(state);
+								if (state.selected && Object.keys(state.selected).length > 1) {
+									key = 'Right';
+								} else {
+									setClickedUTMFlag = false;
+								}
+							}
 						} else if (key === 'ArrowDown' || key === 'Down') {
-							this._removeSelected(state.clickedUTM, state);
+							if (state.rollClickedFlag) {
+								state.rollClickedFlag = false;
+								this._chkRollClickedFlag(state);
+								key = 'Right';
+							} else {
+								setClickedUTMFlag = false;
+							}
+						// } else if (key === 'ArrowUp' || key === 'Up') {
+							// this._addSelected(state.clickedUTM, state);
+							// setClickedUTMFlag = false;
+						// } else if (key === 'ArrowDown' || key === 'Down') {
+							// this._removeSelected(state.clickedUTM, state);
+							// setClickedUTMFlag = false;
+						} else if (key === 'favorite') {
+							if (state.selected && state.selected[state.clickedUTM]) {
+								this._removeSelected(state.clickedUTM, state);
+								state.rollClickedFlag = false;
+							} else {
+								this._addSelected(state.clickedUTM, state);
+								state.rollClickedFlag = true;
+							}
+							this._chkRollClickedFlag(state);
 							setClickedUTMFlag = false;
 						} else if (key === 's') {
 							state.rollClickedFlag = !state.rollClickedFlag;
@@ -743,7 +781,9 @@
 							if (state.selected && state.rollClickedFlag) {
 								arr = Object.keys(state.selected).sort().map(function (it) { return {utm: it}});
 							} else {
-								arr = this._timeline.getData();
+								this._timeline.getData().forEach(function(it) {
+									if (!state.selected || !state.selected[it.utm]) { arr.push({utm: it.utm}); }
+								});
 							}
 							for (var i = 0, len = arr.length - 1; i <= len; i++) {
 								if (Number(arr[i].utm) > state.clickedUTM) {
@@ -790,13 +830,17 @@
 			var len = state.selected ? Object.keys(state.selected).length : 0;
 			if (len < 2) {
 				state.rollClickedFlag = false;
-				this._setClassName(true, this._containers.switchDiv, 'disabled');
-			} else {
-				this._setClassName(false, this._containers.switchDiv, 'disabled');
+				// this._setClassName(true, this._containers.switchDiv, 'disabled');
+			// } else {
+				// this._setClassName(false, this._containers.switchDiv, 'disabled');
 			}
 			this._setClassName(len > 0 && state.selected[state.clickedUTM], this._containers.favorite, 'on');
-			this._setClassName(!state.rollClickedFlag, this._containers.modeSelectedOff, 'on');
-			this._setClassName(state.rollClickedFlag, this._containers.modeSelectedOn, 'on');
+			// this._setClassName(!state.rollClickedFlag, this._containers.modeSelectedOff, 'on');
+			// this._setClassName(state.rollClickedFlag, this._containers.modeSelectedOn, 'on');
+
+			this._setClassName(!state.rollClickedFlag, this._containers.hr1, 'on');
+			this._setClassName(state.rollClickedFlag, this._containers.hr2, 'on');
+			
 		},
 
 		_removeSelected: function (utm, state) {
@@ -831,11 +875,15 @@
 
 				state.clickedUTM = utm;
 				state.skipUnClicked = state.clickedUTM ? true : false;
-				state.gmxLayer.repaint();
-				this._setDateScroll();
+				// this.setCommand(state.selected && state.selected[utm] ? 'Up' : 'Down');
+				this.setCommand('clickTimeLine');
 
-				this._bboxUpdate();
-				this._redrawTimeline();
+				// state.gmxLayer.repaint();
+				// this._setDateScroll();
+
+				// this._bboxUpdate();
+				// this._redrawTimeline();
+				// this._chkRollClickedFlag(state);
 			} else {
 				var selectedPrev = state.selected || {},
 					selected = {};
@@ -873,6 +921,7 @@
 			this._addKeyboard(map);
 			container.tabindex = -1;
 
+//			<div class="clicked el-left disabled gmx-hidden"><div class="el-act on">по1 всем</div><div class="el-pass">по избранным</div></div>
 var str = '\
 <div class="showButtonContainer gmx-hidden">\
 	<div class="warning"><span class="warningText">' + translate.warning + '</span> <span class="closeWarning">X</span></div>\
@@ -882,7 +931,6 @@ var str = '\
 	<div class="tabs"><ul class="layers-tab"></ul></div>\
 	<div class="internal-container">\
 		<div class="w-scroll">\
-			<div class="clicked el-left disabled"><div class="el-act on">по1 всем</div><div class="el-pass">по избранным</div></div>\
 			<div class="el-center">\
 				<span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span>\
 				<span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span>\
@@ -944,9 +992,11 @@ var str = '\
 				clickCalendar = container.getElementsByClassName('el-act-cent-2')[0],
 				clickId = container.getElementsByClassName('calendar-text')[0],
 				clickIdTime = container.getElementsByClassName('clock-text')[0],
-				switchDiv = container.getElementsByClassName('el-left')[0],
-				modeSelectedOn = container.getElementsByClassName('el-pass')[0],
-				modeSelectedOff = container.getElementsByClassName('el-act')[0],
+				// switchDiv = container.getElementsByClassName('el-left')[0],
+				hr1 = container.getElementsByClassName('hr1')[0],
+				hr2 = container.getElementsByClassName('hr2')[0],
+				// modeSelectedOn = container.getElementsByClassName('el-pass')[0],
+				// modeSelectedOff = container.getElementsByClassName('el-act')[0],
 				hideButton = container.getElementsByClassName('hideButton-content')[0],
 				showButtonContainer = container.getElementsByClassName('showButtonContainer')[0],
 				showButton = container.getElementsByClassName('showButton')[0],
@@ -972,13 +1022,15 @@ var str = '\
 				clickId: clickId,
 				clickIdTime: clickIdTime,
 				favorite: favorite,
-				switchDiv: switchDiv,
-				modeSelectedOff: modeSelectedOff,
-				modeSelectedOn: modeSelectedOn,
+				// switchDiv: switchDiv,
+				hr1: hr1,
+				hr2: hr2,
+				// modeSelectedOff: modeSelectedOff,
+				// modeSelectedOn: modeSelectedOn,
 				hideButton: hideButton
 			};
-			modeSelectedOff.innerHTML = translate.modeSelectedOff;
-			modeSelectedOn.innerHTML = translate.modeSelectedOn;
+			// modeSelectedOff.innerHTML = translate.modeSelectedOff;
+			// modeSelectedOn.innerHTML = translate.modeSelectedOn;
 			L.DomEvent
 				.on(document, 'keyup', this._keydown, this);
 
@@ -1049,8 +1101,9 @@ var str = '\
 					}
 				}, this)
 				.on(favorite, 'click', function () {
-					var state = this.getCurrentState();
-					this.setCommand(state.selected && state.selected[state.clickedUTM] ? 'Down' : 'Up', true);
+					// var state = this.getCurrentState();
+					// this.setCommand(state.selected && state.selected[state.clickedUTM] ? 'Down' : 'Up', true);
+					this.setCommand('favorite', true);
 				}, this)
 				.on(trash, 'click', function (ev) {
 					this._removeSelected();
@@ -1064,16 +1117,16 @@ var str = '\
 				.on(clickRight, 'click', function (ev) {
 					this.setCommand('Right');
 				}, this)
-				.on(modeSelectedOff, 'click', function (ev) {
-					this.setCommand('s');
-					L.DomUtil.addClass(modeSelectedOff, 'on');
-					L.DomUtil.removeClass(modeSelectedOn, 'on');
-				}, this)
-				.on(modeSelectedOn, 'click', function (ev) {
-					this.setCommand('s');
-					L.DomUtil.addClass(modeSelectedOn, 'on');
-					L.DomUtil.removeClass(modeSelectedOff, 'on');
-				}, this)
+				// .on(modeSelectedOff, 'click', function (ev) {
+					// this.setCommand('s');
+					// L.DomUtil.addClass(modeSelectedOff, 'on');
+					// L.DomUtil.removeClass(modeSelectedOn, 'on');
+				// }, this)
+				// .on(modeSelectedOn, 'click', function (ev) {
+					// this.setCommand('s');
+					// L.DomUtil.addClass(modeSelectedOn, 'on');
+					// L.DomUtil.removeClass(modeSelectedOff, 'on');
+				// }, this)
 				.on(showButton, 'click', function (ev) {
 					this._state.isVisible = true;
 					toglleVisContainer(true);

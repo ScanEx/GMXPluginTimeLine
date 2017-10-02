@@ -477,7 +477,7 @@
     height: 100px!important;
 }
 
-.gmxTimeline .hr1 {
+.gmxTimeline .hr1, .gmxTimeline .hr2 {
     position: relative;
     height: 1px;
     padding-left: 10px;
@@ -487,18 +487,25 @@
     z-index: 1;
     top: 85px;
     margin-left: 6px;
+	pointer-events: none;
 }
 
 .gmxTimeline .hr2 {
-    position: relative;
+/*    
+	position: relative;
     height: 1px;
     padding-left: 10px;
     padding-right: 10px;
     width: 100%;
     background: rgba(70,70,70,.3);
     z-index: 1;
-    top: 67px;
     margin-left: 6px;    
+*/
+    top: 67px;
+}
+
+.gmxTimeline .hr1.on, .gmxTimeline .hr2.on {
+	background: rgba(70,70,70,1);
 }
 
 .gmxTimeline .timeline-axis {
@@ -536,8 +543,6 @@
     text-align: left;
 }
 
-
-
 .gmxTimeline .el-left  .el-act, .gmxTimeline .el-left  .el-pass{
     color: #666;
     font-size: 12px;
@@ -564,7 +569,7 @@
     display: inline-block;
     text-align: center;
     position: relative;
-    margin-left: 6%;
+    margin-left: 45%;
 }
 
 .gmxTimeline .el-act-cent-1 {
