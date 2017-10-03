@@ -931,6 +931,13 @@ var str = '\
 	<div class="tabs"><ul class="layers-tab"></ul></div>\
 	<div class="internal-container">\
 		<div class="w-scroll">\
+			<div class="el-left">\
+				<span class="el-act-right-1">\
+					<span class="different-interval on">' + this._addSvgIcon('tl-different-interval') + '</span>\
+					<span class="line4">|</span>\
+					<span class="single-interval">' + this._addSvgIcon('tl-single-interval') + '</span>\
+				</span>\
+			</div>\
 			<div class="el-center">\
 				<span class="clicked click-left">' + this._addSvgIcon('arrow_left') + '</span>\
 				<span class="clicked click-right">' + this._addSvgIcon('arrow_right') + '</span>\
@@ -953,11 +960,11 @@ var str = '\
 					<span class="cloud">' + this._addSvgIcon('tl-cloud-cover') + '</span>\
 					<span class="cloud-text">\
 						<select class="cloud-select">\
-							<option value="5">до 5%</option>\
-							<option value="10">до 10%</option>\
-							<option value="20">до 20%</option>\
-							<option value="50" selected>до 50%</option>\
-							<option value="100">до 100%</option>\
+							<option value="5">0 - 5%</option>\
+							<option value="10">0 - 10%</option>\
+							<option value="20">0 - 20%</option>\
+							<option value="50" selected>0 - 50%</option>\
+							<option value="100">0 - 100%</option>\
 						</select>\
 					</span>\
 					&nbsp;&nbsp;\
@@ -965,11 +972,6 @@ var str = '\
 				</div>\
 			</div>\
 			<div class="el-right">\
-				<span class="el-act-right-1">\
-					<span class="different-interval on">' + this._addSvgIcon('tl-different-interval') + '</span>\
-					<span class="line4">|</span>\
-					<span class="single-interval">' + this._addSvgIcon('tl-single-interval') + '</span>\
-				</span>\
 				<span class="el-act-right-2"><span class="ques gmx-hidden">' + this._addSvgIcon('tl-help') + '</span></span>\
 				<span class="hideButton-content"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
 			</div>\

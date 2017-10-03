@@ -491,21 +491,11 @@
 }
 
 .gmxTimeline .hr2 {
-/*    
-	position: relative;
-    height: 1px;
-    padding-left: 10px;
-    padding-right: 10px;
-    width: 100%;
-    background: rgba(70,70,70,.3);
-    z-index: 1;
-    margin-left: 6px;    
-*/
     top: 67px;
 }
 
 .gmxTimeline .hr1.on, .gmxTimeline .hr2.on {
-	background: rgba(70,70,70,1);
+	background: rgba(0,0,255,1);
 }
 
 .gmxTimeline .timeline-axis {
@@ -569,7 +559,7 @@
     display: inline-block;
     text-align: center;
     position: relative;
-    margin-left: 45%;
+    margin-left: 25%;
 }
 
 .gmxTimeline .el-act-cent-1 {
@@ -647,7 +637,7 @@
     display: inline-block;
     background: #dee7ec;
     position: relative;
-    top: -1px;
+    top: -7px;
     line-height: 10px;
 }
 
