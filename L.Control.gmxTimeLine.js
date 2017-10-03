@@ -175,13 +175,17 @@
 
 		clearTab: function (id) {
 			if (this._state.data[id]) {
-				this._state.data[id].observer.deactivate();
+				var state = this._state.data[id],
+					gmxLayer = state.gmxLayer,
+					observer = state.observer;
+				
+				observer.deactivate();
+				gmxLayer.getDataManager().removeObserver(observer.id);
 				delete this._state.data[id];	// При удалении tab забываем о слое
 			}
 		},
 
 		_removeLayerTab: function (liItem) {
-			// var state = this.getCurrentState();
 			var layersTab = this._containers.layersTab;
 			layersTab.removeChild(liItem);
 			this.clearTab(liItem._layerID);
@@ -197,7 +201,6 @@
 				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
 			}
 			this.fire('layerRemove', { layerID: liItem._layerID }, this);
-			// if (state) { this.removeLayer(state.gmxLayer); }
 		},
 
 		_addLayerTab: function (layerID, title) {
