@@ -29,16 +29,15 @@
     right: 40px;
     display: block;
     padding: 5px 10px 5px 10px;
-	background: rgba(69, 176, 216, 1);
+    background: rgba(69, 176, 216, 1);
     border: 1px solid #999;
     border-radius: 4px;
     color: #FFF;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    line-height: normal;
-
-
+    line-height: 19px;
 }
+
 .gmxTimeline .showButton.off {
 	opacity: 0.5;
 	cursor: auto;
@@ -130,11 +129,11 @@
 }
 
 .gmxTimeline .timeline-event-dot {
-    cursor: pointer;
+	cursor: pointer;
     position: absolute;
     border-color: #666;
     background: #666;
-    /*z-index: 34;*/
+    z-index: 3;
 }
 
 .gmxTimeline .item-selected .timeline-event-dot {
@@ -158,12 +157,10 @@
     cursor: pointer;
 }
 
-.gmxTimeline .item-clicked{
-    border-color: rgb(39, 199, 125);
+.gmxTimeline .item-clicked {
     border-width: 1px;
     width: 10px;
     height: 12px;
-    z-index: 1;
     padding-right: 0.6%;
     padding-bottom: 0.2%;
 }
@@ -561,7 +558,7 @@
     display: inline-block;
     text-align: center;
     position: relative;
-    margin-left: 25%;
+    width: 90%;
 }
 
 .gmxTimeline .el-act-cent-1 {
