@@ -736,10 +736,13 @@
 						return;
 					}
 					if (state.clickedUTM) {
-						if (key === ' ') {
-							state.skipUnClicked = !state.skipUnClicked;
+/*						if (key === ' ') {
+							this._addSelected(state.clickedUTM, state);
+							// state.skipUnClicked = !state.skipUnClicked;
 							setClickedUTMFlag = false;
-						} else if (key === 'ArrowUp' || key === 'Up') {
+						} else 
+*/
+						if (key === 'ArrowUp' || key === 'Up') {
 							if (!state.rollClickedFlag) {
 								state.rollClickedFlag = true;
 								this._chkRollClickedFlag(state);
@@ -763,7 +766,7 @@
 						// } else if (key === 'ArrowDown' || key === 'Down') {
 							// this._removeSelected(state.clickedUTM, state);
 							// setClickedUTMFlag = false;
-						} else if (key === 'favorite') {
+						} else if (key === 'favorite' || key === ' ') {
 							if (state.selected && state.selected[state.clickedUTM]) {
 								this._removeSelected(state.clickedUTM, state);
 								state.rollClickedFlag = false;
@@ -773,9 +776,9 @@
 							}
 							this._chkRollClickedFlag(state);
 							setClickedUTMFlag = false;
-						} else if (key === 's') {
-							state.rollClickedFlag = !state.rollClickedFlag;
-							this._chkRollClickedFlag(state);
+						// } else if (key === 's') {
+							// state.rollClickedFlag = !state.rollClickedFlag;
+							// this._chkRollClickedFlag(state);
 						}
 						if (setClickedUTMFlag) {
 							var clickedUTM = String(state.clickedUTM),

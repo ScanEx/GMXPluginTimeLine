@@ -29,11 +29,11 @@
     right: 40px;
     display: block;
     padding: 5px 10px 5px 10px;
-    background: #2c95d6;
+	background: rgba(69, 176, 216, 1);
     border: 1px solid #999;
     border-radius: 4px;
     color: #FFF;
-    font-size: 15px;
+    font-size: 11px;
     font-weight: 500;
     line-height: normal;
 
@@ -495,7 +495,9 @@
 }
 
 .gmxTimeline .hr1.on, .gmxTimeline .hr2.on {
-	background: rgba(0,0,255,1);
+	background: rgba(69, 176, 216, 1);
+	background-image: linear-gradient(100deg, transparent 80%, rgba(255,255,255,.9) 50%);
+    background-size: 3px 4px;
 }
 
 .gmxTimeline .timeline-axis {
