@@ -1208,7 +1208,7 @@ var str = '\
 
 				if (options.locale === 'ru') {
 					translate = {
-						warning: 'Приблизьте карту для загрузки на таймлан',
+						warning: 'Приблизьте карту для загрузки на таймлайн',
 						modeSelectedOff: 'По всем',
 						modeSelectedOn: 'По избранным'
 					};
