@@ -390,15 +390,11 @@
     pointer-events: none;
 }
 
-.gmxTimeline .selected .eye  {
-    opacity: 1;
-}
-
 .gmxTimeline .eye  {
     left: 3px;
     top: 3px;
     color:red;
-    opacity: 0.3;
+    opacity: 1;
 }
 .gmxTimeline .w-scroll {
     fill: #666;

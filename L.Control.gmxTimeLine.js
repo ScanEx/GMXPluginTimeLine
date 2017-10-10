@@ -233,13 +233,15 @@
 			L.DomEvent
 				.on(spaneye, 'click', stop)
 				.on(spaneye, 'click', function (ev) {
-					var state = this.getCurrentState();
-					if (state.layerID === layerID) {
-						chkVisible(!liItem._eye)
-						if (liItem._eye) {
-							if (!gmxLayer._map) { this._map.addLayer(gmxLayer); }
+					var pNode = ev.target.parentNode,
+						cstate = this._state.data[pNode._layerID];
+					if (cstate) {
+						chkVisible(!pNode._eye)
+						var tLayer = cstate.gmxLayer;
+						if (pNode._eye) {
+							if (!tLayer._map) { this._map.addLayer(tLayer); }
 						} else {
-							if (gmxLayer._map) { this._map.removeLayer(gmxLayer); }
+							if (tLayer._map) { this._map.removeLayer(tLayer); }
 						}
 					}
 			}, this);
