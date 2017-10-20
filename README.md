@@ -67,14 +67,12 @@ setCurrentTab|`setCurrentTab(id<String>)`| Установить текущую �
 
 | Type | Property | Description
 | --- | --- |:---
+| statechanged | `<Event>` | произошло изменение состояния таймлайна
+| layerAdd | `<Event>` | слой добавлен на таймлайн
+| layerRemove | `<Event>` | слой удален с таймлайна
+| currentTabChanged | `<Event>` | изменена текущая вкладка таймлайна
 | click | `<Event>` | click на таймлайне
 | dateInterval | `<Event>` | произошло изменение интервала таймлайна
-
-#### События добавляемые к карте
-
-| Type | Property | Description
-| --- | --- |:---
-| gmxTimeLine.currentTabChanged | `<Event>` | изменена текущая вкладка таймлайна
 
 ## config line example for Geomixer
      { pluginName: 'Timeline Vectors', file: 'plugins/external/GMXPluginTimeLine/L.Control.gmxTimeLine.js', module: 'gmxTimeLine', mapPlugin: true, isPublic: true }

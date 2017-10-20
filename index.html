@@ -59,6 +59,9 @@
 				.on('dateInterval', function (ev) {
 					gmxMap.layersByID[ev.layerID].setDateInterval(ev.beginDate, ev.endDate);
 				})
+				.on('statechanged', function (ev) {
+					console.log('statechanged', ev);
+				})
 				.on('click', function (ev) {
 					gmxMap.layersByID[ev.layerID].repaint();
 				});

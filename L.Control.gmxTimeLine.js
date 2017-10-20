@@ -1069,6 +1069,7 @@ var str = '\
 							this._redrawTimeline();
 						}
 						this._addKeyboard(map);
+						this.fire('statechanged', {isVisible: true});
 					}
 				} else {
 					this._setClassName(flag, showButtonContainer, 'gmx-hidden');
@@ -1080,6 +1081,7 @@ var str = '\
 							this._setClassName(flag, iconLayersCont, 'iconLayersShift');
 						}
 						this._removeKeyboard(map);
+						this.fire('statechanged', {isVisible: false});
 					}
 				}
 			}.bind(this);
@@ -1171,10 +1173,7 @@ var str = '\
 			this._sidebarOn = true;
 			this._chkZoom = function () {
 				this._zoomOff = map.getZoom() < this.options.minZoom;
-				// if (this._state.isVisible !== false) {
-					// this._setClassName(flag, showButton, 'off');
 					toglleVisContainer(!this._zoomOff);
-				// }
 			}.bind(this);
 			map
 				.on('moveend', this._moveend, this)
