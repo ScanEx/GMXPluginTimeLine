@@ -82,6 +82,7 @@
 							filters: ['clipFilter', 'userFilter', 'userFilter_timeline', 'styleFilter'],
 							active: false,
 							layerID: opt.name,
+							srs: dmOpt.srs,
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
 								var arr = it.properties;
