@@ -145,6 +145,7 @@
 							beginDate: oInterval.beginDate.valueOf(),
 							endDate: oInterval.endDate.valueOf()
 						},
+						layerOnMap: state.gmxLayer._map ? true : false,
 						currentBounds: state.currentBounds,
 						selected: state.selected,
 						clickedUTM: state.clickedUTM,
@@ -165,6 +166,7 @@
 			return {
 				version: '1.0.0',
 				currentTab: currentDmID,
+				singleIntervalFlag: singleIntervalFlag,
 				isVisible: this._state.isVisible,
 				dataSources: dataSources
 			};
@@ -437,6 +439,9 @@
 					L.DomUtil.removeClass(clickCalendar, 'disabled');
 					if (!this._zoomOff) {
 						state.gmxLayer.setDateInterval(clickedDate, new Date(1000 + msec));
+						if (!state.gmxLayer._map) {
+							this._map.addLayer(state.gmxLayer);
+						}
 					}
 				} else {
 					cont.clickId.innerHTML = '--.--.----';
@@ -509,6 +514,17 @@
 			stateTo.oInterval.endDate = stateFrom.oInterval.endDate;
 			stateTo.uTimeStamp[0] = stateFrom.uTimeStamp[0];
 			stateTo.uTimeStamp[1] = stateFrom.uTimeStamp[1];
+		},
+
+		_hideOtherLayer: function (id) {
+			for (var layerID in this._state.data) {
+				var gmxLayer = this._state.data[layerID].gmxLayer;
+				if (layerID !== id) {
+					this._map.removeLayer(gmxLayer);
+				} else {
+					this._map.addLayer(gmxLayer);
+				}
+			}
 		},
 
 		_setCurrentTab: function (layerID) {
@@ -707,9 +723,11 @@
 				Promise.all(promisesArr || []).then(function() {
 					// console.log('Promise', arguments);
 					this.addDataSource(data);
-					if (currentDmIDPermalink) {
-						this.setCurrentTab(currentDmIDPermalink);
-						currentDmIDPermalink = null;
+					if (currentDmIDPermalink === opt.name) {
+						setTimeout(function() {
+							this._setCurrentTab(currentDmIDPermalink);
+							currentDmIDPermalink = null;
+						}.bind(this), 0);
 					}
 				}.bind(this));
 			}
@@ -942,9 +960,9 @@ var str = '\
 		<div class="w-scroll">\
 			<div class="el-left">\
 				<span class="el-act-right-1">\
-					<span class="different-interval on">' + this._addSvgIcon('tl-different-interval') + '</span>\
+					<span class="different-interval on" title="' + translate.differentInterval + '">' + this._addSvgIcon('tl-different-interval') + '</span>\
 					<span class="line4">|</span>\
-					<span class="single-interval">' + this._addSvgIcon('tl-single-interval') + '</span>\
+					<span class="single-interval" title="' + translate.singleInterval + '">' + this._addSvgIcon('tl-single-interval') + '</span>\
 				</span>\
 			</div>\
 			<div class="el-center">\
@@ -1086,6 +1104,19 @@ var str = '\
 					}
 				}
 			}.bind(this);
+			var toglleSingleInterval = function (flag) {
+				singleIntervalFlag = flag;
+				if (singleIntervalFlag) {
+					L.DomUtil.addClass(singleInterval, 'on');
+					L.DomUtil.removeClass(differentInterval, 'on');
+				} else {
+					L.DomUtil.addClass(differentInterval, 'on');
+					L.DomUtil.removeClass(singleInterval, 'on');
+				}
+			}.bind(this);
+			if (singleIntervalFlag) {
+				toglleSingleInterval(true);
+			}
 			L.DomEvent
 				.on(cloudSelect, 'change', function (ev) {
 					ev.target.blur();
@@ -1097,16 +1128,12 @@ var str = '\
 				}, this)
 				.on(differentInterval, 'click', function () {
 					if (singleIntervalFlag) {
-						singleIntervalFlag = false;
-						L.DomUtil.addClass(differentInterval, 'on');
-						L.DomUtil.removeClass(singleInterval, 'on');
+						toglleSingleInterval(false);
 					}
 				}, this)
 				.on(singleInterval, 'click', function () {
 					if (!singleIntervalFlag) {
-						singleIntervalFlag = true;
-						L.DomUtil.addClass(singleInterval, 'on');
-						L.DomUtil.removeClass(differentInterval, 'on');
+						toglleSingleInterval(true);
 						var state = this.getCurrentState();
 						for (var layerID in this._state.data) {
 							this._copyState(this._state.data[layerID], state);
@@ -1154,11 +1181,17 @@ var str = '\
 
 			L.DomEvent
 				.on(layersTab, 'click', function (ev) {
+					currentDmIDPermalink = null;
 					var target = ev.target,
 						_prevState = this.getCurrentState() || {},
 						_layerID = target._layerID || target.parentNode._layerID;
 
-					if (_layerID && _prevState.layerID !== _layerID) { this._setCurrentTab(_layerID); }
+					if (_layerID && _prevState.layerID !== _layerID) {
+						if (singleIntervalFlag) {
+							this._hideOtherLayer(_layerID);
+						}
+						this._setCurrentTab(_layerID);
+					}
 				}, this);
 
 			var _this = this;
@@ -1210,12 +1243,16 @@ var str = '\
 
 				if (options.locale === 'ru') {
 					translate = {
+						differentInterval: 'Раздельные интервалы для вкладок',
+						singleInterval: 'Единый интервал для вкладок',
 						warning: 'Приблизьте карту для загрузки на таймлайн',
 						modeSelectedOff: 'По всем',
 						modeSelectedOn: 'По избранным'
 					};
 				} else {
 					translate = {
+						differentInterval: 'Different interval for tabs',
+						singleInterval: 'Single interval for tabs',
 						warning: 'Zoom map for TimeLine',
 						modeSelectedOff: 'By all',
 						modeSelectedOn: 'By selected'
@@ -1300,9 +1337,12 @@ var str = '\
         },
         loadState: function(state, map) {
 			if (state.dataSources) {
-				// if (state.currentTab) {
-					// currentDmIDPermalink = state.currentTab;
-				// }
+				if (state.currentTab) {
+					currentDmIDPermalink = state.currentTab;
+				}
+				if (state.singleIntervalFlag) {
+					singleIntervalFlag = state.singleIntervalFlag;
+				}
 				if (!timeLineControl._map) { nsGmx.leafletMap.addControl(timeLineControl); }
 				var layersByID = nsGmx.gmxMap.layersByID;
 				state.dataSources.forEach(function (it) {
