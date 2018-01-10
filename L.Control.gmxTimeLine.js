@@ -698,6 +698,7 @@
 						var state = this._state.data[opt.name] || {},
 							dt = it.properties[state.tmpKeyNum];
 
+						if (this._zoomOff) { return true; }
 						if (state.clouds && it.properties[state.clouds] > Number(this._containers.cloudSelect.selectedOptions[0].value)) {
 							return false;
 						}
