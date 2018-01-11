@@ -961,9 +961,9 @@ var str = '\
 		<div class="w-scroll">\
 			<div class="el-left">\
 				<span class="el-act-right-1">\
-					<span class="different-interval on" title="' + translate.differentInterval + '">' + this._addSvgIcon('tl-different-interval') + '</span>\
+					<span class="different-interval' + (singleIntervalFlag ? '' : ' on') + '" title="' + translate.differentInterval + '">' + this._addSvgIcon('tl-different-interval') + '</span>\
 					<span class="line4">|</span>\
-					<span class="single-interval" title="' + translate.singleInterval + '">' + this._addSvgIcon('tl-single-interval') + '</span>\
+					<span class="single-interval' + (singleIntervalFlag ? ' on' : '') + '" title="' + translate.singleInterval + '">' + this._addSvgIcon('tl-single-interval') + '</span>\
 				</span>\
 			</div>\
 			<div class="el-center">\
