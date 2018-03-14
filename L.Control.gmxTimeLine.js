@@ -437,7 +437,7 @@
 					cont.clickId.innerHTML = arr[0];
 					cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
 					L.DomUtil.removeClass(clickCalendar, 'disabled');
-					if (!this._zoomOff) {
+					if (!this._zoomOff && state.liItem._eye) {
 						state.gmxLayer.setDateInterval(clickedDate, new Date(1000 + msec));
 						if (!state.gmxLayer._map) {
 							this._map.addLayer(state.gmxLayer);
