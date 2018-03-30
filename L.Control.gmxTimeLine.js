@@ -172,6 +172,10 @@
 			};
 		},
 
+		getLayerState: function (id) {
+			return this._state.data[id];
+		},
+
 		getCurrentState: function () {
 			return this._state.data[currentDmID];
 		},
@@ -297,13 +301,15 @@
 						}
 					}, this);
 				}
-				L.DomUtil.removeClass(this._containers.vis, 'gmx-hidden');
-				L.DomUtil.removeClass(this._container, 'gmx-hidden');
+				// L.DomUtil.removeClass(this._containers.vis, 'gmx-hidden');
+				// L.DomUtil.removeClass(this._container, 'gmx-hidden');
 				// if (iconLayers) {
 					// L.DomUtil.addClass(iconLayers.getContainer(), 'iconLayersShift');
 				// }
-				this._setCurrentTab(layerID);
-				this._setDateScroll();
+				if (this._timeline) {
+					this._setCurrentTab(layerID);
+					this._setDateScroll();
+				}
 			}
 			return this;
 		},
@@ -600,7 +606,7 @@
 		},
 
 		_initTimeline: function (data) {
-			if (currentDmID && !this._timeline) {
+			if (currentDmID && !this._timeline && L.gmx.timeline) {
 				var state = this.getCurrentState(),
 					groups = this.options.groups ? [{
 						id: state.layerID,
@@ -716,21 +722,24 @@
 					}.bind(this)
 					, {target: 'screen', id: pluginName});
 
+				this.addDataSource(data);
 				if (filesToLoad && !promisesArr) {
 					promisesArr = filesToLoad.map(function(href) {
 						return L.gmxUtil.requestLink(href);
 					});
+					Promise.all(promisesArr || []).then(function() {
+						// console.log('Promise', arguments);
+						this._initTimeline();
+						L.DomUtil.removeClass(this._containers.vis, 'gmx-hidden');
+						L.DomUtil.removeClass(this._container, 'gmx-hidden');
+						if (currentDmIDPermalink === opt.name) {
+							setTimeout(function() {
+								this._setCurrentTab(currentDmIDPermalink);
+								currentDmIDPermalink = null;
+							}.bind(this), 0);
+						}
+					}.bind(this));
 				}
-				Promise.all(promisesArr || []).then(function() {
-					// console.log('Promise', arguments);
-					this.addDataSource(data);
-					if (currentDmIDPermalink === opt.name) {
-						setTimeout(function() {
-							this._setCurrentTab(currentDmIDPermalink);
-							currentDmIDPermalink = null;
-						}.bind(this), 0);
-					}
-				}.bind(this));
 			}
 		},
 
@@ -1354,6 +1363,9 @@ var str = '\
 					}
 				});
 			}
+        },
+        getLayerState: function(id) {
+			return timeLineControl.getLayerState(id);
         },
         saveState: function() {
 			return timeLineControl.saveState();
