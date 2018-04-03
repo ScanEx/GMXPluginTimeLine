@@ -425,34 +425,36 @@
 				if (!this._timeline) {
 					this._initTimeline(res);
 				}
-				this._timeline.clearItems();
-				this._setWindow(state.oInterval);
-				this._timeline.setData(res);
+				if (this._timeline) {
+					this._timeline.clearItems();
+					this._setWindow(state.oInterval);
+					this._timeline.setData(res);
 
-				this._chkSelection(state);
+					this._chkSelection(state);
 
-				var cont = this._containers,
-					clickCalendar = cont.clickCalendar;
-				if (state.clickedUTM && maxUTM) {
-					var msec = 1000 * state.clickedUTM,
-						clickedDate = new Date(msec),
-						tm = this._timeline.getUTCTimeString(clickedDate),
-						arr = tm.split(' '),
-						arr1 = arr[1].split(':');
+					var cont = this._containers,
+						clickCalendar = cont.clickCalendar;
+					if (state.clickedUTM && maxUTM) {
+						var msec = 1000 * state.clickedUTM,
+							clickedDate = new Date(msec),
+							tm = this._timeline.getUTCTimeString(clickedDate),
+							arr = tm.split(' '),
+							arr1 = arr[1].split(':');
 
-					cont.clickId.innerHTML = arr[0];
-					cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
-					L.DomUtil.removeClass(clickCalendar, 'disabled');
-					if (!this._zoomOff && state.liItem._eye) {
-						state.gmxLayer.setDateInterval(clickedDate, new Date(1000 + msec));
-						if (!state.gmxLayer._map) {
-							this._map.addLayer(state.gmxLayer);
+						cont.clickId.innerHTML = arr[0];
+						cont.clickIdTime.innerHTML = arr1[0] + ':' + arr1[1];
+						L.DomUtil.removeClass(clickCalendar, 'disabled');
+						if (!this._zoomOff && state.liItem._eye) {
+							state.gmxLayer.setDateInterval(clickedDate, new Date(1000 + msec));
+							if (!state.gmxLayer._map) {
+								this._map.addLayer(state.gmxLayer);
+							}
 						}
+					} else {
+						cont.clickId.innerHTML = '--.--.----';
+						cont.clickIdTime.innerHTML = '--:--';
+						L.DomUtil.addClass(clickCalendar, 'disabled');
 					}
-				} else {
-					cont.clickId.innerHTML = '--.--.----';
-					cont.clickIdTime.innerHTML = '--:--';
-					L.DomUtil.addClass(clickCalendar, 'disabled');
 				}
 			}
 		},
