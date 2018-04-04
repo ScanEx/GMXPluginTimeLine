@@ -961,6 +961,7 @@
 			container.tabindex = -1;
 
 //			<div class="clicked el-left disabled gmx-hidden"><div class="el-act on">по1 всем</div><div class="el-pass">по избранным</div></div>
+
 var str = '\
 <div class="showButtonContainer gmx-hidden">\
 	<div class="warning"><span class="warningText">' + translate.warning + '</span> <span class="closeWarning">X</span></div>\
@@ -1011,6 +1012,7 @@ var str = '\
 				</div>\
 			</div>\
 			<div class="el-right">\
+				<span class="filters"></span>\
 				<span class="el-act-right-2"><span class="ques gmx-hidden">' + this._addSvgIcon('tl-help') + '</span></span>\
 				<span class="hideButton-content"><span class="arrow hideButton">' + this._addSvgIcon('arrow-down-01') + '</span></span>\
 			</div>\
@@ -1052,6 +1054,10 @@ var str = '\
 				singleInterval = container.getElementsByClassName('single-interval')[0],
 				cloudsContent = container.getElementsByClassName('clouds-content')[0],
 				layersTab = container.getElementsByClassName('layers-tab')[0];
+
+			if (this.options.webGLFilters) {
+				container.getElementsByClassName('filters')[0].appendChild(this.options.webGLFilters.getWebGLFiltersContainer(map));
+			}
 
 			this._containers = {
 				vis: container.getElementsByClassName('vis')[0],
@@ -1249,6 +1255,12 @@ var str = '\
 
 				// options.clouds = params.clouds || '';
 
+				if (params.webGLFilters) {
+					options.webGLFilters = params.webGLFilters === 'true' ? true : false;
+					if (options.webGLFilters) {
+						options.webGLFilters = L.rastersBgTiles();
+					}
+				}
 				if (params.moveable) { options.moveable = params.moveable === 'false' ? false : true; }
 				// if (params.modeBbox) { options.modeBbox = params.modeBbox; }
 				if (params.rollClicked) { options.rollClicked = params.rollClicked === 'false' ? false : true; }
