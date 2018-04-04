@@ -455,7 +455,6 @@
 						cont.clickIdTime.innerHTML = '--:--';
 						L.DomUtil.addClass(clickCalendar, 'disabled');
 					}
-					L.DomUtil.removeClass(this._container, 'gmx-hidden');
 				}
 			}
 		},
@@ -742,6 +741,8 @@
 							}.bind(this), 0);
 						}
 					}.bind(this));
+				} else {
+					L.DomUtil.removeClass(this._container, 'gmx-hidden');
 				}
 			}
 		},
