@@ -1087,7 +1087,7 @@ var str = '\
 			L.DomEvent
 				.on(container, 'contextmenu', stop)
 				.on(container, 'touchstart', stop)
-				.on(container, 'mousemove', stop)
+				// .on(container, 'mousemove', stop)
 				.on(container, 'mousedown', stop)
 				.on(container, 'mousewheel', stop)
 				.on(container, 'dblclick', stop)
