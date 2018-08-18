@@ -86,7 +86,8 @@
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
 								var arr = it.properties;
-								if (state.clouds && arr[state.clouds] > Number(timeLineControl._containers.cloudSelect.selectedOptions[0].value)) {
+								var clSelect = timeLineControl._containers.cloudSelect;
+								if (state.clouds && arr[state.clouds] > Number(clSelect.options[clSelect.selectedIndex].value)) {
 									return false;
 								}
 
@@ -202,7 +203,7 @@
 				if (iconLayers) {
 					L.DomUtil.removeClass(iconLayers.getContainer(), 'iconLayersShift');
 				}
-				this._map.removeControl(this);
+				if (this._map) { this._map.removeControl(this); }
 
 			} else {
 				this._setCurrentTab((liItem.nextSibling || layersTab.lastChild)._layerID);
@@ -707,7 +708,8 @@
 							dt = it.properties[state.tmpKeyNum];
 
 						if (this._zoomOff) { return true; }
-						if (state.clouds && it.properties[state.clouds] > Number(this._containers.cloudSelect.selectedOptions[0].value)) {
+						var clSelect = this._containers.cloudSelect;
+						if (state.clouds && it.properties[state.clouds] > Number(clSelect.options[clSelect.selectedIndex].value)) {
 							return false;
 						}
 						if (state.skipUnClicked) {
@@ -781,7 +783,7 @@
 							if (!state.rollClickedFlag) {
 								state.rollClickedFlag = true;
 								this._chkRollClickedFlag(state);
-								if (state.selected && Object.keys(state.selected).length > 1) {
+								if (state.selected && Object.keys(state.selected).length > 0) {
 									key = 'Right';
 								} else {
 									setClickedUTMFlag = false;
@@ -869,7 +871,7 @@
 		_chkRollClickedFlag: function (state) {
 			state = state || this.getCurrentState();
 			var len = state.selected ? Object.keys(state.selected).length : 0;
-			if (len < 2) {
+			if (len < 1) {
 				state.rollClickedFlag = false;
 				// this._setClassName(true, this._containers.switchDiv, 'disabled');
 			// } else {
