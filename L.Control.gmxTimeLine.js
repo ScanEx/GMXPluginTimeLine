@@ -15,6 +15,7 @@
 		// tzs = 0,
 		tzm = tzs * 1000,
 		ns = {},
+		zIndexOffset = 1000,
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		translate = {
@@ -547,10 +548,12 @@
 				}
 			}
 			var stateBefore = this.getCurrentState();
+			stateBefore.gmxLayer.setZIndexOffset(0);
 
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			//state.oInterval = state.gmxLayer.getDateInterval();
+			state.gmxLayer.setZIndexOffset(zIndexOffset);
 			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
@@ -563,8 +566,8 @@
 			this._bboxUpdate();
 			if (this._timeline) {
 				this._setWindow(state.oInterval);
+				this._setDateScroll();
 			}
-			this._setDateScroll();
 
 			// if (Object.keys(state.selected || {}).length > 1) {
 				// L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
@@ -762,6 +765,10 @@
 					setClickedUTMFlag = true;
 
 				if (state) {
+					if (!state.gmxLayer._map) {
+						this._map.addLayer(state.gmxLayer);
+					}
+					
 					if (key === 'clickTimeLine') {
 						state.rollClickedFlag = state.selected && state.selected[state.clickedUTM] ? true : false;
 						state.gmxLayer.repaint();
@@ -1366,9 +1373,6 @@ var str = '\
         },
         loadState: function(state, map) {
 			if (state.dataSources) {
-				if (state.currentTab) {
-					currentDmIDPermalink = state.currentTab;
-				}
 				if (state.singleIntervalFlag) {
 					singleIntervalFlag = state.singleIntervalFlag;
 				}
@@ -1380,6 +1384,10 @@ var str = '\
 						timeLineControl.addLayer(gmxLayer, it);
 					}
 				});
+				if (state.currentTab) {
+					currentDmIDPermalink = state.currentTab;
+					timeLineControl.setCurrentTab(currentDmIDPermalink);
+				}
 			}
         },
         getLayerState: function(id) {
