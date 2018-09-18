@@ -341,7 +341,11 @@
 				.off('moveend', this._moveend, this)
 				.off('zoomend', this._chkZoom, this);
 
+			var stop = L.DomEvent.stopPropagation,
+				prevent = L.DomEvent.preventDefault;
 			L.DomEvent
+				.off(document, 'keyup', stop)
+				.off(document, 'keyup', prevent)
 				.off(document, 'keyup', this._keydown, this);
 
 			this._removeKeyboard(map);
@@ -547,9 +551,8 @@
 					L.DomUtil.removeClass(li, 'selected');
 				}
 			}
-			var stateBefore = this.getCurrentState();
-			stateBefore.gmxLayer.setZIndexOffset(0);
 
+			var stateBefore = this.getCurrentState();
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			//state.oInterval = state.gmxLayer.getDateInterval();
@@ -558,8 +561,11 @@
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
 			}
-			if (singleIntervalFlag && stateBefore) {
-				this._copyState(state, stateBefore);
+			if (stateBefore) {
+				stateBefore.gmxLayer.setZIndexOffset(0);
+				if (singleIntervalFlag && stateBefore) {
+					this._copyState(state, stateBefore);
+				}
 			}
 
 			this.fire('currentTabChanged', {currentTab: layerID});
@@ -759,6 +765,7 @@
 		},
 
 		setCommand: function (key, ctrlKey) {
+// console.log('setCommand', key, ctrlKey, this._commandKeys.indexOf(key))
 			if (this._commandKeys.indexOf(key) !== -1) {
 
 				var state = this.getCurrentState(),
@@ -864,6 +871,7 @@
 			observer.activate();
 			observer.needRefresh = true;
 			state.gmxLayer.getDataManager().checkObserver(observer);
+			state.gmxLayer.repaint();
 		},
 
 		_setClassName: function (flag, el, name) {
@@ -1089,10 +1097,14 @@ var str = '\
 			};
 			// modeSelectedOff.innerHTML = translate.modeSelectedOff;
 			// modeSelectedOn.innerHTML = translate.modeSelectedOn;
+			var stop = L.DomEvent.stopPropagation,
+				prevent = L.DomEvent.preventDefault;
+			
 			L.DomEvent
+				.on(document, 'keyup', stop)
+				.on(document, 'keyup', prevent)
 				.on(document, 'keyup', this._keydown, this);
 
-			var stop = L.DomEvent.stopPropagation;
 			L.DomEvent
 				.on(container, 'contextmenu', stop)
 				.on(container, 'touchstart', stop)
