@@ -255,6 +255,7 @@
 					}
 			}, this);
 			gmxLayer
+				.on('zindexupdated', function () { this.chkZindexUpdated(layerID); }, this)
 				.on('add', function () { chkVisible(true); }, this)
 				.on('remove', function () { chkVisible(false); }, this);
 
@@ -262,6 +263,13 @@
 			this.fire('currentTabChanged', {currentTab: layerID});
 			this.fire('layerAdd', { layerID: layerID }, this);
 			return liItem;
+		},
+
+		chkZindexUpdated: function (id) {
+			var state = this.getCurrentState();
+			if (state && state.gmxLayer.options.zIndexOffset !== 1000) {
+				state.gmxLayer.setZIndexOffset(zIndexOffset);
+			}
 		},
 
 		setCurrentTab: function (id) {
