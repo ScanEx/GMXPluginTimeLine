@@ -1,0 +1,862 @@
+.gmxTimeline * {
+    font-family: tahoma;
+}
+.gmxTimeline.leaflet-control {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 19px;
+    margin: 0px;
+    padding: 0px;
+}
+.gmxTimeline .hideButton {
+    top: 5px;
+    position: relative;
+    height: 24px;
+    padding-right: 6px;
+    padding-left: 10px;
+    padding-right: 6px;
+}
+.gmxTimeline .closeWarning {
+	cursor: pointer;
+}
+.gmxTimeline .warningText {
+	margin-right: 27px;
+}
+.gmxTimeline .warning span {
+    position: absolute;
+    bottom: 0px;
+    right: 40px;
+    display: block;
+    padding: 5px 10px 5px 10px;
+    background: rgba(69, 176, 216, 1);
+    border: 1px solid #999;
+    border-radius: 4px;
+    color: #FFF;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 19px;
+}
+
+.gmxTimeline .showButton.off {
+	opacity: 0.5;
+	cursor: auto;
+	pointer-events: none;
+}
+.gmxTimeline .tabs {
+    z-index: 1;
+    position: relative;
+    top: 11px;
+}
+
+.gmxTimeline .layer {
+    bottom: 14px;
+    position: absolute;
+}
+
+.gmxTimeline .options {
+    float: left;
+}
+.gmxTimeline .timeline-content {
+    background-color: #f0f4f6;
+    font-size: 12px;    
+}
+
+.gmxTimeline div.timeline-axis-text {
+
+	padding-left:3px;
+
+
+}
+
+.gmxTimeline .timeline-axis-text-minor {
+    font-size: 11px;
+    font-weight: 600;
+}
+.gmxTimeline .timeline-axis-text-major {
+    font-size: 13px; 
+    font-weight: 600;   
+}
+.gmxTimeline .timeline-axis-grid-minor {
+    border-color: #bfbfbf;
+}
+
+.gmxTimeline .timeline-container {
+    background-color: lightgray;
+}
+.gmxTimeline .internal-container {
+    border: 1px solid rgba(70,70,70,.3);
+    background-color: white;
+}
+
+.gmxTimeline .vis-group  .vis-point {
+    top: 10px;
+}
+
+.gmxTimeline .timeline-event-dot-container {
+    padding-top: 6px;
+    top: 73px;
+    width: 10px;
+    height: 10px;
+}
+
+.gmxTimeline .item-range .timeline-event-dot {
+    border-color: rgb(69, 175, 215);
+    border-width: 5px;
+    box-shadow: 0px 0px 0px 1px #FFF, 0px 0px 0px 2px rgb(69, 175, 215);
+}
+.gmxTimeline .item-selected{
+    margin-top: -5px;
+}
+
+.gmxTimeline .timeline-event-content {
+    z-index: 999;
+    display: none;
+    position: absolute;
+    left: -7px;
+    top: -1px;
+    z-index: 334;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(69, 175, 215);
+    border-radius: 15px;
+    border-color: rgb(69, 175, 215);
+    border-width: 5px;
+    box-shadow: 0px 0px 0px 1px #FFF, 0px 0px 0px 2px rgb(69, 175, 215);
+}
+
+.gmxTimeline .timeline-event {
+}
+
+.gmxTimeline .timeline-event-dot {
+	cursor: pointer;
+    position: absolute;
+    border-color: #666;
+    background: #666;
+    z-index: 3;
+}
+
+.gmxTimeline .item-selected .timeline-event-dot {
+    position: relative;
+    border-color: #da5d40;
+    bottom: 17px;
+    top: px;
+    width: 10px!important;
+    height: 10px!important;
+    background-color: #da5d40;
+    border-radius: 15px;
+    /*z-index: 1;*/
+}
+
+.gmxTimeline .item-selected .timeline-event-content {
+    top: -13px;
+}
+
+.gmxTimeline .item-clicked .timeline-event-content {
+    display: block;
+    cursor: pointer;
+}
+
+.gmxTimeline .item-clicked {
+    border-width: 1px;
+    width: 10px;
+    height: 12px;
+    padding-right: 0.6%;
+    padding-bottom: 0.2%;
+}
+
+.gmxTimeline .gmx-focuse {
+    border: 1px solid rgba(70,70,70,.3);
+    padding: 0;
+    margin: 0;
+    left: 0px;
+    position: relative;
+    min-width: 960px;
+}
+
+.gmxTimeline .w-scroll {
+    position: relative;
+    height: 33px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.gmxTimeline .favorite.on  {
+    fill: #da5d40;
+}
+
+.gmxTimeline .w-scroll .l-scroll {
+    margin-left: -6px;
+}
+
+.gmxTimeline .w-scroll .r-scroll {
+    margin-right: 10px;
+    right: -6px;
+}
+
+.gmxTimeline .w-scroll .l-scroll-title {
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    margin-top: -23px;
+}
+
+.gmxTimeline .w-scroll .g-scroll {
+    height: 2px;
+    width: 100%;
+    top: 12px;
+    left: 0px;
+    position: absolute;
+    display: none;
+}
+
+.gmxTimeline .w-scroll .c-scroll {
+    width: 100%;
+    height: 81px;
+    margin-left: 11px;
+    margin-right: 12px;
+    background-color: rgba(81, 184, 202, 0.15);
+    position: absolute;
+    left: 0px;
+    top: 24px;
+    border-left: 1px solid #9ad4df;
+    border-right: 1px solid #9ad4df;
+    display: none;
+}
+
+.gmxTimeline .w-scroll .c-scroll .c-borders {
+    width: 100%;
+    position: relative;
+    top: -12px;
+    left: -1px;
+    border-top: 1px solid #9ad4df;  
+    border-right: 1px solid #9ad4df;
+    border-left: 1px solid #9ad4df;
+}
+
+.gmxTimeline .vis {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 5px;
+}
+
+.gmxTimeline .tabs ul, .tabs ul li {
+    list-style: none;
+}
+
+.gmxTimeline .tabs ul {
+    display: inline-flex;
+    height: 26px;
+    padding-bottom: 10px;
+    margin: 0;
+}
+
+.gmxTimeline .tabs .clicked:hover {
+    background-color: lightgray;
+}
+
+.gmxTimeline  span.clicked.click-left{
+    display: inline-block;
+    background-color: #dee7ec;
+    cursor: pointer;
+    position: relative;
+    border-radius: 4px;
+    border: 2px solid #dee7ec;
+    height: 20px;
+    bottom: 5px;
+}
+
+
+.gmxTimeline  span.clicked.click-right{
+    display: inline-block;
+    background-color: #dee7ec;
+    cursor: pointer;
+    position: relative;
+    border-radius: 4px;
+    border: 2px solid #dee7ec;
+    height: 20px;
+    bottom: 5px;
+}
+
+.gmxTimeline .clicked.el-left.disabled {
+    display: inline-block;
+    background-color: #dee7ec;
+    cursor: pointer;
+    bottom: 10px;
+    left: -5px;
+    position: relative;
+    border-radius: 4px;
+    border: 1px solid #999;
+    height: 25px;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.gmxTimeline .clicked.el-left {
+    display: inline-block;
+    background-color: #dee7ec;
+    cursor: pointer;
+    bottom: 10px;
+    left: -5px;
+    position: relative;
+    border-radius: 4px;
+    border: 1px solid #999;
+    height: 25px;
+    opacity: 1;
+}
+
+.gmxTimeline .tabs ul li {
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;
+    width: 185px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+    background: #dee7ec;
+    box-shadow: rgba(0,0,0,0.09804) 0px 1px 1px 0px;
+    border: 1px solid rgba(70,70,70,.3);
+}
+
+.gmxTimeline .tabs ul li.last {
+    margin-right: 0;
+}
+
+.gmxTimeline .tabs ul li .close-button {
+    position: absolute;
+    left: auto;
+    right: 4px;
+    top: 8px;
+    width: 15px;
+    height: 15px;
+    padding-right: 0px;
+    background: url(//maps.kosmosnimki.ru/api/img/redesign/icons2.png) -78px -5px;
+}
+
+.gmxTimeline .tabs ul li span {
+    padding-right: 5px;
+    position: relative;
+    left: 5px;
+    bottom: 4px;
+    overflow: hidden;
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    display: inline-block;
+    max-width: 130px;
+    white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.gmxTimeline .tabs ul li .close-button:hover span {
+    color: #69C;
+    text-decoration: underline;
+}
+
+.gmxTimeline .tabs .selected {
+    border-bottom: white;
+    padding-bottom: 0px;
+    background: #FFF;
+    box-shadow: #FFF 0px 1px 1px 0px;
+}
+
+.gmxTimeline .leaflet-gmx-iconSvg {
+    text-align: center;
+    height: 30px;
+    width: 30px;
+    border-radius: 4px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0px 3px 4.7px 0.3px rgba(0, 0, 0, 0.24);
+    fill: #757575;
+    clear: none;
+    cursor: pointer;
+    display: block;
+    float: right;
+    margin-left: 4px;
+    position: relative;
+    top: 8px;
+    left: 6px;
+}
+.gmxTimeline .leaflet-gmx-iconSvg svg {
+    height: 23px;
+    width: 23px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    pointer-events: none;
+}
+
+.gmxTimeline .eye  {
+    left: 3px;
+    top: 3px;
+    color:red;
+    opacity: 1;
+}
+.gmxTimeline .w-scroll {
+    fill: #666;
+}
+.gmxTimeline svg {
+    height: 22px;
+    width: 15px;
+    pointer-events: none;
+}
+
+.gmxTimeline .switch  {
+    font-size: 0;
+    float: right;
+    color: #82909b;
+    padding: 4px;
+    z-index: 2;
+    position: absolute;
+    right: 44px;
+    width: auto;
+    top: 6px;
+}
+.gmxTimeline .switch .diamond {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    margin-top: 10px;
+    margin-left: 90px;
+    background-color: rgb(69, 176, 218);
+    transform: rotate(-45deg);
+    transform-origin: 0 100%;
+}
+.gmxTimeline .modeSelectedOff, .gmxTimeline .modeSelectedOn  {
+    background-color: white;
+    width: 90px;
+    line-height: 24px;
+    text-align: center;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    vertical-align: middle;
+}
+.gmxTimeline .modeSelectedOff  {
+    border-top-left-radius: 8px;
+}
+.gmxTimeline .modeSelectedOn  {
+    border-top-right-radius: 8px;
+    width: 100px;
+}
+.gmxTimeline .modeSelectedOff.on, .gmxTimeline .modeSelectedOn.on  {
+    color: white;
+    background-color: rgb(69, 176, 218);
+}
+
+.gmxTimeline div.timeline-event-dot {
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 4px;
+}
+
+.gmxTimeline .vis-container {
+    bottom: 0;
+    width: 100%;
+    left: 0px;
+}
+
+
+.gmxTimeline .timeline-frame.timeline-selectable {
+    height: 100px!important;
+}
+
+.gmxTimeline .timeline-content {
+    height: 100px!important;
+}
+
+.gmxTimeline .hr1, .gmxTimeline .hr2 {
+    position: relative;
+    height: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 100%;
+    background: rgba(70,70,70,.3);
+    z-index: 1;
+    top: 85px;
+    margin-left: 6px;
+	pointer-events: none;
+}
+
+.gmxTimeline .hr2 {
+    top: 67px;
+}
+
+.gmxTimeline .hr1.on, .gmxTimeline .hr2.on {
+	background: rgba(69, 176, 216, 1);
+	background-image: linear-gradient(100deg, transparent 80%, rgba(255,255,255,.9) 50%);
+    background-size: 3px 4px;
+}
+
+.gmxTimeline .timeline-axis {
+    background: #e6eef2!important;
+}
+
+
+.gmxTimeline span.clicked.click-right.gmx-disabled {
+    position: absolute;
+    top: 46px;
+    left: 32%;
+    border-bottom-right-radius: 4px;
+    border-top-right-radius: 4px;
+    display: none;
+}
+
+.gmxTimeline span.clicked.click-left.gmx-disabled {
+    position: absolute;
+    top: 46px;
+    left: 30%;
+    border-bottom-left-radius: 4px;
+    border-top-left-radius: 4px;
+    display:none;
+}
+
+.gmxTimeline .el-right {
+    display: inline-block;
+    right: 10px;
+    position: absolute;
+    bottom: -6px;
+}
+
+.gmxTimeline .el-left {
+    display: inline-block;
+    text-align: left;
+}
+
+.gmxTimeline .el-left  .el-act, .gmxTimeline .el-left  .el-pass{
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    background-color: #dee7ec;
+    width: auto;
+    line-height: 21px;
+    padding: 2px 10px 2px 10px;
+    text-transform: lowercase;
+    font-weight: 600;
+    display: inline-block;
+    /* margin: 1px; */
+}
+
+.gmxTimeline .el-left  .on {
+    color:  #f7f7f7;
+    background-color:  #45b0d8;
+}
+
+.gmxTimeline .el-act {border-right: 1px solid #999}
+
+.gmxTimeline .el-center {
+    display: inline-block;
+    text-align: center;
+    position: relative;
+    width: 85%;
+}
+
+.gmxTimeline .el-act-cent-1 {
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    position: relative;
+    bottom: 6px;
+    line-height: 7px;
+    text-align: left;
+    border-radius: 4px;
+    border: 1px solid #999;
+    width: auto;
+    margin-left: 3px;
+    padding: 0px 10px 3.5px 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.gmxTimeline .el-act-cent-2 {
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 15px;
+    text-align: left;
+    border: 1px solid #999;
+    border-radius: 4px;
+    width: auto;
+    margin-left: 3px;
+    padding: 2px 15px 0px 15px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+    background: #dee7ec;
+    bottom: 5px;
+    position: relative;
+}
+
+.gmxTimeline .disabled {
+    pointer-events: none;
+    cursor: auto;
+}
+
+.gmxTimeline .clouds-content {
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 23px;
+    text-align: left;
+    border-radius: 4px;
+    width: auto;
+    height: 23px;
+    margin-left: 0px;
+    padding: 3px 10px 0px 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 6px;
+    position: relative;
+    bottom: 2px;
+}
+
+.gmxTimeline .el-act-right-1 {
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    border-radius: 4px;
+    border: 1px solid #999;
+    width: auto;
+    margin-left: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+    background: #dee7ec;
+    position: relative;
+    top: -7px;
+    line-height: 10px;
+}
+
+.gmxTimeline .el-act-right-2 {
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 23px;
+    text-align: left;
+    border-radius: 4px;
+    width: auto;
+    height: 23px;
+    margin-left: 12px;
+    padding: 3px 6px 1px 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: inline-block;
+    position: relative;
+    top: 4px;
+}
+
+.gmxTimeline .hideButton-content {
+    cursor: pointer;
+    border-left: 1px solid #bebebe;
+    border-right: 1px solid #bebebe;
+    height: 33px;
+    margin-left: 0px;
+    padding: 3px 6px 1px 4px;
+    display: inline-block;
+    background: #dee7ec;
+    right: -5px;
+    bottom: 2px;
+    position: relative;
+}
+
+.gmxTimeline .leaflet-gmx-iconSvg.hideButton.leaflet-control {
+    position: absolute;
+    right: -3px;
+    height: 38px;
+    width: 43px;
+    border-radius: 2px;
+    bottom: 200px;
+    background: #dee7ec;
+    box-shadow: none;
+    z-index: 1000;
+}
+
+.gmxTimeline .different-interval, .gmxTimeline .single-interval {
+    cursor: pointer;
+    width: 30px;
+    padding: 3px 5px 2px 5px;
+    position: relative;
+    display: inline-block;
+    bottom: 0px;
+    left: 0px;
+}
+
+.gmxTimeline .different-interval.on, .gmxTimeline .single-interval.on {
+    background-color: #45b0d8;
+    cursor: auto;
+}
+
+.gmxTimeline .favorite, .gmxTimeline .remove, .gmxTimeline .trash {
+    cursor: pointer;
+}
+
+.gmxTimeline .calendar-text {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    position: relative;
+    bottom: 4px;
+    margin-left:3px; 
+    font-weight:500;
+}
+
+.gmxTimeline .clock-text {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    position: relative;
+    bottom: 4px;
+    margin-left:3px;
+    font-weight: 500;
+}
+
+.gmxTimeline .line {
+    position: relative;
+    display: inline-block;
+    margin-right: 4px;
+    margin-left: 4px;
+    top: -1px;
+    width: 11px;
+    height: 11px;
+    padding-right: 0px;
+    line-height: 20px;
+    color: #999;
+    font-weight: 100;
+    font-size: 22px;
+}
+
+.gmxTimeline .line1 {
+    position: relative;
+    display: inline-block;
+    margin-right: 7px;
+    margin-left: 13px;
+    top: -3px;
+    width: 11px;
+    height: 11px;
+    padding-right: 0px;
+    line-height: 20px;
+    color: #999;
+    font-weight: 100;
+    font-size: 22px;
+}
+
+.gmxTimeline .line4 {
+    position: relative;
+    display: inline-block;
+    margin-right: 4px;
+    margin-left: 4px;
+    top: -4px;
+    width: 11px;
+    height: 11px;
+    padding-right: 0px;
+    line-height: 20px;
+    color: #999;
+    font-weight: 100;
+    font-size: 22px;
+    display:none;
+}
+
+.gmxTimeline .cloud-text {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.gmxTimeline .click-left svg {
+    height: 18px;
+    width: 18px;
+    pointer-events: none;
+
+}
+
+.gmxTimeline .click-right svg {
+    height: 18px;
+    width: 18px;
+    pointer-events: none;
+
+}
+
+.gmxTimeline .el-act-cent-1 svg {
+    height: 19px;
+    width: 19px;
+    pointer-events: none;
+}
+
+.gmxTimeline .el-act-cent-2 svg {
+    height: 20px;
+    width: 20px;
+    pointer-events: none;
+}
+
+.gmxTimeline .clouds-content svg {
+    width: 19px;
+    pointer-events: none;
+}
+
+.gmxTimeline select.cloud-select {
+    height: 26px;
+    bottom: 6px;
+    position: relative;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.gmxTimeline .el-act-cent-1 svg {
+    height: 13px;
+    width: 13px;
+    pointer-events: none;
+    position: relative;
+    /*left: 5px;*/
+}
+
+.gmxTimeline .el-act-cent-2 svg {
+    height: 16px;
+    width: 16px;
+    pointer-events: none;
+    position: relative;
+}
+
+
+.gmxTimeline .el-act-right-1 svg {
+    height: 15px;
+    width: 15px;
+    pointer-events: none;
+    position: relative;
+    left: 5px;
+}
+
+.gmxTimeline .tabs  svg {
+    fill:#666;
+    bottom: 1px;
+    position: relative;
+}
+
+.gmxTimeline .gmx-hidden {
+    display: none;
+}
+
+.gmxTimeline .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.gmxTimeline .svgIcon.is-off {
+    fill:#da5d40;
+}
+
+.leaflet-iconLayers.iconLayersShift {
+    margin-bottom: 178px;
+}
+
