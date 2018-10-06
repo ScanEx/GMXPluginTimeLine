@@ -1,0 +1,19 @@
+{
+  "name": "gmx-plugin-timeline",
+  "version": "1.0.0",
+  "description": "Добавляет контрол таймлайна слоев ГеоМиксера. Расширяет [L.Control](http://leafletjs.com/reference.html#control).\r Предназначен для анализа временной составляющей мультивременных векторных слоев ГеоМиксера.\r Доступ через пространство имен ГеоМиксера - `window.nsGmx` по идентификатору `gmxTimeline`\r Через мета свойства добавляемых слоев можно указывать наименования атрибутов слоя используемых в таймлайне:\r   * `timeColumnName` - атрибут содержащий метки времени(по умолчанию равен атрибуту слоя `TemporalColumnName`)\r   * `clouds` - атрибут содержащий метки облачности(по умолчанию фильтр облачности отключен)",
+  "main": "L.Control.gmxTimeLine.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ScanEx/GMXPluginTimeLine.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ScanEx/GMXPluginTimeLine/issues"
+  },
+  "homepage": "https://github.com/ScanEx/GMXPluginTimeLine#readme"
+}
