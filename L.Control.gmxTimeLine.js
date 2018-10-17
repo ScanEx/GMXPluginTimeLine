@@ -15,7 +15,7 @@
 		// tzs = 0,
 		tzm = tzs * 1000,
 		ns = {},
-		zIndexOffset = 1000,
+		zIndexOffset = -1000,
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		translate = {
