@@ -16,6 +16,7 @@
 		tzm = tzs * 1000,
 		ns = {},
 		zIndexOffset = -1000,
+		zIndexOffsetCurrent = -500,
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		translate = {
@@ -267,8 +268,8 @@
 
 		chkZindexUpdated: function (id) {
 			var state = this.getCurrentState();
-			if (state && state.gmxLayer.options.zIndexOffset !== 1000) {
-				state.gmxLayer.setZIndexOffset(zIndexOffset);
+			if (state && state.gmxLayer.options.zIndexOffset !== zIndexOffsetCurrent) {
+				state.gmxLayer.setZIndexOffset(zIndexOffsetCurrent);
 			}
 		},
 
@@ -564,13 +565,13 @@
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			//state.oInterval = state.gmxLayer.getDateInterval();
-			state.gmxLayer.setZIndexOffset(zIndexOffset);
+			state.gmxLayer.setZIndexOffset(zIndexOffsetCurrent);
 			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
 			}
 			if (stateBefore) {
-				stateBefore.gmxLayer.setZIndexOffset(0);
+				stateBefore.gmxLayer.setZIndexOffset(zIndexOffset);
 				if (singleIntervalFlag && stateBefore) {
 					this._copyState(state, stateBefore);
 				}
