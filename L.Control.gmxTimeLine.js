@@ -256,7 +256,7 @@
 					}
 			}, this);
 			gmxLayer
-				.on('zindexupdated', function () { this.chkZindexUpdated(layerID); }, this)
+				.on('zindexupdated', function () { this.chkZindexUpdated(); }, this)
 				.on('add', function () { chkVisible(true); }, this)
 				.on('remove', function () { chkVisible(false); }, this);
 
@@ -266,7 +266,7 @@
 			return liItem;
 		},
 
-		chkZindexUpdated: function (id) {
+		chkZindexUpdated: function () {
 			var state = this.getCurrentState();
 			if (state && state.gmxLayer.options.zIndexOffset !== zIndexOffsetCurrent) {
 				state.gmxLayer.setZIndexOffset(zIndexOffsetCurrent);
@@ -565,13 +565,17 @@
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			//state.oInterval = state.gmxLayer.getDateInterval();
-			state.gmxLayer.setZIndexOffset(zIndexOffsetCurrent);
+
+			for (var key in this._state.data) {
+				var it = this._state.data[key];
+				it.gmxLayer.setZIndexOffset(state === it ? zIndexOffsetCurrent : zIndexOffset);
+			}
+
 			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
 			}
 			if (stateBefore) {
-				stateBefore.gmxLayer.setZIndexOffset(zIndexOffset);
 				if (singleIntervalFlag && stateBefore) {
 					this._copyState(state, stateBefore);
 				}
