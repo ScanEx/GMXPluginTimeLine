@@ -1047,8 +1047,8 @@ var str = '\
 							<option value="5">0 - 5%</option>\
 							<option value="10">0 - 10%</option>\
 							<option value="20">0 - 20%</option>\
-							<option value="50" selected>0 - 50%</option>\
-							<option value="100">0 - 100%</option>\
+							<option value="50">0 - 50%</option>\
+							<option value="100" selected>0 - 100%</option>\
 						</select>\
 					</span>\
 					&nbsp;&nbsp;\
