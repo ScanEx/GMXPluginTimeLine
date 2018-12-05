@@ -323,6 +323,8 @@
 				if (this._timeline) {
 					this._setCurrentTab(layerID);
 					this._setDateScroll();
+				} else {
+					this._chkClouds(this._state.data[layerID]);
 				}
 			}
 			return this;
@@ -594,17 +596,23 @@
 			// if (Object.keys(state.selected || {}).length > 1) {
 				// L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
 			// }
-			if (state.clouds) {
-				L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
-			} else {
-				L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
-			}
+			this._chkClouds(state);
 
 			// if (state.rollClickedFlag) {
 				this._chkRollClickedFlag(state);
 			// }
 			state.gmxLayer.repaint();
 			L.gmx.layersVersion.now();
+		},
+
+		_chkClouds: function (state) {
+			if (this._containers) {
+				if (state.clouds) {
+					L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
+				} else {
+					L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
+				}
+			}
 		},
 
 		initialize: function (options) {

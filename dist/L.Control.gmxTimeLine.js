@@ -15,10 +15,14 @@
 		// tzs = 0,
 		tzm = tzs * 1000,
 		ns = {},
-		zIndexOffset = 1000,
+		zIndexOffset = -1000,
+		zIndexOffsetCurrent = -500,
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		translate = {
+			warning: 'Zoom map for TimeLine',
+			differentInterval: 'Different interval for tabs',
+			singleInterval: 'Single interval for tabs',
 			modeSelectedOff: 'By all',
 			modeSelectedOn: 'By selected'
 		},
@@ -255,7 +259,7 @@
 					}
 			}, this);
 			gmxLayer
-				.on('zindexupdated', function () { this.chkZindexUpdated(layerID); }, this)
+				.on('zindexupdated', function () { this.chkZindexUpdated(); }, this)
 				.on('add', function () { chkVisible(true); }, this)
 				.on('remove', function () { chkVisible(false); }, this);
 
@@ -265,10 +269,10 @@
 			return liItem;
 		},
 
-		chkZindexUpdated: function (id) {
+		chkZindexUpdated: function () {
 			var state = this.getCurrentState();
-			if (state && state.gmxLayer.options.zIndexOffset !== 1000) {
-				state.gmxLayer.setZIndexOffset(zIndexOffset);
+			if (state && state.gmxLayer.options.zIndexOffset !== zIndexOffsetCurrent) {
+				state.gmxLayer.setZIndexOffset(zIndexOffsetCurrent);
 			}
 		},
 
@@ -319,6 +323,8 @@
 				if (this._timeline) {
 					this._setCurrentTab(layerID);
 					this._setDateScroll();
+				} else {
+					this._chkClouds(this._state.data[layerID]);
 				}
 			}
 			return this;
@@ -564,13 +570,17 @@
 			currentDmID = layerID;
 			var state = this.getCurrentState();
 			//state.oInterval = state.gmxLayer.getDateInterval();
-			state.gmxLayer.setZIndexOffset(zIndexOffset);
+
+			for (var key in this._state.data) {
+				var it = this._state.data[key];
+				it.gmxLayer.setZIndexOffset(state === it ? zIndexOffsetCurrent : zIndexOffset);
+			}
+
 			if (state.dInterval && (state.dInterval.beginDate.valueOf() < state.oInterval.beginDate.valueOf() || state.dInterval.endDate.valueOf() > state.oInterval.endDate.valueOf())) {
 				state.dInterval.beginDate = state.oInterval.beginDate;
 				state.dInterval.endDate = state.oInterval.endDate;
 			}
 			if (stateBefore) {
-				stateBefore.gmxLayer.setZIndexOffset(0);
 				if (singleIntervalFlag && stateBefore) {
 					this._copyState(state, stateBefore);
 				}
@@ -586,17 +596,23 @@
 			// if (Object.keys(state.selected || {}).length > 1) {
 				// L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
 			// }
-			if (state.clouds) {
-				L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
-			} else {
-				L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
-			}
+			this._chkClouds(state);
 
 			// if (state.rollClickedFlag) {
 				this._chkRollClickedFlag(state);
 			// }
 			state.gmxLayer.repaint();
 			L.gmx.layersVersion.now();
+		},
+
+		_chkClouds: function (state) {
+			if (this._containers) {
+				if (state.clouds) {
+					L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
+				} else {
+					L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
+				}
+			}
 		},
 
 		initialize: function (options) {
@@ -623,6 +639,7 @@
 				zeroDate: zeroDate.getTime(),
 				maxDate: new Date(2980, 0, 1).getTime()
 			};
+			timeLineControl = this;
 		},
 
 		_initTimeline: function (data) {
