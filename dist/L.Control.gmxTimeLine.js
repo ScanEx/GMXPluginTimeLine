@@ -675,12 +675,14 @@
 				gmxLayer
 					.removeLayerFilter({type: 'screen', id: pluginName});
 					// .off('dateIntervalChanged', this._dateIntervalChanged, this);
-				var layersTab = this._containers.layersTab;
-				for (var i = 0, len = layersTab.children.length; i < len; i++) {
-					var li = layersTab.children[i];
-					if (li._layerID === layerID) {
-						this._removeLayerTab(li);
-						break;
+				if (this._containers) {
+					var layersTab = this._containers.layersTab;
+					for (var i = 0, len = layersTab.children.length; i < len; i++) {
+						var li = layersTab.children[i];
+						if (li._layerID === layerID) {
+							this._removeLayerTab(li);
+							break;
+						}
 					}
 				}
 			}
