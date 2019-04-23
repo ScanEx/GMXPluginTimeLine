@@ -20,6 +20,9 @@
 		zeroDate = new Date(1980, 0, 1),
 		modeSelect = 'range',
 		translate = {
+			warning: 'Zoom map for TimeLine',
+			differentInterval: 'Different interval for tabs',
+			singleInterval: 'Single interval for tabs',
 			modeSelectedOff: 'By all',
 			modeSelectedOn: 'By selected'
 		},
@@ -320,6 +323,8 @@
 				if (this._timeline) {
 					this._setCurrentTab(layerID);
 					this._setDateScroll();
+				} else {
+					this._chkClouds(this._state.data[layerID]);
 				}
 			}
 			return this;
@@ -591,17 +596,23 @@
 			// if (Object.keys(state.selected || {}).length > 1) {
 				// L.DomUtil.removeClass(this._containers.switchDiv, 'disabled');
 			// }
-			if (state.clouds) {
-				L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
-			} else {
-				L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
-			}
+			this._chkClouds(state);
 
 			// if (state.rollClickedFlag) {
 				this._chkRollClickedFlag(state);
 			// }
 			state.gmxLayer.repaint();
 			L.gmx.layersVersion.now();
+		},
+
+		_chkClouds: function (state) {
+			if (this._containers) {
+				if (state.clouds) {
+					L.DomUtil.removeClass(this._containers.cloudsContent, 'disabled');
+				} else {
+					L.DomUtil.addClass(this._containers.cloudsContent, 'disabled');
+				}
+			}
 		},
 
 		initialize: function (options) {
@@ -628,6 +639,7 @@
 				zeroDate: zeroDate.getTime(),
 				maxDate: new Date(2980, 0, 1).getTime()
 			};
+			timeLineControl = this;
 		},
 
 		_initTimeline: function (data) {
@@ -663,12 +675,14 @@
 				gmxLayer
 					.removeLayerFilter({type: 'screen', id: pluginName});
 					// .off('dateIntervalChanged', this._dateIntervalChanged, this);
-				var layersTab = this._containers.layersTab;
-				for (var i = 0, len = layersTab.children.length; i < len; i++) {
-					var li = layersTab.children[i];
-					if (li._layerID === layerID) {
-						this._removeLayerTab(li);
-						break;
+				if (this._containers) {
+					var layersTab = this._containers.layersTab;
+					for (var i = 0, len = layersTab.children.length; i < len; i++) {
+						var li = layersTab.children[i];
+						if (li._layerID === layerID) {
+							this._removeLayerTab(li);
+							break;
+						}
 					}
 				}
 			}
@@ -1035,8 +1049,8 @@ var str = '\
 							<option value="5">0 - 5%</option>\
 							<option value="10">0 - 10%</option>\
 							<option value="20">0 - 20%</option>\
-							<option value="50" selected>0 - 50%</option>\
-							<option value="100">0 - 100%</option>\
+							<option value="50">0 - 50%</option>\
+							<option value="100" selected>0 - 100%</option>\
 						</select>\
 					</span>\
 					&nbsp;&nbsp;\
