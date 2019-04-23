@@ -78,4 +78,4 @@ setCurrentTab|`setCurrentTab(id<String>)`| Установить текущую �
 | dateInterval | `<Event>` | произошло изменение интервала таймлайна
 
 ## config line example for Geomixer
-     { pluginName: 'Timeline Vectors', file: 'plugins/external/GMXPluginTimeLine/L.Control.gmxTimeLine.js', module: 'gmxTimeLine', mapPlugin: true, isPublic: true }
+     { pluginName: 'Geomixer Timeline', file: 'plugins/external/GMXPluginTimeLine/L.Control.gmxTimeLine.js', module: 'gmxTimeLine', mapPlugin: true, isPublic: true }
