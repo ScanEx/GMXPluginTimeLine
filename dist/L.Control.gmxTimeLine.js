@@ -49,8 +49,8 @@
 						oneDay = 1000 * 60 * 60 * 24;
 
 					dInterval = {
-						beginDate: new Date(opt.DateBeginUTC * 1000 - oneDay),
-						endDate: new Date((1 + opt.DateEndUTC) * 1000 + oneDay)
+						beginDate: new Date(dmOpt.DateBeginUTC * 1000 - oneDay),
+						endDate: new Date((1 + dmOpt.DateEndUTC) * 1000 + oneDay)
 					};
 					if (!dInterval.beginDate || !dInterval.endDate) {
 						var cInterval;
@@ -71,7 +71,7 @@
 
 					state = {
 						gmxLayer: gmxLayer,
-						layerID: opt.name, title: opt.title, //dmID: dmOpt.name,
+						layerID: dmOpt.name, title: dmOpt.title, //dmID: dmOpt.name,
 						tmpKeyNum: tmpKeyNum,
 						timeKeyNum: timeKeyNum,
 						clouds: clouds,
@@ -86,7 +86,7 @@
 							type: 'resend',
 							filters: ['clipFilter', 'userFilter', 'userFilter_timeline', 'styleFilter'],
 							active: false,
-							layerID: opt.name,
+							layerID: dmOpt.name,
 							srs: dmOpt.srs,
 							itemHook: function(it) {
 								if (!this.cache) { this.cache = {}; }
